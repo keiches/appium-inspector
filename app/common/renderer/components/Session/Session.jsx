@@ -16,6 +16,7 @@ import CloudProviderSelector from './CloudProviderSelector.jsx';
 import CloudProviders from './CloudProviders.jsx';
 import SavedSessions from './SavedSessions.jsx';
 import ServerTabCustom from './ServerTabCustom.jsx';
+import SessionHelper from './SessionHelper';
 import SessionStyles from './Session.module.css';
 
 const Session = (props) => {
@@ -98,6 +99,10 @@ const Session = (props) => {
             onChange={(tab) => handleSelectServerTab(tab)}
             className={SessionStyles.serverTabs}
             items={[
+              {
+                label: <span className="addCloudProviderTab">{t('New Start')}</span>,
+                key: 'NEW_START_CONNECTION',
+              },
               {label: t('Appium Server'), key: 'remote', children: <ServerTabCustom {...props} />},
               ..._(visibleProviders).map((providerName) => {
                 const provider = CloudProviders[providerName];
@@ -119,6 +124,7 @@ const Session = (props) => {
           <AdvancedServerParams {...props} />
         </div>
 
+        {serverType === 'NEW_START_CONNECTION' ? (<SessionHelper {...props} />) : (
         <Tabs
           activeKey={tabKey}
           onChange={switchTabs}
@@ -149,7 +155,7 @@ const Session = (props) => {
               children: <AttachToSession {...props} />,
             },
           ]}
-        />
+        />)}
 
         <div className={SessionStyles.sessionFooter}>
           <div className={SessionStyles.desiredCapsLink}>
