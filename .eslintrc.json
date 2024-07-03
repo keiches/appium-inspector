@@ -1,6 +1,11 @@
 {
   "extends": ["plugin:react/recommended", "@appium/eslint-config-appium"],
   "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "babelOptions": {
+      "presets": ["@babel/preset-react"]
+    }
+  },
   "plugins": ["import", "react", "react-native", "@babel"],
   "env": {
     "browser": true,
