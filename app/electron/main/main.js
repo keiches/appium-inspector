@@ -10,10 +10,11 @@ import NodeDetector from './node-detector';
 // import fs from 'node:fs';
 // import {fs} from '@appium/support';
 // import {exec, spawn} from 'node:child_process';
-import {spawn} from 'child_process';
-import {exec} from 'teen_process';
-import {join} from 'path';
+import {spawn} from 'node:child_process';
+import {join, resolve} from 'node:path';
+import {homedir} from 'node:os';
 // import _logger from 'console';
+import {exec} from 'teen_process';
 import log from './logger';
 // import {spawn} from './utils';
 
@@ -184,9 +185,17 @@ async function runServer() {
     log.log(`----> ${__dirname}`);
 
     // const server = spawn(nodePath, [join(__dirname, '../server/build/lib/main.js')]/*, {
-    const server = spawn(nodePath, [join(__dirname, 'server/build/lib/main.js')]/*, {
-      stdio: ['pipe', 'inherit', 'inherit'],
-    }*/);
+    const server = spawn(nodePath, [
+      join(__dirname, 'server/build/lib/main.js'),
+      '--',
+      '--config-file'
+    ], {
+      // stdio: ['pipe', 'inherit', 'inherit']
+      env: {
+        // 'APPIIM_HOME': join(__dirname, '.appium'),
+        'APPIIM_HOME': resolve(homedir(), '.aav'),
+      },
+    });
 
     server.stdout.on('data', (data) => {
       // if we get here, all we know is that the proc exited
