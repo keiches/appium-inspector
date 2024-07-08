@@ -10,9 +10,9 @@ import NodeDetector from './node-detector';
 // import fs from 'node:fs';
 // import {fs} from '@appium/support';
 // import {exec, spawn} from 'node:child_process';
-import {spawn} from 'node:child_process';
-import {join, resolve} from 'node:path';
-import {homedir} from 'node:os';
+import {spawn} from 'child_process';
+import {join, resolve} from 'path';
+import {homedir} from 'os';
 // import _logger from 'console';
 import {exec} from 'teen_process';
 import log from './logger';
@@ -22,11 +22,15 @@ import log from './logger';
 
 export let openFilePath = getAppiumSessionFilePath(process.argv, app.isPackaged);
 
+let server;
+
 app.on('open-file', (event, filePath) => {
   openFilePath = filePath;
 });
 
 app.on('window-all-closed', () => {
+  server.kill('SIGKILL'); // NodeJS.Signals
+  // process.kill(server.pid, 'SIGINT');
   app.quit();
 });
 
@@ -47,8 +51,8 @@ async function spawn(cmd) {
 async function runServer0() {
   /*const controller = new AbortController();
   const { signal } = controller;
-  const server = fork('../server/build/lib/main.js', [], {*/
-  /*const server = fork('node', ['../server/build/lib/main'], {
+  server = fork('../server/build/lib/main.js', [], {*/
+  /*server = fork('node', ['../server/build/lib/main'], {
     // signal,
     stdio: ['pipe', 'inherit', 'inherit'],
   });*/
@@ -59,7 +63,8 @@ async function runServer0() {
       (await exec('node', ['--version'])).stdout.split('\n')[0]
     }`);
 
-    const server = spawn(nodePath, ['../server/build/lib/main.js']/*, {
+    // server = spawn(nodePath, ['../server/build/lib/main.js']/*, {
+    server = spawn(nodePath, ['../node_modules/appium/build/lib/main.js']/*, {
       stdio: ['pipe', 'inherit', 'inherit'],
     }*/);
 
@@ -170,8 +175,8 @@ async function runServer0() {
 async function runServer() {
   /*const controller = new AbortController();
   const { signal } = controller;
-  const server = fork('../server/build/lib/main.js', [], {*/
-  /*const server = fork('node', ['../server/build/lib/main'], {
+  server = fork('../server/build/lib/main.js', [], {*/
+  /*server = fork('node', ['../server/build/lib/main'], {
     // signal,
     stdio: ['pipe', 'inherit', 'inherit'],
   });*/
@@ -184,11 +189,13 @@ async function runServer() {
 
     log.log(`----> ${__dirname}`);
 
-    // const server = spawn(nodePath, [join(__dirname, '../server/build/lib/main.js')]/*, {
-    const server = spawn(nodePath, [
-      join(__dirname, 'server/build/lib/main.js'),
+    // server = spawn(nodePath, [join(__dirname, '../server/build/lib/main.js')]/*, {
+    // server = spawn(nodePath, ['../node_modules/appium/build/lib/main.js']/*, {
+    server = spawn(nodePath, [
+      join(__dirname, '../node_modules/appium/build/lib/main.js'),
       '--',
-      '--config-file'
+      '--config-file',
+      join(__dirname, '../configs/server.config.js'),
     ], {
       // stdio: ['pipe', 'inherit', 'inherit']
       env: {
@@ -237,7 +244,7 @@ async function runServer() {
 
     app.on('window-all-closed', () => {
       // controller.abort();
-      server.kill('SIGHUP');
+      server.kill('SIGHUP'); // NodeJS.Signals
     });
   } else {
     log.error('node cannot be found');
