@@ -4,25 +4,28 @@ module.exports = {
     "address": "127.0.0.1",
     "allow-cors": false,
     // "allow-insecure": ["foo", "bar"],
-    "base-path": "/",
+    // "base-path": "/",
+    // "base-path": "/wd/hub",
     "callback-address": "127.0.0.1",
     "callback-port": 4723,
     "debug-log-spacing": true,
-    "default-capabilities": {
-      "key": "value"
-    },
+    /*"default-capabilities": {
+      "appium:automationName": "uiautomator2",
+      "appium:newCommandTimeout": 240,
+    },*/
     // "deny-insecure": ["baz", "quux"],
-    "driver": {
-      /*"xcuitest": {
-        "key": "value"
-      },*/
+    /*"driver": {
+      /!*"xcuitest": {
+        "wdaLocalPort": 8100
+      },*!/
       "uiautomator2": {
         "key": "value"
       }
-    },
+    },*/
     "keep-alive-timeout": 600,
     "local-timezone": true,
-    "log": "/tmp/appium.log",
+    // "log": "/tmp/appium.log",
+    "log": "C:\\Temp\\appium-server.log",
     "log-level": "info",
     "log-format": "text",
     "log-no-colors": true,
@@ -31,16 +34,25 @@ module.exports = {
     "no-perms-check": false,
     "plugin": {
       "device-farm": {
-        "platform": "android",
+        "platform": "android", // "ios",
         "androidDeviceType": "both",
         // "androidDeviceType": "real",
-        "iosDeviceType": "both"
+        "iosDeviceType": "both",
         // "iosDeviceType": "simulated",
+        /*"liveStreaming":true,
+        "skipChromeDownload":true,
+        "deviceAvailabilityTimeoutMs":300000,
+        "deviceAvailabilityQueryIntervalMs":10000,
+        "sendNodeDevicesToHubIntervalMs":30000,
+        "checkStaleDevicesIntervalMs":30000,
+        "checkBlockedDevicesIntervalMs":30000,
+        "newCommandTimeoutSec":60,
+        "bindHostOrIp":"127.0.0.0"*/
       },
       "element-wait": {
         "timeout": 10000,
         "intervalBetweenAttempts": 500,
-        "excludeEnabledCheck": [],
+        // "excludeEnabledCheck": [],
       }
     },
     "port": 4723,
@@ -50,7 +62,7 @@ module.exports = {
     // "tmp": "/tmp",
     // "trace-dir": "/tmp/appium-instruments",
     "use-drivers": ["uiautomator2"],
-    // "use-plugins": ["baz", "quux"],
-    "webhook": "https://some-url.com"
+    "use-plugins": ["images", "gestures", "device-farm", "element-wait"],
+    // "webhook": "https://some-url.com"
   }
 };
