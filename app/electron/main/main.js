@@ -30,8 +30,11 @@ app.on('open-file', (event, filePath) => {
 });
 
 app.on('window-all-closed', () => {
-  server.kill('SIGKILL'); // NodeJS.Signals
-  // process.kill(server.pid, 'SIGINT');
+  if (server && !server.killed) {
+    server.kill('SIGTERM'); // NodeJS.Signals
+    // process.kill(server.pid, 'SIGINT');
+    server = null;
+  }
   app.quit();
 });
 
@@ -188,20 +191,31 @@ async function runServer() {
       (await exec('node', ['--version'])).stdout.split('\n')[0]
     }`);
 
-    log.log(`----> ${__dirname}`);
+    log.log(`----1> ${__dirname}`);
+    log.log(`----2> ${homedir()}`);
+    log.log(`----3> ${resolve(homedir(), '.aav')}`);
 
     // server = spawn(nodePath, [join(__dirname, '../server/build/lib/main.js')]/*, {
     // server = spawn(nodePath, ['../node_modules/appium/build/lib/main.js']/*, {
     server = spawn(nodePath, [
-      join(__dirname, '../node_modules/appium/build/lib/main.js'),
-      '--',
-      '--config-file',
-      join(__dirname, '../configs/server.config.js'),
+      // TODO: search appium server
+      // join(__dirname, '../node_modules/ap\pium/build/lib/main.js'),
+      // 'C:\\opt\\nodejs\\node_modules\\appium\\index.js',
+      'C:\\Users\\keiches\\Projects\\open\\appium\\appium\\packages\\appium\\build\\lib\\main.js',
+      'server',
+      '--config',
+      join(__dirname, '../configs/server.conf.js'),
+      // '--show-config'
     ], {
       // stdio: ['pipe', 'inherit', 'inherit']
+      // shell: true,
+      // cwd: 'C:\\Test\\Path',
+      // detached: true, ==> server.unref();
+      // NOTE: 아래 값을 넣으면, 더 이상 shell 로 부터 환경설정값을 읽지 않는 듯함
       env: {
-        // 'APPIIM_HOME': join(__dirname, '.appium'),
-        'APPIIM_HOME': resolve(homedir(), '.aav'),
+        // 'APPIUM_HOME': join(__dirname, '.appium'),
+        'APPIUM_HOME': resolve(homedir(), '.aav'),
+        'ANDROID_HOME': 'C:\\opt\\Android\\Sdk',
       },
     });
 
@@ -216,17 +230,21 @@ async function runServer() {
     });
 
     server.on('message', (message) => {
-      log.log('[appium-server] ' + message);
+      log.log('[appium-server] message:' + message);
     });
 
     server.on('error', (err) => {
       // This will be called with err being an AbortError if the controller aborts
-      log.error('[appium-server] ' + err.toString());
+      log.error('[appium-server] error:' + err.toString());
       dialog.showMessageBox({
         type: 'error',
           buttons: [t('OK')],
           message: err.message,
       });
+    });
+
+    server.on('disconnect', () => {
+      log.warn('[appium-server] disconnect');
     });
 
     server.on('close', (code, signal) => {
@@ -245,7 +263,10 @@ async function runServer() {
 
     app.on('window-all-closed', () => {
       // controller.abort();
-      server.kill('SIGHUP'); // NodeJS.Signals
+      if (server && !server.killed) {
+        server.kill('SIGTERM'); // NodeJS.Signals
+        server = null;
+      }
     });
   } else {
     log.error('node cannot be found');
@@ -264,7 +285,9 @@ app.on('ready', async () => {
     // await installExtensions();
   }
 
-  await runServer();
+  // @site: https://www.freecodecamp.org/korean/news/node-js-child-processes-everything-you-need-to-know-e69498fe970a/
+  // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
+  // await runServer();
 
   setupMainWindow({
     mainUrl: `file://${__dirname}/index.html`,

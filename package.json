@@ -43,7 +43,7 @@
     "build:dev:main": "cross-env NODE_ENV=development npm run build:main",
     "build:dev:renderer": "cross-env NODE_ENV=development npm run build:renderer",
     "start": "cross-env RUNNING_LOCALLY=true electron ./",
-    "start:dev": "cross-env RUNNING_LOCALLY=true FORCE_NO_WRONG_FOLDER=true NODE_ENV=development electron --inspect ./",
+    "start:dev": "cross-env RUNNING_LOCALLY=true FORCE_NO_WRONG_FOLDER=true NODE_ENV=development electron --inspect-brk ./",
     "dev": "npm run build:dev:main && npm run build:dev:renderer && cross-env NODE_ENV=development concurrently --kill-others npm:start:dev npm:watch:main npm:watch:renderer",
     "clean": "npm run clean:electron && npm run clean:browser && npm run clean:npm",
     "clean:electron": "rimraf dist/ && rimraf .cache",
@@ -76,7 +76,6 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "2.2.6",
-    "@types/react-dom": "^18.3.0",
     "@xmldom/xmldom": "0.8.10",
     "antd": "4.24.15",
     "axios": "1.7.2",
