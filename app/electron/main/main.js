@@ -2,7 +2,7 @@ import {app, dialog} from 'electron';
 import debug from 'electron-debug';
 
 // import {installExtensions} from './debug';
-import {getAppiumSessionFilePath, isDev} from './helpers';
+import {getAppiumSessionFilePath, t, isDev} from './helpers';
 import {setupMainWindow} from './windows';
 import NodeDetector from './node-detector';
 // import server from '../server/build/lib/main.js';
