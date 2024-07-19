@@ -1,7 +1,7 @@
 import {app, dialog} from 'electron';
 
 // import {installExtensions} from './debug';
-import {getAppiumSessionFilePath} from './helpers';
+import {getAppiumSessionFilePath, t} from './helpers';
 import {setupMainWindow} from './windows';
 import NodeDetector from './node-detector';
 // import server from '../server/build/lib/main.js';
