@@ -1,22 +1,15 @@
 {
-  "extends": ["plugin:react/recommended", "@appium/eslint-config-appium"],
-  "parser": "@babel/eslint-parser",
-  "parserOptions": {
-    "babelOptions": {
-      "presets": ["@babel/preset-react"]
-    }
-  },
-  "plugins": ["import", "react", "react-native", "@babel"],
+  "extends": ["plugin:react/recommended", "@appium/eslint-config-appium-ts"],
+  "plugins": ["import", "react", "react-native"],
   "env": {
     "browser": true,
-    "mocha": true,
     "node": true
   },
   "settings": {
     "react": {
       "version": "detect"
     },
-    "import/resolver": {
+    "_import/resolver": {
       "node": {
         // "paths": ["app/src"],
         // "moduleDirectory": ["node_modules", "app/"],
@@ -28,15 +21,8 @@
     }
   },
   "rules": {
-    "@babel/arrow-parens": 0,
-    "import/no-unresolved": [
-      2,
-      {
-        "ignore": ["electron"]
-      }
-    ],
     "react/prop-types": 0,
-    "react-native/no-inline-styles": 2,
-    "react/react-in-jsx-scope": "off"
+    "_react/react-in-jsx-scope": "off",
+    "react-native/no-inline-styles": 2
   }
 }

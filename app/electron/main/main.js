@@ -1,7 +1,8 @@
 import {app, dialog} from 'electron';
+import debug from 'electron-debug';
 
 // import {installExtensions} from './debug';
-import {getAppiumSessionFilePath, t} from './helpers';
+import {getAppiumSessionFilePath, t, isDev} from './helpers';
 import {setupMainWindow} from './windows';
 import NodeDetector from './node-detector';
 // import server from '../server/build/lib/main.js';
@@ -19,10 +20,9 @@ import log from './logger';
 
 // const log = console || _logger;
 
-const isDev = process.env.NODE_ENV === 'development';
-
 export let openFilePath = getAppiumSessionFilePath(process.argv, app.isPackaged);
 
+/** @type {import('teen_process').ChildProcess} */
 let server;
 
 app.on('open-file', (event, filePath) => {
@@ -177,6 +177,10 @@ async function runServer0() {
 }
 
 async function runServer() {
+  // TODO: uncomment this after applying the appium server
+  if (!server) {
+    return;
+  }
   /*const controller = new AbortController();
   const { signal } = controller;
   server = fork('../server/build/lib/main.js', [], {*/
@@ -280,14 +284,14 @@ async function runServer() {
 
 app.on('ready', async () => {
   if (isDev) {
-    require('electron-debug')();
+    debug();
     // TODO: uncomment this after upgrading to Electron 15+
     // await installExtensions();
   }
 
   // @site: https://www.freecodecamp.org/korean/news/node-js-child-processes-everything-you-need-to-know-e69498fe970a/
   // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
-  // await runServer();
+  await runServer();
 
   setupMainWindow();
 });
