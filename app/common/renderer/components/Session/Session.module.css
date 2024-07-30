@@ -323,3 +323,11 @@
   color: #ff4d4f;
   font-size: 12px;
 }
+
+.sessionHelper {
+  flex: 1;
+}
+
+.sessionHelper > :global(.ant-col):not(:first-child) {
+  padding-left: 16px;
+}

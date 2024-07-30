@@ -282,5 +282,8 @@
   "whitespaceDetected": "Text Starts and/or Ends With Whitespace",
   "pcloudyCredentialsRequired": "pCloudy username and api key are required!",
   "duplicateCapabilityNameError": "A capability set with the same name already exists",
-  "getCurrentDevices": "장치 읽기"
+  "getCurrentDevices": "장치 읽기",
+  "connectivitySetting": "연결 설정",
+  "deviceList": "장치 목록",
+  "applicationList": "애플리케이션 목록"
 }

@@ -282,5 +282,8 @@
   "whitespaceDetected": "文本开始和/或以空格结束",
   "pcloudyCredentialsRequired": "需要 pCloudy 用户名和 api 密钥！",
   "duplicateCapabilityNameError": "A capability set with the same name already exists",
-  "getCurrentDevices": "Get Current Devices"
+  "getCurrentDevices": "Get Current Devices",
+  "connectivitySetting": "Connectivity Setting",
+  "deviceList": "Device List"
+  "applicationList": "Application List"
 }
