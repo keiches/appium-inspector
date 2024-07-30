@@ -282,5 +282,8 @@
   "whitespaceDetected": "Texto começa e/ou termina com espaço em branco",
   "pcloudyCredentialsRequired": "O nome de usuário e a chave de API do pCloudy são necessários!",
   "duplicateCapabilityNameError": "A capability set with the same name already exists",
-  "getCurrentDevices": "Get Current Devices"
+  "getCurrentDevices": "Get Current Devices",
+  "connectivitySetting": "Connectivity Setting",
+  "deviceList": "Device List"
+  "applicationList": "Application List"
 }

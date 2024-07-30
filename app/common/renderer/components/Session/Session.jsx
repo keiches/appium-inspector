@@ -100,8 +100,8 @@ const Session = (props) => {
             className={SessionStyles.serverTabs}
             items={[
               {
-                label: <span className="addCloudProviderTab">{t('New Start')}</span>,
-                key: 'NEW_START_CONNECTION',
+                label: <span className="addCloudProviderTab">{t('connectivitySetting')}</span>,
+                key: 'local',
               },
               {label: t('Appium Server'), key: 'remote', children: <ServerTabCustom {...props} />},
               ..._(visibleProviders).map((providerName) => {
@@ -124,7 +124,7 @@ const Session = (props) => {
           <AdvancedServerParams {...props} />
         </div>
 
-        {serverType === 'NEW_START_CONNECTION' ? (<SessionHelper {...props} />) : (
+        {serverType === 'local' ? (<SessionHelper {...props} />) : (
         <Tabs
           activeKey={tabKey}
           onChange={switchTabs}
@@ -163,6 +163,8 @@ const Session = (props) => {
               <LinkOutlined />
               &nbsp;
               {t('desiredCapabilitiesDocumentation')}
+              &nbsp;
+              * {serverType}---{attachSessId}
             </a>
           </div>
           {!isAttaching && capsUUID && (

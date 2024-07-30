@@ -282,5 +282,8 @@
   "whitespaceDetected": "Текст начинается и/или заканчивается с пробелом",
   "pcloudyCredentialsRequired": "Требуется имя пользователя и ключ API pCloudy!",
   "duplicateCapabilityNameError": "Набор возможностей с таким именем уже существует",
-  "getCurrentDevices": "Get Current Devices"
+  "getCurrentDevices": "Get Current Devices",
+  "connectivitySetting": "Connectivity Setting",
+  "deviceList": "Device List"
+  "applicationList": "Application List"
 }
