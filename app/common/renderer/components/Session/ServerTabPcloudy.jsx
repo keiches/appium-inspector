@@ -14,7 +14,7 @@ const ServerTabPcloudy = ({server, setServerParam, t}) => (
             className={SessionStyles.customServerInputLeft}
             id="PcloudyServerHost"
             placeholder={PROVIDER_VALUES.PCLOUDY_HOST}
-            addonBefore={t('Pcloudy Host')}
+            addonBefore={t('pCloudy Host')}
             value={server.pcloudy.hostname}
             onChange={(e) => setServerParam('hostname', e.target.value)}
           />
@@ -26,7 +26,7 @@ const ServerTabPcloudy = ({server, setServerParam, t}) => (
             id="username"
             type={INPUT.TEXT}
             placeholder={PROVIDER_VALUES.PCLOUDY_USERNAME}
-            addonBefore={t('Pcloudy User Name')}
+            addonBefore={t('pCloudy User Name')}
             value={server.pcloudy.username}
             onChange={(e) => setServerParam('username', e.target.value)}
           />
@@ -38,7 +38,7 @@ const ServerTabPcloudy = ({server, setServerParam, t}) => (
             id="accessKey"
             type={INPUT.PASSWORD}
             placeholder={PROVIDER_VALUES.PCLOUDY_ACCESS_KEY}
-            addonBefore={t('Pcloudy API Key')}
+            addonBefore={t('pCloudy API Key')}
             value={server.pcloudy.accessKey}
             onChange={(e) => setServerParam('accessKey', e.target.value)}
           />

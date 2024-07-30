@@ -179,9 +179,9 @@
   "yourApiKey": "మీ API కీ",
   "Perfecto Host": "పర్ఫెక్టో హోస్ట్",
   "Perfecto Port": "పర్ఫెక్టో పోర్ట్",
-  "Pcloudy User Name": "పిక్లౌడీ వినియోగదారు పేరు",
-  "Pcloudy Host": "పిక్లౌడీ హోస్ట్",
-  "Pcloudy API Key": "Pcloudy API కీ",
+  "pCloudy User Name": "పిక్లౌడీ వినియోగదారు పేరు",
+  "pCloudy Host": "పిక్లౌడీ హోస్ట్",
+  "pCloudy API Key": "pCloudy API కీ",
   "Add your token": "మీ టోకెన్‌ని జోడించండి",
   "Perfecto Token": "పర్ఫెక్టో టోకెన్",
   "Your Kobiton Username": "మీ కోబిటన్ వినియోగదారు పేరు",
@@ -281,5 +281,6 @@
   "invalidCapType": "Invalid capability type: {{type}}",
   "whitespaceDetected": "Text Starts and/or Ends With Whitespace",
   "pcloudyCredentialsRequired": "pCloudy username and api key are required!",
-  "duplicateCapabilityNameError": "A capability set with the same name already exists"
+  "duplicateCapabilityNameError": "A capability set with the same name already exists",
+  "getCurrentDevices": "Get Current Devices"
 }

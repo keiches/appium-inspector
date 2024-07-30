@@ -70,6 +70,7 @@
     "@reduxjs/toolkit": "2.2.6",
     "@xmldom/xmldom": "0.8.10",
     "antd": "4.24.16",
+    "appium-adb": "9.11.7",
     "axios": "1.7.2",
     "bluebird": "3.7.2",
     "cheerio": "1.0.0-rc.10",

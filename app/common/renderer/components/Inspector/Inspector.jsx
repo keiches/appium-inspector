@@ -227,8 +227,8 @@ const Inspector = (props) => {
   // Timeout is canceled if user selects either action in prompt (keep session alive or quit)
   useEffect(() => {
     if (showKeepAlivePrompt) {
-      const userWaitTimeout = setTimeout(() => {
-        quitCurrentSession(t('Session closed due to inactivity'), false);
+      const userWaitTimeout = setTimeout(async () => {
+        await quitCurrentSession(t('Session closed due to inactivity'), false);
       }, SESSION_EXPIRY_PROMPT_TIMEOUT);
       setUserWaitTimeout(userWaitTimeout);
     }
@@ -447,7 +447,7 @@ const Inspector = (props) => {
         title={t('Session Inactive')}
         open={showKeepAlivePrompt}
         onOk={() => keepSessionAlive()}
-        onCancel={() => quitCurrentSession()}
+        onCancel={() => quitCurrentSession(t('Session Inactive'))}
         okText={t('Keep Session Running')}
         cancelText={t('Quit Session')}
       >
