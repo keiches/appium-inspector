@@ -112,6 +112,8 @@ export const CLEAR_TAP_COORDINATES = 'CLEAR_TAP_COORDINATES';
 export const TOGGLE_SHOW_ATTRIBUTES = 'TOGGLE_SHOW_ATTRIBUTES';
 export const TOGGLE_REFRESHING_STATE = 'TOGGLE_REFRESHING_STATE';
 
+export const SET_DEVICE_LIST = 'SET_DEVICE_LIST';
+
 const KEEP_ALIVE_PING_INTERVAL = 20 * 1000;
 const NO_NEW_COMMAND_LIMIT = 24 * 60 * 60 * 1000; // Set timeout to 24 hours
 
@@ -951,5 +953,31 @@ export function tapTickCoordinates(x, y) {
 export function toggleShowAttributes() {
   return (dispatch) => {
     dispatch({type: TOGGLE_SHOW_ATTRIBUTES});
+  };
+}
+
+/**
+ * Get device list
+ */
+export function getDeviceList(platform, androidDeviceType, iosDeviceType) {
+  return async (dispatch, getState) => {
+    const applyAction = applyClientMethod({
+      methodName: 'executeScript',
+      args: ['devices:list', [{
+        platform,
+        androidDeviceType,
+        iosDeviceType,
+      }]],
+    });
+    const devices = await applyAction(dispatch, getState);
+    dispatch({type: SET_DEVICE_LIST, devices});
+    // TODO: for develop, must be removed
+    setTimeout(() => {
+      const result = JSON.stringify(devices, null, '  ');
+      const truncatedResult = _.truncate(result, {length: 2000});
+      log.info(truncatedResult);
+      setVisibleCommandResult(result, 'devices:list')(dispatch);
+    }, 1);
+    //
   };
 }

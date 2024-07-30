@@ -179,9 +179,9 @@
   "yourApiKey": "Ваш API ключ",
   "Perfecto Host": "Хост Perfecto",
   "Perfecto Port": "Порт Perfecto",
-  "Pcloudy User Name": "Имя пользователя Pcloudy",
-  "Pcloudy Host": "Хост Pcloudy",
-  "Pcloudy API Key": "API ключ Pcloudy",
+  "pCloudy User Name": "Имя пользователя pCloudy",
+  "pCloudy Host": "Хост pCloudy",
+  "pCloudy API Key": "API ключ pCloudy",
   "Add your token": "Добавить токен",
   "Perfecto Token": "Токен Perfecto",
   "Your Kobiton Username": "Имя пользователя Kobiton",
@@ -281,5 +281,6 @@
   "invalidCapType": "Неверный тип возможности: {{type}}",
   "whitespaceDetected": "Текст начинается и/или заканчивается с пробелом",
   "pcloudyCredentialsRequired": "Требуется имя пользователя и ключ API pCloudy!",
-  "duplicateCapabilityNameError": "Набор возможностей с таким именем уже существует"
+  "duplicateCapabilityNameError": "Набор возможностей с таким именем уже существует",
+  "getCurrentDevices": "Get Current Devices"
 }

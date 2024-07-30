@@ -179,9 +179,9 @@
   "yourApiKey": "Your API Key",
   "Perfecto Host": "Perfecto Host",
   "Perfecto Port": "Perfecto Port",
-  "Pcloudy User Name": "Pcloudy User Name",
-  "Pcloudy Host": "Pcloudy Host",
-  "Pcloudy API Key": "Pcloudy API Key",
+  "pCloudy User Name": "pCloudy User Name",
+  "pCloudy Host": "pCloudy Host",
+  "pCloudy API Key": "pCloudy API Key",
   "Add your token": "Add your token",
   "Perfecto Token": "Perfecto Token",
   "Your Kobiton Username": "Seu usuário Kobiton",
@@ -281,5 +281,6 @@
   "invalidCapType": "Invalid capability type: {{type}}",
   "whitespaceDetected": "Text Starts and/or Ends With Whitespace",
   "pcloudyCredentialsRequired": "pCloudy username and api key are required!",
-  "duplicateCapabilityNameError": "A capability set with the same name already exists"
+  "duplicateCapabilityNameError": "A capability set with the same name already exists",
+  "getCurrentDevices": "Get Current Devices"
 }

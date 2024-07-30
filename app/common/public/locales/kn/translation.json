@@ -179,9 +179,9 @@
   "yourApiKey": "ನಿಮ್ಮ API ಕೀ",
   "Perfecto Host": "ಪೆರ್ಫೆಕ್ಟೋ ಆತಿಥ್ಯ ವಿವರ",
   "Perfecto Port": "ಪೆರ್ಫೆಕ್ಟೋ ಸಂಪರ್ಕ ಕಿಂಡಿ",
-  "Pcloudy User Name": "ಪಿಕ್ಲೌಡಿ ಯೂಸೆರ್ ನೇಮ್",
-  "Pcloudy Host": "ಪಿಕ್ಲೌಡಿ ಆತಿಥ್ಯ ವಿವರ",
-  "Pcloudy API Key": "ಪಿಕ್ಲೌಡಿ API ಕೀ",
+  "pCloudy User Name": "ಪಿಕ್ಲೌಡಿ ಯೂಸೆರ್ ನೇಮ್",
+  "pCloudy Host": "ಪಿಕ್ಲೌಡಿ ಆತಿಥ್ಯ ವಿವರ",
+  "pCloudy API Key": "ಪಿಕ್ಲೌಡಿ API ಕೀ",
   "Add your token": "ನಿಮ್ಮ ಟೋಕನ್ ಸೇರಿಸಿ",
   "Perfecto Token": "ಪೆರ್ಫೆಕ್ಟೋ ಟೋಕನ್",
   "Your Kobiton Username": "ನಿಮ್ಮ ಕೋಬಿಟೋನ್ ಯೂಸೆರ್ ನೇಮ್",
@@ -281,5 +281,6 @@
   "invalidCapType": "Invalid capability type: {{type}}",
   "whitespaceDetected": "Text Starts and/or Ends With Whitespace",
   "pcloudyCredentialsRequired": "pCloudy username and api key are required!",
-  "duplicateCapabilityNameError": "A capability set with the same name already exists"
+  "duplicateCapabilityNameError": "A capability set with the same name already exists",
+  "getCurrentDevices": "Get Current Devices"
 }

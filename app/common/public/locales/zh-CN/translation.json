@@ -179,9 +179,9 @@
   "yourApiKey": "您的 API 密钥",
   "Perfecto Host": "Perfecto 主机",
   "Perfecto Port": "Perfecto 端口",
-  "Pcloudy User Name": "Pcloudy 用户名",
-  "Pcloudy Host": "Pcloudy 主机",
-  "Pcloudy API Key": "Pcloudy API 密钥",
+  "pCloudy User Name": "pCloudy 用户名",
+  "pCloudy Host": "pCloudy 主机",
+  "pCloudy API Key": "pCloudy API 密钥",
   "Add your token": "添加您的 Token",
   "Perfecto Token": "Perfecto Token",
   "Your Kobiton Username": "您的 Kobiton 用户名",
@@ -281,5 +281,6 @@
   "invalidCapType": "无效的capability类型: {{type}}",
   "whitespaceDetected": "文本开始和/或以空格结束",
   "pcloudyCredentialsRequired": "需要 pCloudy 用户名和 api 密钥！",
-  "duplicateCapabilityNameError": "A capability set with the same name already exists"
+  "duplicateCapabilityNameError": "A capability set with the same name already exists",
+  "getCurrentDevices": "Get Current Devices"
 }

@@ -9,12 +9,13 @@ import {
   ReloadOutlined,
   SearchOutlined,
   VideoCameraOutlined,
+  // PhoneOutlined,
 } from '@ant-design/icons';
 import {Button, Select, Space, Tooltip} from 'antd';
 import React from 'react';
 import {BiCircle, BiSquare} from 'react-icons/bi';
 import {HiOutlineHome, HiOutlineMicrophone} from 'react-icons/hi';
-import {IoChevronBackOutline} from 'react-icons/io5';
+import {IoChevronBackOutline, IoPhonePortraitOutline} from 'react-icons/io5';
 
 import {BUTTON} from '../../constants/antd-types';
 import {LINKS} from '../../constants/common';
@@ -35,6 +36,7 @@ const HeaderButtons = (props) => {
     showLocatorTestModal,
     showSiriCommandModal,
     applyClientMethod,
+    getDeviceList,
     quitCurrentSession,
     driver,
     contexts,
@@ -42,6 +44,10 @@ const HeaderButtons = (props) => {
     setContext,
     t,
   } = props;
+
+  const getCurrentDevices = async () => {
+    await getDeviceList('android', 'both', 'none');
+  };
 
   const deviceControls = (
     <Button.Group>
@@ -213,6 +219,15 @@ const HeaderButtons = (props) => {
     </Button.Group>
   );
 
+  const getDevicesButton = (
+    <Tooltip title={t('getCurrentDevices')}>
+      <Button id="btnGetCurrentDevices"
+        icon={<IoPhonePortraitOutline className={InspectorStyles['custom-button-icon']} />}
+        onClick={getCurrentDevices}
+      />
+    </Tooltip>
+  );
+
   const quitSessionButton = (
     <Tooltip title={t('quitSessionAndClose')}>
       <Button id="btnClose" icon={<CloseOutlined />} onClick={quitCurrentSession} />
@@ -225,6 +240,7 @@ const HeaderButtons = (props) => {
         {deviceControls}
         {appModeControls}
         {generalControls}
+        {getDevicesButton}
         {quitSessionButton}
       </Space>
     </div>

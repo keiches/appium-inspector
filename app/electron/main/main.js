@@ -16,6 +16,7 @@ import {homedir} from 'os';
 // import _logger from 'console';
 import {exec} from 'teen_process';
 import log from './logger';
+import {getDevices} from './device-manager';
 // import {spawn} from './utils';
 
 // const log = console || _logger;
@@ -287,6 +288,8 @@ app.on('ready', async () => {
   // @site: https://www.freecodecamp.org/korean/news/node-js-child-processes-everything-you-need-to-know-e69498fe970a/
   // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
   // await runServer();
+
+  await getDevices();
 
   setupMainWindow();
 });

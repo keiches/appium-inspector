@@ -179,9 +179,9 @@
   "yourApiKey": "APIキー",
   "Perfecto Host": "Perfectoのホスト",
   "Perfecto Port": "Perfectoのポート",
-  "Pcloudy User Name": "Pcloudyのユーザ名",
-  "Pcloudy Host": "Pcloudyのホスト",
-  "Pcloudy API Key": "PcloudyのAPIキー",
+  "pCloudy User Name": "Pcloudyのユーザ名",
+  "pCloudy Host": "Pcloudyのホスト",
+  "pCloudy API Key": "PcloudyのAPIキー",
   "Add your token": "トークンを追加する",
   "Perfecto Token": "Perfectoのトークン",
   "Your Kobiton Username": "Kobitonのユーザ名",
@@ -281,5 +281,6 @@
   "invalidCapType": "無効な Capability: {{type}}",
   "whitespaceDetected": "空白文字で開始または終了します",
   "pcloudyCredentialsRequired": "pCloudy username and api key are required!",
-  "duplicateCapabilityNameError": "A capability set with the same name already exists"
+  "duplicateCapabilityNameError": "A capability set with the same name already exists",
+  "getCurrentDevices": "Get Current Devices"
 }

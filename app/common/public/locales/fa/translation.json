@@ -179,9 +179,9 @@
   "yourApiKey": "کلید API شما",
   "Perfecto Host": "هاست Perfecto",
   "Perfecto Port": "پورت Perfecto",
-  "Pcloudy User Name": "نام کاربری Pcloudy",
-  "Pcloudy Host": "هاست Pcloudy",
-  "Pcloudy API Key": "کلید API برای Pcloudy",
+  "pCloudy User Name": "نام کاربری pCloudy",
+  "pCloudy Host": "هاست pCloudy",
+  "pCloudy API Key": "کلید API برای pCloudy",
   "Add your token": "توکن خود را اضافه کنید",
   "Perfecto Token": "توکن Perfecto",
   "Your Kobiton Username": "نام کاربری Kobiton شما",
@@ -281,5 +281,6 @@
   "invalidCapType": "Invalid capability type: {{type}}",
   "whitespaceDetected": "Text Starts and/or Ends With Whitespace",
   "pcloudyCredentialsRequired": "pCloudy username and api key are required!",
-  "duplicateCapabilityNameError": "A capability set with the same name already exists"
+  "duplicateCapabilityNameError": "A capability set with the same name already exists",
+  "getCurrentDevices": "Get Current Devices"
 }
