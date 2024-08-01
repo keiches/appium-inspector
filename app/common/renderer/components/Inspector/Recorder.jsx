@@ -1,5 +1,12 @@
-import {ClearOutlined, CodeOutlined, CopyOutlined, PicRightOutlined} from '@ant-design/icons';
-import {Button, Card, Select, Space, Tooltip} from 'antd';
+import {
+  ClearOutlined,
+  CodeOutlined,
+  CopyOutlined,
+  PicRightOutlined,
+  FormOutlined,
+  AndroidOutlined, AppleOutlined
+} from '@ant-design/icons';
+import {Button, Card, Col, Descriptions, Divider, Layout, List, Row, Select, Space, Spin, Table, Tooltip} from 'antd';
 import hljs from 'highlight.js';
 import React from 'react';
 
@@ -7,9 +14,109 @@ import {BUTTON} from '../../constants/antd-types';
 import frameworks from '../../lib/client-frameworks';
 import {clipboard} from '../../polyfills';
 import InspectorStyles from './Inspector.module.css';
+import SessionStyles from '../Session/Session.module.css';
+import {Content} from 'antd/es/layout/layout';
+import * as PropTypes from 'prop-types';
+import Sider from 'antd/es/layout/Sider';
 
+function Flex(props) {
+  return null;
+}
+
+Flex.propTypes = {children: PropTypes.node};
 const Recorder = (props) => {
-  const {showBoilerplate, recordedActions, actionFramework, t} = props;
+  const {showBoilerplate, showSourceActions, recordedActions, actionFramework, t} = props;
+  // actions panel
+  const dataSourceActions = [
+    {
+      key: '1',
+      name: 'Action #1',
+      type: 'tap',
+      status: 'Ready',
+    },
+    {
+      key: '2',
+      name: 'Swipe to right',
+      type: 'swipe',
+      status: 'Ready',
+    },
+    {
+      key: '3',
+      name: 'Tap Login Button',
+      type: 'tap',
+      status: 'Ready',
+    },
+    {
+      key: '4',
+      name: 'Swipe to left',
+      type: 'swipe',
+      status: 'Ready',
+    },
+    {
+      key: '5',
+      name: 'Double Taps',
+      type: 'tap',
+      status: 'Ready',
+    },
+  ];
+  /** @type {any[]} */
+  const columnsActions = [
+    {
+      title: 'Type',
+      dataIndex: 'type',
+      key: 'type',
+    },
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+    },
+    {
+      title: 'Actions',
+      dataIndex: 'actions',
+      key: 'actions',
+    },
+  ];
+  // properties panel
+  const dataSourceProperties = [
+    {
+      key: '1',
+      name: 'X',
+      value: '100.0',
+      unit: 'pt'
+    },
+    {
+      key: '2',
+      name: 'Y',
+      value: '220.0',
+      unit: 'pt'
+    },
+    {
+      key: '3',
+      name: 'Wait',
+      value: '1000',
+      unit: 'ms',
+    },
+  ];
+  /** @type {any[]} */
+  const columnsProperties = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: 'Values',
+      dataIndex: 'values',
+      colSpan: 2,
+      key: 'values',
+    },
+  ];
 
   const code = (raw = true) => {
     const {host, port, path, https, desiredCapabilities} = props.sessionDetails;
@@ -24,11 +131,18 @@ const Recorder = (props) => {
   };
 
   const actionBar = () => {
-    const {setActionFramework, toggleShowBoilerplate, clearRecording} = props;
+    const {setActionFramework, toggleShowBoilerplate, toggleShowSourceActions, clearRecording} = props;
 
     return (
       <Space size="middle">
-        {!!recordedActions.length && (
+        <Tooltip title={t('Show/Hide Source Actions')}>
+          <Button
+            onClick={toggleShowSourceActions}
+            icon={<FormOutlined />}
+            type={showSourceActions ? BUTTON.PRIMARY : BUTTON.DEFAULT}
+          />
+        </Tooltip>
+        {showSourceActions && (<>{!!recordedActions.length && (
           <Button.Group>
             <Tooltip title={t('Show/Hide Boilerplate Code')}>
               <Button
@@ -45,17 +159,17 @@ const Recorder = (props) => {
             </Tooltip>
           </Button.Group>
         )}
-        <Select
-          defaultValue={actionFramework}
-          onChange={setActionFramework}
-          className={InspectorStyles['framework-dropdown']}
-        >
-          {Object.keys(frameworks).map((f) => (
-            <Select.Option value={f} key={f}>
-              {frameworks[f].readableName}
-            </Select.Option>
-          ))}
-        </Select>
+          <Select
+            defaultValue={actionFramework}
+            onChange={setActionFramework}
+            className={InspectorStyles['framework-dropdown']}
+          >
+            {Object.keys(frameworks).map((f) => (
+              <Select.Option value={f} key={f}>
+                {frameworks[f].readableName}
+              </Select.Option>
+            ))}
+          </Select></>)}
       </Space>
     );
   };
@@ -75,10 +189,46 @@ const Recorder = (props) => {
           {t('enableRecordingAndPerformActions')}
         </div>
       )}
-      {!!recordedActions.length && (
-        <pre className={InspectorStyles['recorded-code']}>
-          <code dangerouslySetInnerHTML={{__html: code(false)}} />
-        </pre>
+      {showSourceActions ? (
+        <>
+          {!!recordedActions.length && (
+            <pre className={InspectorStyles['recorded-code']}>
+              <code dangerouslySetInnerHTML={{__html: code(false)}} />
+            </pre>
+          )}
+        </>) : (
+        <Spin spinning={false}>
+          <Layout>
+            <Content>
+              <Table
+                columns={columnsActions}
+                dataSource={dataSourceActions}
+                size="small"
+                scroll={{x: 'max-content'}}
+                pagination={false}
+              />
+            </Content>
+            <Sider style={{background: 'white'}} collapsible={false} width="25%">
+              <Table
+                columns={columnsProperties}
+                dataSource={dataSourceProperties}
+                size="small"
+                scroll={{x: 'max-content'}}
+                pagination={false}
+              />
+              <Divider />
+              <Descriptions title="Properties" layout={'vertical'} size={'small'}>
+                <Descriptions.Item label="X">Test</Descriptions.Item>
+                <Descriptions.Item label="Y">1810000000</Descriptions.Item>
+                <Descriptions.Item label="Live">asdf asdf3g</Descriptions.Item>
+                <Descriptions.Item label="Remark">empty</Descriptions.Item>
+                <Descriptions.Item label="Address">
+                  No. 18, Wantang Road, Xihu District, Hangzhou, Zhejiang, China
+                </Descriptions.Item>
+              </Descriptions>
+            </Sider>
+          </Layout>
+        </Spin>
       )}
     </Card>
   );
