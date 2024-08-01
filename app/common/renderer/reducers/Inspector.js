@@ -65,6 +65,7 @@ import {
   SET_SESSION_DETAILS,
   SET_SESSION_TIME,
   SET_SHOW_BOILERPLATE,
+  SET_SHOW_SOURCE_ACTIONS,
   SET_SHOW_CENTROIDS,
   SET_SIRI_COMMAND_VALUE,
   SET_SOURCE_AND_SCREENSHOT,
@@ -101,6 +102,7 @@ const INITIAL_STATE = {
   isRecording: false,
   isSourceRefreshOn: true,
   showBoilerplate: false,
+  showSourceActions: false,
   recordedActions: [],
   actionFramework: DEFAULT_FRAMEWORK,
   sessionDetails: {},
@@ -306,6 +308,9 @@ export default function inspector(state = INITIAL_STATE, action) {
 
     case SET_SHOW_BOILERPLATE:
       return {...state, showBoilerplate: action.show};
+
+    case SET_SHOW_SOURCE_ACTIONS:
+      return {...state, showSourceActions: action.show};
 
     case SET_SESSION_DETAILS: {
       const automationName = action.driver.client.capabilities.automationName;

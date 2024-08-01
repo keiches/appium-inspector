@@ -46,6 +46,7 @@ export const CLEAR_RECORDING = 'CLEAR_RECORDING';
 export const SET_ACTION_FRAMEWORK = 'SET_ACTION_FRAMEWORK';
 export const RECORD_ACTION = 'RECORD_ACTION';
 export const SET_SHOW_BOILERPLATE = 'SET_SHOW_BOILERPLATE';
+export const SET_SHOW_SOURCE_ACTIONS = 'SET_SHOW_SOURCE_ACTIONS';
 
 export const SHOW_LOCATOR_TEST_MODAL = 'SHOW_LOCATOR_TEST_MODAL';
 export const HIDE_LOCATOR_TEST_MODAL = 'HIDE_LOCATOR_TEST_MODAL';
@@ -360,6 +361,13 @@ export function toggleShowBoilerplate() {
   return (dispatch, getState) => {
     const show = !getState().inspector.showBoilerplate;
     dispatch({type: SET_SHOW_BOILERPLATE, show});
+  };
+}
+
+export function toggleShowSourceActions() {
+  return (dispatch, getState) => {
+    const show = !getState().inspector.showSourceActions;
+    dispatch({type: SET_SHOW_SOURCE_ACTIONS, show});
   };
 }
 
