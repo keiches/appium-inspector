@@ -4,11 +4,10 @@ import {
   CopyOutlined,
   PicRightOutlined,
   FormOutlined,
-  AndroidOutlined, AppleOutlined
 } from '@ant-design/icons';
 import {Button, Card, Col, Descriptions, Divider, Layout, List, Row, Select, Space, Spin, Table, Tooltip} from 'antd';
 import hljs from 'highlight.js';
-import React from 'react';
+import React, {useState} from 'react';
 
 import {BUTTON} from '../../constants/antd-types';
 import frameworks from '../../lib/client-frameworks';
@@ -118,6 +117,16 @@ const Recorder = (props) => {
     },
   ];
 
+  const [actionSelect, setActionSelect] = useState({
+    selectedRowKeys: [],
+    loading: false
+  });
+
+  const [propertiesSelect, setPropertiesSelect] = useState({
+    selectedRowKeys: [],
+    loading: false
+  });
+
   const code = (raw = true) => {
     const {host, port, path, https, desiredCapabilities} = props.sessionDetails;
 
@@ -174,6 +183,36 @@ const Recorder = (props) => {
     );
   };
 
+  const onActionsRowClick = (_event, record, rowIndex) => {
+    if (record.key !== actionSelect?.key) {
+      // TODO: 수정된 사항이 있는 경우, 적용할지 여부를 물어보자!
+      // const dataSource = dataSourceActions[rowIndex];
+      setActionSelect({
+        ...actionSelect,
+        selectedRowKeys: [record.key],
+      });
+    } else {
+      setActionSelect({
+        ...actionSelect,
+        selectedRowKeys: [record.key],
+      });
+    }
+  };
+
+  const onPropertiesRowClick = (_event, record, _rowIndex) => {
+    if (record.key !== actionSelect?.key) {
+      setActionSelect({
+        ...actionSelect,
+        selectedRowKeys: [record.key],
+      });
+    } else {
+      setActionSelect({
+        ...actionSelect,
+        selectedRowKeys: [record.key],
+      });
+    }
+  };
+
   return (
     <Card
       title={
@@ -206,6 +245,9 @@ const Recorder = (props) => {
                 size="small"
                 scroll={{x: 'max-content'}}
                 pagination={false}
+                onRow={(record, rowIndex) => ({
+                  onClick: (event) => onActionsRowClick(event, record, rowIndex),
+                })}
               />
             </Content>
             <Sider style={{background: 'white'}} collapsible={false} width="25%">
@@ -215,6 +257,9 @@ const Recorder = (props) => {
                 size="small"
                 scroll={{x: 'max-content'}}
                 pagination={false}
+                onRow={(record, rowIndex) => ({
+                  onClick: (event) => onPropertiesRowClick(event, record, rowIndex),
+                })}
               />
               <Divider />
               <Descriptions title="Properties" layout={'vertical'} size={'small'}>

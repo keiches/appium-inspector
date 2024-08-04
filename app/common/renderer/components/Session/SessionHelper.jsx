@@ -56,10 +56,10 @@ const SessionHelper = (props) => {
   const [capabilites, setCapabilites] = useState({
     // "platformName": "Android",
     // "appium:platformVersion": "12.0",
-    "appium:automationName": "uiautomator2",
+    'appium:automationName': 'uiautomator2',
     // "appium:deviceName": "emulator-5554",
-    "appium:noReset": true,
-    "appium:printPageSourceOnFindFailure": true,
+    'appium:noReset': true,
+    'appium:printPageSourceOnFindFailure': true,
     // "appium:udid": "emulator-5554",
     // "appium:appPackage": "com.saucelabs.mydemoapp.rn",
     // "appium:app": "\"C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk\"",
@@ -74,7 +74,7 @@ const SessionHelper = (props) => {
     loading: false
   });
 
-  console.log("selectedRowKeys", deviceSelect, applicationSelect);
+  console.log('selectedRowKeys', deviceSelect, applicationSelect);
 
   const {selectedRowKeys: selectedDeviceRowKeys, loading: loadingDevice} = deviceSelect;
   const {selectedRowKeys: selectedApplicationRowKeys, loading: applicationLoading} = applicationSelect;
@@ -265,16 +265,45 @@ const SessionHelper = (props) => {
       key: 'version',
     },
   ];
+
+  const onDevicesRowClick = (_event, record, _rowIndex) => {
+    if (record.key !== deviceSelect?.key) {
+      setDeviceSelect({
+        ...deviceSelect,
+        selectedRowKeys: [record.key],
+      });
+    } else {
+      setDeviceSelect({
+        ...deviceSelect,
+        selectedRowKeys: [record.key],
+      });
+    }
+  };
+
+  const onApplicationsRowClick = (_event, record, _rowIndex) => {
+    if (record.key !== applicationSelect?.key) {
+      setApplicationSelect({
+        ...applicationSelect,
+        selectedRowKeys: [record.key],
+      });
+    } else {
+      setApplicationSelect({
+        ...applicationSelect,
+        selectedRowKeys: [record.key],
+      });
+    }
+  };
+
   useEffect(() => {
     if (deviceSelect) {
       setCapabilites({
         ...capabilites,
-        "platformName": "Android",
-        "appium:platformVersion": "12.0",
-        "appium:automationName": "uiautomator2",
-        "appium:deviceName": "emulator-5554",
-        "appium:noReset": true,
-        "appium:printPageSourceOnFindFailure": true,
+        'platformName': 'Android',
+        'appium:platformVersion': '12.0',
+        'appium:automationName': 'uiautomator2',
+        'appium:deviceName': 'emulator-5554',
+        'appium:noReset': true,
+        'appium:printPageSourceOnFindFailure': true,
         // "appium:udid": "emulator-5554",
         // "appium:appPackage": "com.saucelabs.mydemoapp.rn",
         // "appium:app": "\"C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk\"",
@@ -283,26 +312,26 @@ const SessionHelper = (props) => {
     } else {
       setCapabilites({
         ...capabilites,
-        "platformName": undefined,
-        "appium:platformVersion": undefined,
-        "appium:automationName": undefined,
-        "appium:deviceName": undefined,
+        'platformName': undefined,
+        'appium:platformVersion': undefined,
+        'appium:automationName': undefined,
+        'appium:deviceName': undefined,
         // "appium:udid": "emulator-5554",
       });
     }
     if (applicationSelect) {
       setCapabilites({
         ...capabilites,
-        "appium:appPackage": "com.saucelabs.mydemoapp.rn",
-        "appium:app": "\"C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk\"",
-        "appium:appActivity": ".MainActivity",
+        'appium:appPackage': 'com.saucelabs.mydemoapp.rn',
+        'appium:app': '"C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk"',
+        'appium:appActivity': '.MainActivity',
       });
     } else {
       setCapabilites({
         ...capabilites,
-        "appium:appPackage": undefined,
-        "appium:app": undefined,
-        "appium:appActivity": undefined,
+        'appium:appPackage': undefined,
+        'appium:app': undefined,
+        'appium:appActivity': undefined,
       });
     }
   }, [deviceSelect, applicationSelect]);
@@ -328,23 +357,9 @@ const SessionHelper = (props) => {
               {/*<Table dataSource={dataSourceDevices} columns={columnsDevices} pagination={false} size="small"
                    rowSelection={deviceRowSelection} />*/}
               <Table dataSource={dataSourceDevices} columns={columnsDevices} pagination={false} size="small"
-                     onRow={(record, rowIndex) => {
-                       return ({
-                         onClick: (event) => {
-                           if (record.key !== deviceSelect?.key) {
-                             setDeviceSelect({
-                               ...deviceSelect,
-                               selectedRowKeys: [record.key],
-                             });
-                           } else {
-                             setDeviceSelect({
-                               ...deviceSelect,
-                               selectedRowKeys: [record.key],
-                             });
-                           }
-                         },
-                       });
-                     }}
+                     onRow={(record, rowIndex) => ({
+                       onClick: (event) => onDevicesRowClick(event, record, rowIndex),
+                     })}
               />
             </Col>
             <Col span={24}>
@@ -375,23 +390,9 @@ const SessionHelper = (props) => {
               {/*<Table dataSource={dataSourceApplications} columns={columnsApplications} pagination={false} size="small"
                    rowSelection={applicationRowSelection} />*/}
               <Table dataSource={dataSourceApplications} columns={columnsApplications} pagination={false} size="small"
-                     onRow={(record, rowIndex) => {
-                       return ({
-                         onClick: (event) => {
-                           if (record.key !== applicationSelect?.key) {
-                             setApplicationSelect({
-                               ...applicationSelect,
-                               selectedRowKeys: [record.key],
-                             });
-                           } else {
-                             setApplicationSelect({
-                               ...applicationSelect,
-                               selectedRowKeys: [],
-                             });
-                           }
-                         },
-                       });
-                     }}
+                     onRow={(record, rowIndex) => ({
+                         onClick: (event) => onApplicationsRowClick(event, record, rowIndex),
+                       })}
               />
             </Col>
           </Row>
