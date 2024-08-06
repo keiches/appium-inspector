@@ -476,7 +476,7 @@ const SessionHelper = (props) => {
                 columns={columnsApplications}
                 pagination={false} size="small"
                 rowSelection={{
-                  type: 'radio',
+                  // type: 'radio',
                   /*getCheckboxProps: (_record) => {
                     return {
                       style: {
@@ -484,6 +484,10 @@ const SessionHelper = (props) => {
                       },
                     };
                   },*/
+                  renderCell() {
+                    // .ant-table-selection-column { display: none; } 필요
+                    return null;
+                  },
                   selectedRowKeys: applicationSelect.selectedRowKeys,
                 }}
                 onRow={onApplicationsTableRow}
