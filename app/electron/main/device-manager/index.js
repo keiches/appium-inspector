@@ -1,7 +1,7 @@
 // import ADB from 'appium-adb';
 import {dialog} from 'electron';
 import {t} from '../helpers';
-import log from '../logger';
+import {log} from '../logger';
 
 export async function getDevices() {
   try {

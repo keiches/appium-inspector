@@ -3,7 +3,7 @@ import os from 'os';
 import * as _ from '../../endash';
 
 import {DEFAULT_ADB_EXEC_TIMEOUT, getSdkRootFromEnv} from './helpers';
-// import log from './logger';
+// import {log} from './logger';
 // import type {ADBOptions, ADBExecutable} from './options';
 
 const DEFAULT_ADB_PORT = 5037;

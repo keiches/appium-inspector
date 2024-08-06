@@ -2,7 +2,7 @@ import {app, dialog} from 'electron';
 import debug from 'electron-debug';
 
 // import {installExtensions} from './debug';
-import {getAppiumSessionFilePath, t, isDev} from './helpers';
+import {getAppiumSessionFilePath, isDev} from './helpers';
 import {setupMainWindow} from './windows';
 import NodeDetector from './node-detector';
 // import server from '../server/build/lib/main.js';
@@ -15,7 +15,7 @@ import {join, resolve} from 'path';
 import {homedir} from 'os';
 // import _logger from 'console';
 import {exec} from 'teen_process';
-import log from './logger';
+import {log} from './logger';
 import {getDevices} from './device-manager';
 // import {spawn} from './utils';
 
@@ -170,7 +170,7 @@ async function runServer0() {
     log.error('node cannot be found');
     await dialog.showMessageBox({
       type: 'error',
-      buttons: [t('OK')],
+      buttons: ['OK'],
       message: 'node cannot be found',
     });
   }
@@ -238,7 +238,7 @@ async function runServer() {
       log.error('[appium-server] error:' + err.toString());
       dialog.showMessageBox({
         type: 'error',
-          buttons: [t('OK')],
+          buttons: ['OK'],
           message: err.message,
       });
     });
@@ -252,7 +252,6 @@ async function runServer() {
       // but with a 0 exit code
       // app.quit();
       log.log(`[appium-server] closed with code ${code} from signal ${signal}`);
-      // console.log(`child process terminated due to receipt of signal ${signal}`);
     });
 
     server.on('exit', (code) => {
@@ -272,7 +271,7 @@ async function runServer() {
     log.error('node cannot be found');
     await dialog.showMessageBox({
       type: 'error',
-      buttons: [t('OK')],
+      buttons: ['OK'],
       message: 'node cannot be found',
     });
   }

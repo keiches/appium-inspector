@@ -1,4 +1,4 @@
-import log from './logger';
+import {log} from './logger';
 import which from 'which';
 // import {fs, system} from '@appium/support';
 // import fs from 'fs';

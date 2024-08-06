@@ -1,20 +1,39 @@
-/*
-import {logger} from '@appium/support';
-
-const log = logger.getLogger('AppiumDoctor');
-
-export default log;
-*/
-import log from 'electron-log';
+import electronLog from 'electron-log/main';
 
 // Optional, initialize the logger for any renderer process
-// log.initialize();
+electronLog.initialize();
 
 const level = process.env.NODE_ENV === 'development' ? 'debug' : 'silly';
 
-log.transports.file.level = level;
-log.transports.console.level = level;
+electronLog.transports.file.level = level;
+electronLog.transports.console.level = level;
 
-// log.info('Log from the main process');
+Object.assign(console, electronLog.functions);
 
-export default log;
+class Logger {
+  constructor() {
+    console.info('Log from the main process'); // eslint-disable-line no-console
+  }
+
+  debug(...args) {
+    console.info(...args); // eslint-disable-line no-console
+  }
+
+  info(...args) {
+    console.info(...args); // eslint-disable-line no-console
+  }
+
+  log(...args) {
+    console.info(...args); // eslint-disable-line no-console
+  }
+
+  warn(...args) {
+    console.warn(...args); // eslint-disable-line no-console
+  }
+
+  error(...args) {
+    console.error(...args); // eslint-disable-line no-console
+  }
+}
+
+export const log = new Logger();

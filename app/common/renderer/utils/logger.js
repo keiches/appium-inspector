@@ -1,5 +1,21 @@
+import electronLog from 'electron-log/renderer';
+
+Object.assign(console, electronLog.functions);
+
 class Logger {
+  constructor() {
+    console.info('Log from the renderer process'); // eslint-disable-line no-console
+  }
+
+  debug(...args) {
+    console.info(...args); // eslint-disable-line no-console
+  }
+
   info(...args) {
+    console.info(...args); // eslint-disable-line no-console
+  }
+
+  log(...args) {
     console.info(...args); // eslint-disable-line no-console
   }
 

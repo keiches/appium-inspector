@@ -1,4 +1,4 @@
-import log from './logger';
+import {log} from './logger';
 import {resolveExecutablePath} from './utils';
 
 // Look for node

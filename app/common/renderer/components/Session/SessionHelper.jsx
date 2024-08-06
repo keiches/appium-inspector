@@ -9,6 +9,7 @@ import {ServerTypes} from '../../actions/Session';
 import SessionStyles from './Session.module.css';
 import InspectorStyles from '../Inspector/Inspector.module.css';
 import {Header} from 'antd/es/layout/layout';
+import {log} from '../../utils/logger';
 
 const formatCaps = (caps) => {
   let importantCaps = [caps.app, caps.platformName, caps.deviceName];
@@ -74,7 +75,7 @@ const SessionHelper = (props) => {
     loading: false
   });
 
-  console.log('selectedRowKeys', deviceSelect, applicationSelect);
+  log.log('selectedRowKeys', deviceSelect, applicationSelect);
 
   const {selectedRowKeys: selectedDeviceRowKeys, loading: loadingDevice} = deviceSelect;
   const {selectedRowKeys: selectedApplicationRowKeys, loading: applicationLoading} = applicationSelect;
