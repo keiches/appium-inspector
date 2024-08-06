@@ -1,14 +1,16 @@
 import electronLog from 'electron-log/main';
 
-// Optional, initialize the logger for any renderer process
-electronLog.initialize();
+if (process.env.ELECTRON_LOG) {
+  // Optional, initialize the logger for any renderer process
+  electronLog.initialize();
 
-const level = process.env.NODE_ENV === 'development' ? 'debug' : 'silly';
+  const level = process.env.NODE_ENV === 'development' ? 'debug' : 'silly';
 
-electronLog.transports.file.level = level;
-electronLog.transports.console.level = level;
+  electronLog.transports.file.level = level;
+  electronLog.transports.console.level = level;
 
-Object.assign(console, electronLog.functions);
+  Object.assign(console, electronLog.functions);
+}
 
 class Logger {
   constructor() {

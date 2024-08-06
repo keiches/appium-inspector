@@ -1,6 +1,9 @@
 import electronLog from 'electron-log/renderer';
 
-Object.assign(console, electronLog.functions);
+// if (import.meta.env.VITE_ELECTRON_LOG) {
+if (process.env.ELECTRON_LOG) {
+  Object.assign(console, electronLog.functions);
+}
 
 class Logger {
   constructor() {
