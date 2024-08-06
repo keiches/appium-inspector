@@ -47,6 +47,19 @@ const getSessionInfo = (session, serverType) => {
   }
 };
 
+const defaultCapabilities = {
+  // "platformName": "Android",
+  // "appium:platformVersion": "12.0",
+  'appium:automationName': 'uiautomator2',
+  // "appium:deviceName": "emulator-5554",
+  'appium:noReset': true,
+  'appium:printPageSourceOnFindFailure': true,
+  // "appium:udid": "emulator-5554",
+  // "appium:appPackage": "com.saucelabs.mydemoapp.rn",
+  // "appium:app": "\"C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk\"",
+  // "appium:appActivity": ".MainActivity"
+};
+
 const SessionHelper = (props) => {
   const {
     serverType,
@@ -54,18 +67,7 @@ const SessionHelper = (props) => {
     devices: currentDevices,
     t,
   } = props;
-  const [capabilites, setCapabilites] = useState({
-    // "platformName": "Android",
-    // "appium:platformVersion": "12.0",
-    'appium:automationName': 'uiautomator2',
-    // "appium:deviceName": "emulator-5554",
-    'appium:noReset': true,
-    'appium:printPageSourceOnFindFailure': true,
-    // "appium:udid": "emulator-5554",
-    // "appium:appPackage": "com.saucelabs.mydemoapp.rn",
-    // "appium:app": "\"C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk\"",
-    // "appium:appActivity": ".MainActivity"
-  });
+  const [capabilities, setCapabilities] = useState({...defaultCapabilities});
   const [deviceSelect, setDeviceSelect] = useState({
     selectedRowKeys: [],
     loading: false
@@ -296,46 +298,43 @@ const SessionHelper = (props) => {
   };
 
   useEffect(() => {
-    if (deviceSelect) {
-      setCapabilites({
-        ...capabilites,
-        'platformName': 'Android',
-        'appium:platformVersion': '12.0',
-        'appium:automationName': 'uiautomator2',
-        'appium:deviceName': 'emulator-5554',
-        'appium:noReset': true,
-        'appium:printPageSourceOnFindFailure': true,
-        // "appium:udid": "emulator-5554",
-        // "appium:appPackage": "com.saucelabs.mydemoapp.rn",
-        // "appium:app": "\"C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk\"",
-        // "appium:appActivity": ".MainActivity"
-      });
-    } else {
-      setCapabilites({
-        ...capabilites,
-        'platformName': undefined,
-        'appium:platformVersion': undefined,
-        'appium:automationName': undefined,
-        'appium:deviceName': undefined,
-        // "appium:udid": "emulator-5554",
-      });
+    log.debug('--', deviceSelect, applicationSelect);
+    try {
+      if (deviceSelect.selectedRowKeys.length > 0) {
+        setCapabilities({
+          ...defaultCapabilities,
+          'platformName': 'Android',
+          'appium:platformVersion': '12.0',
+          'appium:automationName': 'uiautomator2',
+          'appium:deviceName': 'emulator-5554',
+          'appium:noReset': true,
+          'appium:printPageSourceOnFindFailure': true,
+          // "appium:udid": "emulator-5554",
+          // "appium:appPackage": "com.saucelabs.mydemoapp.rn",
+          // "appium:app": "\"C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk\"",
+          // "appium:appActivity": ".MainActivity"
+        });
+      } else {
+        setCapabilities({
+          ...defaultCapabilities,
+        });
+      }
+      if (applicationSelect.selectedRowKeys.length > 0) {
+        setCapabilities({
+          ...defaultCapabilities,
+          'appium:appPackage': 'com.saucelabs.mydemoapp.rn',
+          'appium:app': '"C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk"',
+          'appium:appActivity': '.MainActivity',
+        });
+      } else {
+        setCapabilities({
+          ...defaultCapabilities,
+        });
+      }
+    } catch (error) {
+      log.error('###', error);
     }
-    if (applicationSelect) {
-      setCapabilites({
-        ...capabilites,
-        'appium:appPackage': 'com.saucelabs.mydemoapp.rn',
-        'appium:app': '"C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk"',
-        'appium:appActivity': '.MainActivity',
-      });
-    } else {
-      setCapabilites({
-        ...capabilites,
-        'appium:appPackage': undefined,
-        'appium:app': undefined,
-        'appium:appActivity': undefined,
-      });
-    }
-  }, [deviceSelect, applicationSelect]);
+  }, [deviceSelect?.selectedRowKeys?.join(''), applicationSelect?.selectedRowKeys?.join('')]);
   return (
     <>
       <Row className={SessionStyles.sessionHelper}>
@@ -411,7 +410,7 @@ const SessionHelper = (props) => {
       <Row>
         <Col span={24}>
         <pre>
-          <code>{JSON.stringify(capabilites, null, 2)}</code>
+          <code>{JSON.stringify(capabilities, null, 2)}</code>
         </pre>
         </Col>
       </Row>
