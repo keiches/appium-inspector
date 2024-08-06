@@ -14,9 +14,10 @@ import frameworks from '../../lib/client-frameworks';
 import {clipboard} from '../../polyfills';
 import InspectorStyles from './Inspector.module.css';
 import SessionStyles from '../Session/Session.module.css';
-import {Content} from 'antd/es/layout/layout';
+import {Content} from 'antd/lib/layout';
 import * as PropTypes from 'prop-types';
-import Sider from 'antd/es/layout/Sider';
+import Sider from 'antd/lib/slider';
+import {log} from '../../utils/logger';
 
 function Flex(props) {
   return null;
@@ -183,34 +184,53 @@ const Recorder = (props) => {
     );
   };
 
-  const onActionsRowClick = (_event, record, rowIndex) => {
-    if (record.key !== actionSelect?.key) {
-      // TODO: 수정된 사항이 있는 경우, 적용할지 여부를 물어보자!
-      // const dataSource = dataSourceActions[rowIndex];
-      setActionSelect({
-        ...actionSelect,
-        selectedRowKeys: [record.key],
-      });
-    } else {
-      setActionSelect({
-        ...actionSelect,
-        selectedRowKeys: [record.key],
-      });
-    }
+
+  const onActionsTableRow = (record, rowIndex) => {
+    log.log('onApplicationsTableRow', record, rowIndex);
+    return {
+      onClick: (_event) => {
+        if (record.key !== actionSelect?.key) {
+          // TODO: 수정된 사항이 있는 경우, 적용할지 여부를 물어보자!
+          // const dataSource = dataSourceActions[rowIndex];
+          setActionSelect({
+            ...actionSelect,
+            selectedRowKeys: [record.key],
+          });
+          setPropertiesSelect({
+            ...propertiesSelect,
+            loading: true,
+          });
+        } else {
+          setActionSelect({
+            ...actionSelect,
+            selectedRowKeys: [record.key],
+          });
+          setPropertiesSelect({
+            ...propertiesSelect,
+            loading: false,
+          });
+        }
+      },
+    };
   };
 
-  const onPropertiesRowClick = (_event, record, _rowIndex) => {
-    if (record.key !== actionSelect?.key) {
-      setActionSelect({
-        ...actionSelect,
-        selectedRowKeys: [record.key],
-      });
-    } else {
-      setActionSelect({
-        ...actionSelect,
-        selectedRowKeys: [record.key],
-      });
-    }
+  const onPropertiesTableRow = (record, rowIndex) => {
+    log.log('onPropertiesTableRow', record, rowIndex);
+    return {
+      onClick: (_event) => {
+        if (record.key !== actionSelect?.key) {
+          setActionSelect({
+            ...actionSelect,
+            selectedRowKeys: [record.key],
+          });
+        } else {
+          setActionSelect({
+            ...actionSelect,
+            selectedRowKeys: [record.key],
+          });
+        }
+      },
+    };
   };
 
   return (
@@ -245,9 +265,18 @@ const Recorder = (props) => {
                 size="small"
                 scroll={{x: 'max-content'}}
                 pagination={false}
-                onRow={(record, rowIndex) => ({
-                  onClick: (event) => onActionsRowClick(event, record, rowIndex),
-                })}
+                rowSelection={{
+                  type: 'radio',
+                  /*getCheckboxProps: (_record) => {
+                    return {
+                      style: {
+                        display: 'none',
+                      },
+                    };
+                  },*/
+                  selectedRowKeys: actionSelect.selectedRowKeys,
+                }}
+                onRow={onActionsTableRow}
               />
             </Content>
             <Sider style={{background: 'white'}} collapsible={false} width="25%">
@@ -257,9 +286,7 @@ const Recorder = (props) => {
                 size="small"
                 scroll={{x: 'max-content'}}
                 pagination={false}
-                onRow={(record, rowIndex) => ({
-                  onClick: (event) => onPropertiesRowClick(event, record, rowIndex),
-                })}
+                onRow={onPropertiesTableRow}
               />
               <Divider />
               <Descriptions title="Properties" layout={'vertical'} size={'small'}>

@@ -285,5 +285,6 @@
   "getCurrentDevices": "Get Current Devices",
   "connectivitySetting": "Connectivity Setting",
   "deviceList": "Device List",
-  "applicationList": "Application List"
+  "applicationList": "Application List",
+  "Show/Hide Source Actions": "Show/Hide Source Actions"
 }

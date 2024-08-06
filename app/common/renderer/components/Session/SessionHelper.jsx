@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   MobileOutlined, ReloadOutlined, AndroidOutlined, AppleOutlined,
   DownloadOutlined, ShakeOutlined, StopOutlined, DeleteOutlined, // ResetOutlined,
@@ -11,6 +11,10 @@ import InspectorStyles from '../Inspector/Inspector.module.css';
 import {Header} from 'antd/es/layout/layout';
 import {log} from '../../utils/logger';
 
+/**
+ * @param {import('@wdio/utils/node_modules/@wdio/types/build').Capabilities.AppiumCapabilities} caps
+ * @returns {string}
+ */
 const formatCaps = (caps) => {
   let importantCaps = [caps.app, caps.platformName, caps.deviceName];
   if (caps.automationName) {
@@ -19,6 +23,10 @@ const formatCaps = (caps) => {
   return importantCaps.join(', ').trim();
 };
 
+/**
+ * @param {import('@wdio/utils/node_modules/@wdio/types/build').Capabilities.BrowserStackCapabilities} caps
+ * @returns {string}
+ */
 const formatCapsBrowserstack = (caps) => {
   let importantCaps = formatCaps(caps).split(', ');
   if (caps.sessionName) {
@@ -27,6 +35,10 @@ const formatCapsBrowserstack = (caps) => {
   return importantCaps.join(', ').trim();
 };
 
+/**
+ * @param {import('@wdio/utils/node_modules/@wdio/types/build').Capabilities.BrowserStackCapabilities} caps
+ * @returns {string}
+ */
 const formatCapsLambdaTest = (caps) => {
   if (caps.hasOwnProperty.call(caps, 'capabilities')) {
     caps = caps.capabilities;
@@ -67,6 +79,11 @@ const SessionHelper = (props) => {
     devices: currentDevices,
     t,
   } = props;
+
+  /** @type {Parameters<typeof Table>[0]['ref']} */
+  const devicesTblRef = useRef(null);
+  /** @type {Parameters<typeof Table>[0]['ref']} */
+  const applicationsTblRef = useRef(null);
   const [capabilities, setCapabilities] = useState({...defaultCapabilities});
   const [deviceSelect, setDeviceSelect] = useState({
     selectedRowKeys: [],
@@ -76,6 +93,7 @@ const SessionHelper = (props) => {
     selectedRowKeys: [],
     loading: false
   });
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   log.log('selectedRowKeys', deviceSelect, applicationSelect);
 
@@ -269,36 +287,46 @@ const SessionHelper = (props) => {
     },
   ];
 
-  const onDevicesRowClick = (_event, record, _rowIndex) => {
-    if (record.key !== deviceSelect?.key) {
-      setDeviceSelect({
-        ...deviceSelect,
-        selectedRowKeys: [record.key],
-      });
-    } else {
-      setDeviceSelect({
-        ...deviceSelect,
-        selectedRowKeys: [record.key],
-      });
-    }
+  const onDevicesTableRow = (record, rowIndex) => {
+    log.log('onDevicesTableRow', record, rowIndex);
+    return {
+      onClick: (_event) => {
+        if (record.key !== deviceSelect?.key) {
+          setDeviceSelect({
+            ...deviceSelect,
+            selectedRowKeys: [record.key],
+          });
+        } else {
+          setDeviceSelect({
+            ...deviceSelect,
+            selectedRowKeys: [record.key],
+          });
+        }
+      },
+    };
   };
 
-  const onApplicationsRowClick = (_event, record, _rowIndex) => {
-    if (record.key !== applicationSelect?.key) {
-      setApplicationSelect({
-        ...applicationSelect,
-        selectedRowKeys: [record.key],
-      });
-    } else {
-      setApplicationSelect({
-        ...applicationSelect,
-        selectedRowKeys: [record.key],
-      });
-    }
+  const onApplicationsTableRow = (record, rowIndex) => {
+    log.log('onApplicationsTableRow', record, rowIndex);
+    return {
+      onClick: (_event) => {
+        if (record.key !== applicationSelect?.key) {
+          setApplicationSelect({
+            ...applicationSelect,
+            selectedRowKeys: [record.key]
+          });
+        } else {
+          setApplicationSelect({
+            ...applicationSelect,
+            selectedRowKeys: [record.key]
+          });
+        }
+      },
+    };
   };
 
   useEffect(() => {
-    log.debug('--', deviceSelect, applicationSelect);
+    log.debug('-- Devices Table selected:', deviceSelect);
     try {
       if (deviceSelect.selectedRowKeys.length > 0) {
         setCapabilities({
@@ -319,6 +347,15 @@ const SessionHelper = (props) => {
           ...defaultCapabilities,
         });
       }
+    } catch (error) {
+      log.error('###', error);
+    }
+  }, [deviceSelect?.selectedRowKeys?.join('')]);
+
+  useEffect(() => {
+    log.debug('-- Applications Table selected:', applicationSelect);
+    try {
+      log.log('applicationSelect.selectedRowKeys =', applicationSelect.selectedRowKeys);
       if (applicationSelect.selectedRowKeys.length > 0) {
         setCapabilities({
           ...defaultCapabilities,
@@ -334,7 +371,39 @@ const SessionHelper = (props) => {
     } catch (error) {
       log.error('###', error);
     }
-  }, [deviceSelect?.selectedRowKeys?.join(''), applicationSelect?.selectedRowKeys?.join('')]);
+  }, [applicationSelect?.selectedRowKeys?.join('')]);
+
+  useEffect(() => {
+    const handleDevicesTblOutsideClick = (e) => {
+      if (!applicationsTblRef?.current?.contains(e.target)) {
+        log.log('This one gets called because of the click outside', e);
+        setApplicationSelect({
+          ...applicationSelect,
+          selectedRowKeys: [],
+        });
+      }
+    };
+    const handleApplicationsTblOutsideClick = (e) => {
+      if (!applicationsTblRef?.current?.contains(e.target)) {
+        log.log('This one gets called because of the click outside', e);
+        setApplicationSelect({
+          ...applicationSelect,
+          selectedRowKeys: [],
+        });
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('click', handleDevicesTblOutsideClick, false);
+      document.addEventListener('click', handleApplicationsTblOutsideClick, false);
+    }, 0);
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('click', handleDevicesTblOutsideClick, false);
+      document.removeEventListener('click', handleApplicationsTblOutsideClick, false);
+    };
+  });
+
   return (
     <>
       <Row className={SessionStyles.sessionHelper}>
@@ -356,10 +425,22 @@ const SessionHelper = (props) => {
             <Col span={24}>
               {/*<Table dataSource={dataSourceDevices} columns={columnsDevices} pagination={false} size="small"
                    rowSelection={deviceRowSelection} />*/}
-              <Table dataSource={dataSourceDevices} columns={columnsDevices} pagination={false} size="small"
-                     onRow={(record, rowIndex) => ({
-                       onClick: (event) => onDevicesRowClick(event, record, rowIndex),
-                     })}
+              <Table
+                ref={devicesTblRef}
+                dataSource={dataSourceDevices} columns={columnsDevices} pagination={false}
+                size="small"
+                rowSelection={{
+                  type: 'radio',
+                  /*getCheckboxProps: (_record) => {
+                    return {
+                      style: {
+                        display: 'none',
+                      },
+                    };
+                  },*/
+                  selectedRowKeys: deviceSelect.selectedRowKeys,
+                }}
+                onRow={onDevicesTableRow}
               />
             </Col>
             <Col span={24}>
@@ -389,10 +470,23 @@ const SessionHelper = (props) => {
             <Col span={24}>
               {/*<Table dataSource={dataSourceApplications} columns={columnsApplications} pagination={false} size="small"
                    rowSelection={applicationRowSelection} />*/}
-              <Table dataSource={dataSourceApplications} columns={columnsApplications} pagination={false} size="small"
-                     onRow={(record, rowIndex) => ({
-                         onClick: (event) => onApplicationsRowClick(event, record, rowIndex),
-                       })}
+              <Table
+                ref={applicationsTblRef}
+                dataSource={dataSourceApplications}
+                columns={columnsApplications}
+                pagination={false} size="small"
+                rowSelection={{
+                  type: 'radio',
+                  /*getCheckboxProps: (_record) => {
+                    return {
+                      style: {
+                        display: 'none',
+                      },
+                    };
+                  },*/
+                  selectedRowKeys: applicationSelect.selectedRowKeys,
+                }}
+                onRow={onApplicationsTableRow}
               />
             </Col>
           </Row>
