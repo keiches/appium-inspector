@@ -9,7 +9,7 @@
     "react": {
       "version": "detect"
     },
-    "import/resolver": {
+    "_import/resolver": {
       "node": {
         // "paths": ["app/src"],
         // "moduleDirectory": ["node_modules", "app/"],
@@ -21,16 +21,7 @@
     }
   },
   "rules": {
-    "no-unused-vars":  [
-      "warn", // or "error"
-      {
-        // "args": "all",
-        "argsIgnorePattern": "^_",
-        "varsIgnorePattern": "^_",
-        "caughtErrorsIgnorePattern": "^_",
-        "destructuredArrayIgnorePattern": "^_"
-      }
-    ],
+    "no-unused-vars":  "off",
     "@typescript-eslint/no-unused-vars": [
       "warn", // or "error"
       {
@@ -41,8 +32,8 @@
         "destructuredArrayIgnorePattern": "^_"
       }
     ],
+    "react/react-in-jsx-scope": "off",
     "react/prop-types": 0,
-    "react-native/no-inline-styles": 2,
-    "react/react-in-jsx-scope": "off"
+    "react-native/no-inline-styles": 2
   }
 }
