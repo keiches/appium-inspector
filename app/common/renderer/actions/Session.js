@@ -408,7 +408,7 @@ export function newSession(caps, attachSessId = null) {
         username = session.server.pcloudy.username || process.env.PCLOUDY_USERNAME;
         accessKey = session.server.pcloudy.accessKey || process.env.PCLOUDY_ACCESS_KEY;
         if (!username || !accessKey) {
-          showError(new Error(i18n.t('pcloudyCredentialsRequired')));
+          showError(new Error(i18n.t('pCloudyCredentialsRequired')));
           return false;
         }
         desiredCapabilities['pcloudy:options'] = {

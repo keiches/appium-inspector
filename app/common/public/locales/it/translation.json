@@ -280,10 +280,10 @@
   "noResultsFound": "Nessun risultato trovato",
   "invalidCapType": "Tipo di capability non valido: {{type}}",
   "whitespaceDetected": "Il testo inizia e/o termina con uno spazio bianco",
-  "pcloudyCredentialsRequired": "pCloudy username and api key are required!",
+  "pCloudyCredentialsRequired": "pCloudy username and api key are required!",
   "duplicateCapabilityNameError": "A capability set with the same name already exists",
   "getCurrentDevices": "Get Current Devices",
   "connectivitySetting": "Connectivity Setting",
-  "deviceList": "Device List"
+  "deviceList": "Device List",
   "applicationList": "Application List"
 }

@@ -280,10 +280,10 @@
   "noResultsFound": "Результатів не знайдено",
   "invalidCapType": "Недійсний тип можливості: {{type}}",
   "whitespaceDetected": "Текст починається та/або закінчується пробілом",
-  "pcloudyCredentialsRequired": "Необхідні ім'я користувача та API ключ від pCloudy!",
+  "pCloudyCredentialsRequired": "Необхідні ім'я користувача та API ключ від pCloudy!",
   "duplicateCapabilityNameError": "Набір можливостей з таким ім'ям вже існує",
   "getCurrentDevices": "Get Current Devices",
   "connectivitySetting": "Connectivity Setting",
-  "deviceList": "Device List"
+  "deviceList": "Device List",
   "applicationList": "Application List"
 }

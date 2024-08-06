@@ -280,7 +280,7 @@
   "noResultsFound": "결과가 없음",
   "invalidCapType": "Invalid capability type: {{type}}",
   "whitespaceDetected": "Text Starts and/or Ends With Whitespace",
-  "pcloudyCredentialsRequired": "pCloudy username and api key are required!",
+  "pCloudyCredentialsRequired": "pCloudy username and api key are required!",
   "duplicateCapabilityNameError": "A capability set with the same name already exists",
   "getCurrentDevices": "장치 읽기",
   "connectivitySetting": "연결 설정",
