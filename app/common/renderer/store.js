@@ -18,7 +18,7 @@ const store = configureStore({
         level: 'info',
         collapsed: true,
       });
-      middleware.push(logger);
+      middleware.concat(logger); // middleware.push(logger);
     }
 
     return middleware;

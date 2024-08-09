@@ -198,7 +198,7 @@ const SessionHelper = (props) => {
       title: 'Type',
       dataIndex: 'type',
       key: 'type',
-      render: ({_name, icon}) => React.createElement(icon),
+      render: ({name, icon}, record) => React.createElement(icon),
     },
     {
       title: 'Version',
@@ -273,7 +273,7 @@ const SessionHelper = (props) => {
       title: 'Type',
       dataIndex: 'type',
       key: 'type',
-      render: ({_name, icon}) => React.createElement(icon),
+      render: ({name, icon}, record) => React.createElement(icon),
     },
     {
       title: 'Name',
@@ -430,14 +430,18 @@ const SessionHelper = (props) => {
                 dataSource={dataSourceDevices} columns={columnsDevices} pagination={false}
                 size="small"
                 rowSelection={{
-                  type: 'radio',
-                  /*getCheckboxProps: (_record) => {
+                  /*type: 'radio',
+                  getCheckboxProps: (_record) => {
                     return {
                       style: {
                         display: 'none',
                       },
                     };
                   },*/
+                  renderCell() {
+                    // .ant-table-selection-column { display: none; } 필요
+                    return null;
+                  },
                   selectedRowKeys: deviceSelect.selectedRowKeys,
                 }}
                 onRow={onDevicesTableRow}
@@ -476,8 +480,8 @@ const SessionHelper = (props) => {
                 columns={columnsApplications}
                 pagination={false} size="small"
                 rowSelection={{
-                  // type: 'radio',
-                  /*getCheckboxProps: (_record) => {
+                  /* type: 'radio',
+                  getCheckboxProps: (_record) => {
                     return {
                       style: {
                         display: 'none',

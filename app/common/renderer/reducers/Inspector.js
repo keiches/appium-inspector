@@ -87,6 +87,7 @@ import {
 } from '../actions/Inspector';
 import {SCREENSHOT_INTERACTION_MODE} from '../constants/screenshot';
 import {APP_MODE, INSPECTOR_TABS, NATIVE_APP} from '../constants/session-inspector';
+import {log} from '../utils/logger';
 
 const DEFAULT_FRAMEWORK = 'java';
 
@@ -286,6 +287,7 @@ export default function inspector(state = INITIAL_STATE, action) {
       };
 
     case RECORD_ACTION:
+      log.error('[RECORD_ACTION]:', action.action, action.params);
       return {
         ...state,
         recordedActions: [...state.recordedActions, {action: action.action, params: action.params}],
