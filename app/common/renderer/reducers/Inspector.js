@@ -76,6 +76,7 @@ import {
   SHOW_LOCATOR_TEST_MODAL,
   SHOW_SIRI_COMMAND_MODAL,
   START_RECORDING,
+  STORE_SESSION_SETTINGS,
   TOGGLE_REFRESHING_STATE,
   TOGGLE_SHOW_ATTRIBUTES,
   UNSELECT_CENTROID,
@@ -107,6 +108,7 @@ const INITIAL_STATE = {
   recordedActions: [],
   actionFramework: DEFAULT_FRAMEWORK,
   sessionDetails: {},
+  sessionSettings: {},
   isGestureEditorVisible: false,
   isLocatorTestModalVisible: false,
   isSiriCommandModalVisible: false,
@@ -325,6 +327,12 @@ export default function inspector(state = INITIAL_STATE, action) {
         mjpegScreenshotUrl: action.mjpegScreenshotUrl,
       };
     }
+
+    case STORE_SESSION_SETTINGS:
+      return {
+        ...state,
+        sessionSettings: {...state.sessionSettings, ...action.sessionSettings},
+      };
 
     case SHOW_LOCATOR_TEST_MODAL:
       return {
