@@ -27,7 +27,7 @@ const contentStyle = {
   minHeight: 120,
   lineHeight: '120px',
   // color: '#fff',
-  backgroundColor: 'transparent',
+  backgroundColor: '#fff'
 };
 
 /** @type {React.CSSProperties} */
@@ -35,12 +35,12 @@ const siderStyle = {
   textAlign: 'center',
   lineHeight: '120px',
   // color: '#fff',
-  backgroundColor: 'transparent',
+  backgroundColor: '#fff'
 };
 
 const spaceContainer = {
   display: 'flex',
-  'wordBreak': 'break-word',
+  'wordBreak': 'break-word'
 };
 
 
@@ -86,7 +86,7 @@ const Recorder = (props) => {
         name: getActionName(actionNameIndex),
         type: '',
         status: 'Ready',
-        params,
+        params
       };
     });
   }, [recordedActions.length]); // TODO: find a better way
@@ -95,18 +95,18 @@ const Recorder = (props) => {
     {
       title: 'Type', // t('Type'),
       dataIndex: 'type',
-      key: 'type',
+      key: 'type'
     },
     {
       title: 'Name',
       dataIndex: 'name',
-      key: 'name',
+      key: 'name'
     },
     {
       title: 'Status',
       dataIndex: 'status',
-      key: 'status',
-    },
+      key: 'status'
+    }
     /*{
       title: 'Actions',
       key: 'actions',
@@ -148,8 +148,8 @@ const Recorder = (props) => {
       key: '3',
       name: 'Wait',
       values: '1000',
-      unit: 'ms',
-    },
+      unit: 'ms'
+    }
   ];
   const dataSourceProperties = useMemo(() => {
     if (actionSelect.selectedRowKeys.length === 1) {
@@ -172,20 +172,20 @@ const Recorder = (props) => {
                     key: '1',
                     name: 'id',
                     values: params[1],
-                    unit: '',
+                    unit: ''
                   },
                   {
                     key: '2',
                     name: 'unknown1',
                     values: params[2],
-                    unit: '',
+                    unit: ''
                   },
                   {
                     key: '3',
                     name: 'unknown2',
                     values: params[3],
-                    unit: '',
-                  },
+                    unit: ''
+                  }
                 ];
                 break;
             }
@@ -198,8 +198,8 @@ const Recorder = (props) => {
                 key: '1',
                 name: 'key code',
                 values: params[2],
-                unit: '',
-              },
+                unit: ''
+              }
             ];
             if (params.length === 4) {
               data.push(
@@ -207,7 +207,7 @@ const Recorder = (props) => {
                   key: '2',
                   name: 'meta',
                   values: params[3],
-                  unit: '',
+                  unit: ''
                 });
             }
             if (params.length === 5) {
@@ -216,7 +216,7 @@ const Recorder = (props) => {
                   key: '3',
                   name: 'custom',
                   values: params[4] ?? '',
-                  unit: '',
+                  unit: ''
                 });
             }
             return data;
@@ -240,7 +240,7 @@ const Recorder = (props) => {
                   name,
                   values: '-----',
                   unit: ''
-                },
+                }
               ];
               fingers.forEach((finger) => {
                 switch (finger.type) {
@@ -366,19 +366,19 @@ const Recorder = (props) => {
     {
       title: 'Name',
       dataIndex: 'name',
-      key: 'name',
+      key: 'name'
     },
     {
       title: 'Values',
       dataIndex: 'values',
       // colSpan: 2,
-      key: 'values',
+      key: 'values'
     },
     {
       title: ' ',
       dataIndex: 'unit',
-      key: 'unit',
-    },
+      key: 'unit'
+    }
   ];
 
   const code = (raw = true) => {
@@ -447,7 +447,7 @@ const Recorder = (props) => {
           // const dataSource = dataSourceActions[rowIndex];
           setActionSelect({
             ...actionSelect,
-            selectedRowKeys: [record.key],
+            selectedRowKeys: [record.key]
           });
           /*setPropertiesSelect({
             ...propertiesSelect,
@@ -456,14 +456,14 @@ const Recorder = (props) => {
         } else {
           setActionSelect({
             ...actionSelect,
-            selectedRowKeys: [record.key],
+            selectedRowKeys: [record.key]
           });
           /*setPropertiesSelect({
             ...propertiesSelect,
             loading: false,
           });*/
         }
-      },
+      }
     };
   };
 
@@ -482,7 +482,7 @@ const Recorder = (props) => {
             selectedRowKeys: [record.key],
           });
         }*/
-      },
+      }
     };
   };
 
@@ -531,7 +531,7 @@ const Recorder = (props) => {
                     // .ant-table-selection-column { display: none; } 필요
                     return null;
                   },
-                  selectedRowKeys: actionSelect.selectedRowKeys,
+                  selectedRowKeys: actionSelect.selectedRowKeys
                 }}
                 onRow={onActionsTableRow}
               />
@@ -547,13 +547,10 @@ const Recorder = (props) => {
               />
               <Divider />
               <Descriptions title="Properties" layout={'vertical'} size={'small'}>
-                <Descriptions.Item label="X">Test</Descriptions.Item>
-                <Descriptions.Item label="Y">1810000000</Descriptions.Item>
-                <Descriptions.Item label="Live">asdf asdf3g</Descriptions.Item>
-                <Descriptions.Item label="Remark">empty</Descriptions.Item>
-                <Descriptions.Item label="Address">
-                  No. 18, Wantang Road, Xihu District, Hangzhou, Zhejiang, China
-                </Descriptions.Item>
+                <Descriptions.Item label={t('propDescDescription')}>{'Desc'}</Descriptions.Item>
+                <Descriptions.Item label={t('propDescX')}>{'X'}</Descriptions.Item>
+                <Descriptions.Item label={t('propDescY')}>{'Y'}</Descriptions.Item>
+                <Descriptions.Item label={t('propDescType')}>{'Type'}</Descriptions.Item>
               </Descriptions>
             </Sider>
           </Layout>

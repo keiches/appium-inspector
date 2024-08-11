@@ -3,7 +3,7 @@ import {
   MobileOutlined, ReloadOutlined, AndroidOutlined, AppleOutlined,
   DownloadOutlined, ShakeOutlined, StopOutlined, DeleteOutlined, // ResetOutlined,
 } from '@ant-design/icons';
-import {Button, Card, Col, Form, List, Menu, Row, Select, Table} from 'antd';
+import {Button, Card, Checkbox, Col, Form, List, Menu, Row, Select, Table} from 'antd';
 
 import {ServerTypes} from '../../actions/Session';
 import SessionStyles from './Session.module.css';
@@ -62,14 +62,15 @@ const getSessionInfo = (session, serverType) => {
 const defaultCapabilities = {
   // "platformName": "Android",
   // "appium:platformVersion": "12.0",
-  'appium:automationName': 'uiautomator2',
+  // 'appium:automationName': 'uiautomator2',
   // "appium:deviceName": "emulator-5554",
-  'appium:noReset': true,
-  'appium:printPageSourceOnFindFailure': true,
+  'appium:noReset': false,
   // "appium:udid": "emulator-5554",
   // "appium:appPackage": "com.saucelabs.mydemoapp.rn",
   // "appium:app": "\"C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk\"",
   // "appium:appActivity": ".MainActivity"
+  'appium:fullReset': false,
+  'appium:printPageSourceOnFindFailure': true,
 };
 
 const SessionHelper = (props) => {
@@ -169,21 +170,23 @@ const SessionHelper = (props) => {
     {
       key: '1',
       name: 'Pixel_7_API_31',
-      type: {
-        name: 'android',
-        icon: AndroidOutlined,
+      platform: {
+        name: 'Android', // TODO: read using adb
+        version: '12.0',
+        icon: AndroidOutlined, // TODO: assign according to platform.name
       },
-      version: '12.0',
+      udid: 'emulator-5554', // TODO: read using adb
       status: 'Ready',
     },
     {
       key: '2',
-      name: 'Pixel_5_API_29',
-      type: {
-        name: 'ios',
-        icon: AppleOutlined,
+      name: 'Pixel_5_API_33',
+      platform: {
+        name: 'iOS', // TODO: read using libs
+        version: '17.5.1', // TODO: read using libs
+        icon: AppleOutlined, // TODO: assign according to platform.name
       },
-      version: '9.0',
+      udid: 'emulator-5554', // TODO: read using adb
       status: 'Ready',
     },
   ];
@@ -195,15 +198,16 @@ const SessionHelper = (props) => {
       key: 'name',
     },
     {
-      title: 'Type',
-      dataIndex: 'type',
-      key: 'type',
+      title: 'Platform',
+      dataIndex: 'platform',
+      key: 'platform',
       render: ({name, icon}, record) => React.createElement(icon),
     },
     {
       title: 'Version',
-      dataIndex: 'version',
-      key: 'version',
+      dataIndex: 'platform',
+      key: 'platform',
+      render: ({version}, record) => <span>{version}</span>,
     },
     {
       title: 'Status',
@@ -238,31 +242,37 @@ const SessionHelper = (props) => {
   const dataSourceApplications = [
     {
       key: '1',
-      name: 'com.google.android.chrome',
-      type: {
-        name: 'android',
+      package: 'com.saucelabs.mydemoapp.rn',
+      platform: {
+        name: 'Android',
         icon: AndroidOutlined,
       },
+      app: 'C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk',
+      activity: '.MainActivity',
       version: '384.0.150',
       status: 'Ready',
     },
     {
       key: '2',
-      name: 'com.apple.ios.safari',
-      type: {
-        name: 'ios',
+      package: 'com.sptek.mydemoapp',
+      platform: {
+        name: 'iOS',
         icon: AppleOutlined,
       },
+      app: 'C:\\Users\\keiches\\Projects\\appium\\ipas\\Android-MyDemoAppRN.1.3.0.build-244.zip',
+      activity: '.MainActivity',
       version: '23.6.7',
       status: 'Ready',
     },
     {
       key: '3',
-      name: 'com.google.android.calendar',
-      type: {
-        name: 'android',
+      package: 'com.google.android.calendar',
+      platform: {
+        name: 'Android',
         icon: AndroidOutlined,
       },
+      app: 'C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk',
+      activity: '.MainActivity',
       version: '12.3.2',
       status: 'Ready',
     },
@@ -270,15 +280,15 @@ const SessionHelper = (props) => {
   /** @type {any[]} */
   const columnsApplications = [
     {
-      title: 'Type',
-      dataIndex: 'type',
-      key: 'type',
+      title: 'Platform',
+      dataIndex: 'platform',
+      key: 'platform',
       render: ({name, icon}, record) => React.createElement(icon),
     },
     {
       title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
+      dataIndex: 'package',
+      key: 'package',
     },
     {
       title: 'Version',
@@ -287,10 +297,14 @@ const SessionHelper = (props) => {
     },
   ];
 
+  const [capabilitiesNoReset, setCapabilitiesNoReset] = React.useState(false);
+  const [capabilitiesFullReset, setCapabilitiesFullReset] = React.useState(false);
+
   const onDevicesTableRow = (record, rowIndex) => {
     log.log('onDevicesTableRow', record, rowIndex);
     return {
-      onClick: (_event) => {
+      onClick: (event) => {
+        log.log('onDevicesTableRowClick:', event);
         if (record.key !== deviceSelect?.key) {
           setDeviceSelect({
             ...deviceSelect,
@@ -309,7 +323,8 @@ const SessionHelper = (props) => {
   const onApplicationsTableRow = (record, rowIndex) => {
     log.log('onApplicationsTableRow', record, rowIndex);
     return {
-      onClick: (_event) => {
+      onClick: (event) => {
+        log.log('onApplicationsTableRowClick:', event);
         if (record.key !== applicationSelect?.key) {
           setApplicationSelect({
             ...applicationSelect,
@@ -325,55 +340,92 @@ const SessionHelper = (props) => {
     };
   };
 
+  const onNoResetChange = (event) => {
+    log.log('noReset: checked = ', event.target.checked);
+    setCapabilitiesNoReset(event.target.checked);
+  };
+
+  const onFullResetChange = (event) => {
+    log.log('FullReset: checked = ', event.target.checked);
+    setCapabilitiesFullReset(event.target.checked);
+  };
+
   useEffect(() => {
-    log.debug('-- Devices Table selected:', deviceSelect);
+    log.debug('Devices or Applications Table selected:', deviceSelect, applicationSelect);
     try {
+      let newCapabilities = {
+        ...capabilities,
+      };
+      if ((deviceSelect.selectedRowKeys.length === 0) || (applicationSelect.selectedRowKeys.length === 0)) {
+        setCapabilities(newCapabilities);
+        return;
+      }
       if (deviceSelect.selectedRowKeys.length > 0) {
-        setCapabilities({
-          ...defaultCapabilities,
-          'platformName': 'Android',
-          'appium:platformVersion': '12.0',
-          'appium:automationName': 'uiautomator2',
-          'appium:deviceName': 'emulator-5554',
-          'appium:noReset': true,
-          'appium:printPageSourceOnFindFailure': true,
-          // "appium:udid": "emulator-5554",
-          // "appium:appPackage": "com.saucelabs.mydemoapp.rn",
-          // "appium:app": "\"C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk\"",
-          // "appium:appActivity": ".MainActivity"
-        });
+        log.log('- Device selected:', applicationSelect.selectedRowKeys);
+        const dataSourceDevice = dataSourceDevices[deviceSelect.selectedRowKeys[0]];
+        newCapabilities = {
+          ...newCapabilities,
+          platformName: dataSourceDevice.platform.name,
+          'appium:platformVersion': dataSourceDevice.platform.version,
+          'appium:automationName': dataSourceDevice.platform.name === 'Android' ? 'UIAutomator2' : 'XCUITest',
+          'appium:deviceName': dataSourceDevice.name,
+          // 'appium:udid': dataSourceDevice.udid,
+        };
       } else {
-        setCapabilities({
-          ...defaultCapabilities,
-        });
+        delete newCapabilities.platformName;
+        delete newCapabilities['appium:platformVersion'];
+        delete newCapabilities['appium:automationName'];
+        delete newCapabilities['appium:deviceName'];
       }
-    } catch (error) {
-      log.error('###', error);
-    }
-  }, [deviceSelect?.selectedRowKeys?.join('')]);
-
-  useEffect(() => {
-    log.debug('-- Applications Table selected:', applicationSelect);
-    try {
-      log.log('applicationSelect.selectedRowKeys =', applicationSelect.selectedRowKeys);
       if (applicationSelect.selectedRowKeys.length > 0) {
-        setCapabilities({
-          ...defaultCapabilities,
-          'appium:appPackage': 'com.saucelabs.mydemoapp.rn',
-          'appium:app': '"C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk"',
-          'appium:appActivity': '.MainActivity',
-        });
+        log.log('- Application selected:', applicationSelect.selectedRowKeys);
+        const dataSourceApplication = dataSourceApplications[applicationSelect.selectedRowKeys[0]];
+        newCapabilities = {
+          ...newCapabilities,
+          'appium:appPackage': dataSourceApplication.package,
+          'appium:app': dataSourceApplication.app,
+          'appium:appActivity': dataSourceApplication.activity,
+        };
       } else {
-        setCapabilities({
-          ...defaultCapabilities,
-        });
+        delete newCapabilities['appium:appPackage'];
+        delete newCapabilities['appium:app'];
+        delete newCapabilities['appium:appActivity'];
       }
+      setCapabilities({
+        ...newCapabilities,
+      });
     } catch (error) {
-      log.error('###', error);
+      log.error('Failed to set Devices or Applications capabilities', error);
     }
-  }, [applicationSelect?.selectedRowKeys?.join('')]);
+  }, [deviceSelect?.selectedRowKeys?.[0], applicationSelect?.selectedRowKeys?.[0]]);
 
   useEffect(() => {
+    log.debug('Appium:noReset:', capabilitiesNoReset);
+    try {
+      log.log('- Capabilities::', 'appium:noReset =', capabilitiesNoReset);
+      setCapabilities({
+        ...capabilities,
+        'appium:noReset': capabilitiesNoReset,
+      });
+    } catch (error) {
+      log.error('Failed to set capabilities::appium:noRest', error);
+    }
+  }, [capabilitiesNoReset]);
+
+  useEffect(() => {
+    log.debug('Appium:fullReset:', capabilitiesFullReset);
+    try {
+      log.log('- Capabilities::', 'appium:fullReset =', capabilitiesFullReset);
+      setCapabilities({
+        ...capabilities,
+        'appium:fullReset': capabilitiesFullReset,
+      });
+    } catch (error) {
+      log.error('Failed to set capabilities::appium:fullRest', error);
+    }
+  }, [capabilitiesFullReset]);
+
+  /*useEffect(() => {
     const handleDevicesTblOutsideClick = (e) => {
       if (!applicationsTblRef?.current?.contains(e.target)) {
         log.log('This one gets called because of the click outside', e);
@@ -402,7 +454,7 @@ const SessionHelper = (props) => {
       document.removeEventListener('click', handleDevicesTblOutsideClick, false);
       document.removeEventListener('click', handleApplicationsTblOutsideClick, false);
     };
-  });
+  });*/
 
   return (
     <>
@@ -430,23 +482,31 @@ const SessionHelper = (props) => {
                 dataSource={dataSourceDevices} columns={columnsDevices} pagination={false}
                 size="small"
                 rowSelection={{
-                  /*type: 'radio',
-                  getCheckboxProps: (_record) => {
+                  type: 'radio',
+                  /*getCheckboxProps: (_record) => {
                     return {
                       style: {
                         display: 'none',
                       },
                     };
                   },*/
-                  renderCell() {
+                  /*renderCell() {
                     // .ant-table-selection-column { display: none; } 필요
                     return null;
-                  },
+                  },*/
                   selectedRowKeys: deviceSelect.selectedRowKeys,
                 }}
                 onRow={onDevicesTableRow}
               />
             </Col>
+          </Row>
+          <Row>
+            <Col span={24}>
+              <Checkbox onChange={onNoResetChange}>No Reset?</Checkbox>
+              <p>The app data will NOT be cleared before this session starts.</p>
+            </Col>
+          </Row>
+          <Row>
             <Col span={24}>
               <Card>
                 <p className={SessionStyles.localDesc}>
@@ -480,22 +540,28 @@ const SessionHelper = (props) => {
                 columns={columnsApplications}
                 pagination={false} size="small"
                 rowSelection={{
-                  /* type: 'radio',
-                  getCheckboxProps: (_record) => {
+                  type: 'radio',
+                  /*getCheckboxProps: (_record) => {
                     return {
                       style: {
                         display: 'none',
                       },
                     };
                   },*/
-                  renderCell() {
+                  /*renderCell() {
                     // .ant-table-selection-column { display: none; } 필요
                     return null;
-                  },
+                  },*/
                   selectedRowKeys: applicationSelect.selectedRowKeys,
                 }}
                 onRow={onApplicationsTableRow}
               />
+            </Col>
+          </Row>
+          <Row>
+            <Col span={24}>
+              <Checkbox onChange={onFullResetChange}>Full Reset?</Checkbox>
+              <p>The app will get uninstalled and all data will be cleared.</p>
             </Col>
           </Row>
           <Row>
