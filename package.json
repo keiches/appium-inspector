@@ -29,7 +29,7 @@
     "test:integration": "vitest run integration",
     "test:e2e": "echo 'Currently not functional - TODO: fixme'",
     "dev:browser": "vite",
-    "dev:electron": "electron-vite -w",
+    "dev:electron": "cross-env NODE_OPTIONS=\"--no-force-async-hooks-checks\" electron-vite -w",
     "build": "npm run build:browser && npm run build:electron",
     "build:browser": "vite build",
     "build:electron": "electron-vite build",

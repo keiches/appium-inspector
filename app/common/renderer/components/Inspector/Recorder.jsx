@@ -20,6 +20,7 @@ import SessionStyles from '../Session/Session.module.css';
 import * as PropTypes from 'prop-types';
 import Sider from 'antd/lib/layout/Sider';
 import {log} from '../../utils/logger';
+import {LOCATOR_STRATEGIES} from '../../constants/session-inspector';
 
 /** @type {React.CSSProperties} */
 const contentStyle = {
@@ -84,7 +85,7 @@ const Recorder = (props) => {
       return {
         key: (index % MODULO) + '',
         name: getActionName(actionNameIndex),
-        type: '',
+        type: action,
         status: 'Ready',
         params
       };
@@ -152,21 +153,20 @@ const Recorder = (props) => {
     }
   ];
   const dataSourceProperties = useMemo(() => {
+    const data = [];
     if (actionSelect.selectedRowKeys.length === 1) {
       const selectedActionKey = actionSelect.selectedRowKeys[0];
       const dataSourceAction = dataSourceActions.find(({key}) => selectedActionKey === key);
       if (dataSourceAction) {
-        let data;
         const params = dataSourceAction.params;
-        switch (dataSourceAction.action) {
+        switch (dataSourceAction.type) {
           case 'findAndAssign':
-            // TODO: 찾는 방법에 따라 값이 다름
-            switch (params[0]) {
-              case 'id':
-                // params[0]; // 찾는 방법?
-                // params[1]; // 찾을 값
-                // params[2]; // TODO: 뭔지 모름
-                // params[3]; // TODO: 뭔지 모름
+            // params[0]; // LOCATOR_STRATEGIES
+            // params[1]; // selector
+            // params[2]; // variableName
+            // params[3]; // isArray (read-only)
+            /*switch (params[0]) {
+              case LOCATOR_STRATEGIES.ID:
                 data = [
                   {
                     key: '1',
@@ -188,99 +188,167 @@ const Recorder = (props) => {
                   }
                 ];
                 break;
-            }
+              case LOCATOR_STRATEGIES.XPATH:
+                break;
+            }*/
+            data.push(...[
+              {
+                // type: 'input',
+                key: '0',
+                name: 'Name',
+                values: dataSourceAction.name,
+                unit: ''
+              },
+              {
+                // type: 'options',
+                key: '1',
+                name: 'Strategy',
+                values: params[0],
+                unit: ''
+              },
+              {
+                // type: 'input',
+                key: '2',
+                name: 'Selector',
+                values: params[1],
+                unit: ''
+              },
+              /*{
+                // type: 'input',
+                // readOnly: true,
+                key: '3',
+                name: 'Variable Name',
+                values: params[2],
+                unit: ''
+              },
+              {
+                // type: 'boolean',
+                // readOnly: true,
+                key: '4',
+                name: 'Is array',
+                values: params[3],
+                unit: ''
+              }*/
+            ]);
             return data;
           case 'pressKeyCode':
-            // params[0]; // TODO: 뭔지 모름
-            // params[1]; // TODO: 뭔지 모름
-            data = [
+            // params[0] = variableName // appium-client.js::this.elementCache[elementId], `el${this.elVarCount}` (read-only)
+            // params[1] = variableIndex // (read-only)
+            data.push(...[
               {
+                // type: 'input',
+                key: '0',
+                name: 'Name',
+                values: dataSourceAction.name,
+                unit: ''
+              },
+              {
+                // type: input,
                 key: '1',
-                name: 'key code',
+                name: 'key code', // keyCode
                 values: params[2],
                 unit: ''
               }
-            ];
+            ]);
             if (params.length === 4) {
-              data.push(
-                {
-                  key: '2',
-                  name: 'meta',
-                  values: params[3],
-                  unit: ''
-                });
+              data.push({
+                // type: input,
+                key: '2',
+                name: 'meta', // metaState
+                values: params[3],
+                unit: ''
+              });
             }
             if (params.length === 5) {
-              data.push(
-                {
-                  key: '3',
-                  name: 'custom',
-                  values: params[4] ?? '',
-                  unit: ''
-                });
+              data.push({
+                // type: input,
+                key: '3',
+                name: 'flags', // flags
+                values: params[4] ?? '',
+                unit: ''
+              });
             }
             return data;
           case 'swipe':
-            // params[0]; // TODO: 뭔지 모름
-            // params[1]; // TODO: 뭔지 모름
+            // params[0] = variableName // appium-client.js::this.elementCache[elementId], `el${this.elVarCount}` (read-only)
+            // params[1] = variableIndex // (read-only)
             // params[2] = {finger1: []}
             // params[2][0] = {type: "pointerMove", duration: 0, x: 190, y: 485}
             // params[2][1] = {type: "pointerDown", button: 0}
             // params[2][0] = {type: "pointerMove", duration: 500, x: 320, y: 485, origin: "mouse|viewport"}
             // params[2][3] = {type: "pointerUp", button: 0}
-            data = Object.keys(params[2]).map((name) => {
+            data.push({
+              // type: 'input',
+              key: 'swipe',
+              name: 'Name',
+              values: dataSourceAction.name,
+              unit: '',
+            });
+            Object.keys(params[2]).forEach((name, index) => {
+              const propertyKey = `${name}#${index}`;
               /** @type {{type: string, button?: number; duration?: number; x?: number; y?: number; origin?: string}[]} */
               const fingers = params[2][name];
               /** @type {{key: string; name: string; values: string | number; unit?: string}[]} */
-              const properties = [
-                // TODO: properties에 list 처리 기능 필요
-                //!--
-                {
-                  key: '0',
-                  name,
-                  values: '-----',
+              data.push({
+                // type: separator,
+                key: name,
+                name,
+                values: '-----',
+                unit: ''
+              });
+              fingers.forEach((finger, fingerIndex) => {
+                data.push({
+                  // type: input,
+                  // readOnly: true,
+                  key: `${propertyKey}#${fingerIndex}}#A`,
+                  name: 'Type',
+                  values: finger.type,
                   unit: ''
-                }
-              ];
-              fingers.forEach((finger) => {
+                });
                 switch (finger.type) {
                   case 'pointerMove':
-                    properties.push({
-                      key: '11',
+                    data.push({
+                      // type: number,
+                      key: `${propertyKey}#${fingerIndex}#0`,
                       name: 'duration',
                       values: finger.duration,
                       unit: ''
                     });
-                    properties.push({
-                      key: '12',
+                    data.push({
+                      // type: number,
+                      key: `${propertyKey}#${fingerIndex}#1`,
                       name: 'x',
                       values: finger.x,
                       unit: ''
                     });
-                    properties.push({
-                      key: '13',
+                    data.push({
+                      // type: number,
+                      key: `${propertyKey}#${fingerIndex}#2`,
                       name: 'y',
                       values: finger.y,
                       unit: ''
                     });
-                    properties.push({
-                      key: '14',
+                    data.push({
+                      // type: input,
+                      key: `${propertyKey}#${fingerIndex}#3`,
                       name: 'origin',
                       values: finger.origin ?? 'viewport', // 'viewport' | '?'
                       unit: ''
                     });
                     break;
                   case 'pointerDown':
-                    properties.push({
-                      key: '1',
+                    data.push({
+                      // type: number,
+                      key: `${propertyKey}#${fingerIndex}#4`,
                       name: 'button',
                       values: finger.button ?? 0,
                       unit: ''
                     });
                     break;
                   case 'pause':
-                    properties.push({
-                      key: '1',
+                    data.push({
+                      // type: number,
+                      key: `${propertyKey}#${fingerIndex}#5`,
                       name: 'duration',
                       values: finger.duration ?? 0,
                       unit: ''
@@ -288,78 +356,97 @@ const Recorder = (props) => {
                     break;
                 }
               });
-              return properties;
             });
             return data;
-          case 'tap':
-            // params[0]; // TODO: 뭔지 모름
-            // params[1]; // TODO: 뭔지 모름
+          case 'tap': {
+            // params[0] = variableName // appium-client.js::this.elementCache[elementId], `el${this.elVarCount}` (read-only)
+            // params[1] = variableIndex // (read-only)
             // params[2] = {finger1: []}
             // params[2][0] = {type: "pointerMove", duration: 0, x: 190, y: 485, origin: "mouse|viewport"}
             // params[2][1] = {type: "pointerDown", button: 0}
             // params[2][2] = {type: "pause", duration: 100}
             // params[2][3] = {type: "pointerUp", button: 0}
-            data = Object.keys(params[2]).map((name) => {
-              /** @type {{type: string, button?: number; duration?: number; x?: number; y?: number;}} */
-              const finger = params[2][name];
+            data.push({
+              // type: 'input',
+              key: 'tap',
+              name: 'Name',
+              values: dataSourceAction.name,
+              unit: ''
+            });
+            Object.keys(params[2]).forEach((name, index) => {
+              const propertyKey = `${name}#${index}`;
+              /** @type {{type: string, button?: number; duration?: number; x?: number; y?: number;}[]} */
+              const fingers = params[2][name];
               /** @type {{key: string; name: string; values: string | number; unit?: string}[]} */
-              const properties = [
-                // TODO: properties에 list 처리 기능 필요
-                //!--
-                {
-                  key: '0',
-                  name,
-                  values: '-----',
+              data.push({
+                // type: separator,
+                // key: propertyKey,
+                key: name,
+                name,
+                values: '-----',
+                unit: ''
+              });
+              fingers.forEach((finger, fingerIndex) => {
+                data.push({
+                  // type: input,
+                  // readOnly: true,
+                  key: `${propertyKey}#${fingerIndex}}#A`,
+                  name: 'Type',
+                  values: finger.type,
                   unit: ''
+                });
+                switch (finger.type) {
+                  case 'pointerMove':
+                    data.push({
+                      // type: number,
+                      key: `${propertyKey}#${fingerIndex}}#0`,
+                      name: 'duration',
+                      values: finger.duration,
+                      unit: ''
+                    });
+                    data.push({
+                      // type: number,
+                      key: `${propertyKey}#${fingerIndex}#1`,
+                      name: 'x',
+                      values: finger.x,
+                      unit: ''
+                    });
+                    data.push({
+                      // type: number,
+                      key: `${propertyKey}#${fingerIndex}#2`,
+                      name: 'y',
+                      values: finger.y,
+                      unit: ''
+                    });
+                    break;
+                  case 'pointerDown':
+                    data.push({
+                      // type: number,
+                      key: `${propertyKey}#${fingerIndex}#3`,
+                      name: 'button',
+                      values: finger.button ?? 0,
+                      unit: ''
+                    });
+                    break;
+                  case 'pause':
+                    data.push({
+                      // type: number,
+                      key: `${propertyKey}#${fingerIndex}#4`,
+                      name: 'duration',
+                      values: finger.duration ?? 0,
+                      unit: ''
+                    });
+                    break;
                 }
-                //--
-              ];
-              switch (finger.type) {
-                case 'pointerMove':
-                  properties.push({
-                    key: '1',
-                    name: 'duration',
-                    values: finger.duration,
-                    unit: ''
-                  });
-                  properties.push({
-                    key: '2',
-                    name: 'x',
-                    values: finger.x,
-                    unit: ''
-                  });
-                  properties.push({
-                    key: '3',
-                    name: 'y',
-                    values: finger.y,
-                    unit: ''
-                  });
-                  break;
-                case 'pointerDown':
-                  properties.push({
-                    key: '1',
-                    name: 'button',
-                    values: finger.button ?? 0,
-                    unit: ''
-                  });
-                  break;
-                case 'pause':
-                  properties.push({
-                    key: '1',
-                    name: 'duration',
-                    values: finger.duration ?? 0,
-                    unit: ''
-                  });
-                  break;
-              }
-              return properties;
+              });
             });
             return data;
+          }
         }
       }
-      return [];
+      return data;
     }
-    return [];
+    return data;
   }, [actionSelect.selectedRowKeys?.[0], dataSourceActions.length]);
   /** @type {any[]} */
   const columnsProperties = [
@@ -438,31 +525,39 @@ const Recorder = (props) => {
   };
 
   const onActionsTableRow = (record, rowIndex) => {
-    log.log('onActionsTableRow', record, rowIndex);
+    // log.log('onActionsTableRow', record, rowIndex);
     return {
       onClick: (event) => {
-        log.log('onActionsTableRowClick', event, record, rowIndex);
-        if (record.key !== actionSelect?.key) {
-          // TODO: 수정된 사항이 있는 경우, 적용할지 여부를 물어보자!
-          // const dataSource = dataSourceActions[rowIndex];
-          setActionSelect({
-            ...actionSelect,
-            selectedRowKeys: [record.key]
-          });
-          /*setPropertiesSelect({
-            ...propertiesSelect,
-            loading: true,
-          });*/
-        } else {
-          setActionSelect({
-            ...actionSelect,
-            selectedRowKeys: [record.key]
-          });
-          /*setPropertiesSelect({
-            ...propertiesSelect,
-            loading: false,
-          });*/
-        }
+        setActionSelect((prevActionSelect) => {
+          log.log('onActionsTableRowClick', event, record, rowIndex);
+          /*if (record.key !== actionSelect?.key) {
+            // TODO: 수정된 사항이 있는 경우, 적용할지 여부를 물어보자!
+            // const dataSource = dataSourceActions[rowIndex];
+            setActionSelect({
+              ...actionSelect,
+              selectedRowKeys: [record.key]
+            });
+            /!*setPropertiesSelect({
+              ...propertiesSelect,
+              loading: true,
+            });*!/
+          } else {
+            setActionSelect({
+              ...actionSelect,
+              selectedRowKeys: [record.key]
+            });
+            /!*setPropertiesSelect({
+              ...propertiesSelect,
+              loading: false,
+            });*!/
+          }*/
+          if (record.key !== prevActionSelect.key) {
+            return {
+              ...prevActionSelect,
+              selectedRowKeys: [record.key],
+            };
+          }
+        });
       }
     };
   };

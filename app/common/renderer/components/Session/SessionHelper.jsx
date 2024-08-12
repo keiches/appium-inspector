@@ -356,13 +356,14 @@ const SessionHelper = (props) => {
       let newCapabilities = {
         ...capabilities,
       };
-      if ((deviceSelect.selectedRowKeys.length === 0) || (applicationSelect.selectedRowKeys.length === 0)) {
+      if ((deviceSelect.selectedRowKeys.length === 0) && (applicationSelect.selectedRowKeys.length === 0)) {
         setCapabilities(newCapabilities);
         return;
       }
       if (deviceSelect.selectedRowKeys.length > 0) {
-        log.log('- Device selected:', applicationSelect.selectedRowKeys);
-        const dataSourceDevice = dataSourceDevices[deviceSelect.selectedRowKeys[0]];
+        log.log('- Device selected:', deviceSelect.selectedRowKeys);
+        // const dataSourceDevice = dataSourceDevices[deviceSelect.selectedRowKeys[0]];
+        const dataSourceDevice = dataSourceDevices.find(({key}) => key === deviceSelect.selectedRowKeys[0]);
         newCapabilities = {
           ...newCapabilities,
           platformName: dataSourceDevice.platform.name,
@@ -379,7 +380,8 @@ const SessionHelper = (props) => {
       }
       if (applicationSelect.selectedRowKeys.length > 0) {
         log.log('- Application selected:', applicationSelect.selectedRowKeys);
-        const dataSourceApplication = dataSourceApplications[applicationSelect.selectedRowKeys[0]];
+        // const dataSourceApplication = dataSourceApplications[applicationSelect.selectedRowKeys[0]];
+        const dataSourceApplication = dataSourceApplications.find(({key}) => key === applicationSelect.selectedRowKeys[0]);
         newCapabilities = {
           ...newCapabilities,
           'appium:appPackage': dataSourceApplication.package,
