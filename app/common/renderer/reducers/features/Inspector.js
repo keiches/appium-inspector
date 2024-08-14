@@ -18,7 +18,7 @@ const INITIAL_STATE = {
   isRecording: false,
   isSourceRefreshOn: true,
   showBoilerplate: false,
-  showSourceActions: false,
+  showActionsSource: false,
   recordedActions: [],
   actionFramework: DEFAULT_FRAMEWORK,
   sessionDetails: {},
@@ -248,7 +248,7 @@ const inspectorSlice = createSlice({
 
     SET_SHOW_SOURCE_ACTIONS(state, action) {
       state.inspector = {
-        ...state.inspector, showSourceActions: action.show
+        ...state.inspector, showActionsSource: action.show
       };
     },
 

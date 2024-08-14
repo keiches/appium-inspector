@@ -366,9 +366,9 @@ export function toggleShowBoilerplate() {
   };
 }
 
-export function toggleShowSourceActions() {
+export function toggleShowActionsSource() {
   return (dispatch, getState) => {
-    const show = !getState().inspector.showSourceActions;
+    const show = !getState().inspector.showActionsSource;
     dispatch({type: SET_SHOW_SOURCE_ACTIONS, show});
   };
 }

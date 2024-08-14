@@ -286,5 +286,15 @@
   "connectivitySetting": "연결 설정",
   "deviceList": "장치 목록",
   "applicationList": "애플리케이션 목록",
-  "Show/Hide Source Actions": "Show/Hide Source Actions"
+  "Show/Hide Source Actions": "Actions Source 보기",
+  "actionsType": "종류",
+  "actionsName": "이름",
+  "actionsActions": "기능",
+  "actionPropName": "속성명",
+  "actionPropValues": "속성값",
+  "properties": "속성",
+  "propertiesDescription": "설명",
+  "propertiesType": "종류",
+  "propertiesX": "X",
+  "propertiesY": "Y"
 }

@@ -281,10 +281,20 @@
   "invalidCapType": "Invalid capability type: {{type}}",
   "whitespaceDetected": "Text Starts and/or Ends With Whitespace",
   "pCloudyCredentialsRequired": "pCloudy username and api key are required!",
+  "properties": "Properties",
+  "propertiesDescription": "Description",
+  "propertiesType": "Type",
+  "propertiesX": "X",
+  "propertiesY": "Y",
   "duplicateCapabilityNameError": "A capability set with the same name already exists",
   "getCurrentDevices": "Get Current Devices",
   "connectivitySetting": "Connectivity Setting",
   "deviceList": "Device List",
   "applicationList": "Application List",
-  "Show/Hide Source Actions": "Show/Hide Source Actions"
+  "Show/Hide Source Actions": "Show/Hide Source Actions",
+  "actionsType": "actionsType",
+  "actionsName": "actionsName",
+  "actionsActions": "actionsActions",
+  "actionPropName": "actionPropName",
+  "actionPropValues": "actionPropValues"
 }

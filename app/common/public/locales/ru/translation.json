@@ -281,10 +281,20 @@
   "invalidCapType": "Неверный тип возможности: {{type}}",
   "whitespaceDetected": "Текст начинается и/или заканчивается с пробелом",
   "pCloudyCredentialsRequired": "Требуется имя пользователя и ключ API pCloudy!",
+  "properties": "Properties",
+  "propertiesDescription": "Description",
+  "propertiesType": "Type",
+  "propertiesX": "X",
+  "propertiesY": "Y",
   "duplicateCapabilityNameError": "Набор возможностей с таким именем уже существует",
   "getCurrentDevices": "Get Current Devices",
   "connectivitySetting": "Connectivity Setting",
   "deviceList": "Device List",
   "applicationList": "Application List",
-  "Show/Hide Source Actions": "Show/Hide Source Actions"
+  "Show/Hide Source Actions": "Show/Hide Source Actions",
+  "actionsType": "actionsType",
+  "actionsName": "actionsName",
+  "actionsActions": "actionsActions",
+  "actionPropName": "actionPropName",
+  "actionPropValues": "actionPropValues"
 }

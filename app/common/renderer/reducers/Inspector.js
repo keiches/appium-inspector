@@ -104,7 +104,7 @@ const INITIAL_STATE = {
   isRecording: false,
   isSourceRefreshOn: true,
   showBoilerplate: false,
-  showSourceActions: false,
+  showActionsSource: false,
   recordedActions: [],
   actionFramework: DEFAULT_FRAMEWORK,
   sessionDetails: {},
@@ -314,7 +314,7 @@ export default function inspector(state = INITIAL_STATE, action) {
       return {...state, showBoilerplate: action.show};
 
     case SET_SHOW_SOURCE_ACTIONS:
-      return {...state, showSourceActions: action.show};
+      return {...state, showActionsSource: action.show};
 
     case SET_SESSION_DETAILS: {
       const automationName = action.driver.client.capabilities.automationName;

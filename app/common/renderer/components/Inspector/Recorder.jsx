@@ -5,12 +5,12 @@ import {
   PicRightOutlined,
   FormOutlined,
   EditOutlined,
-  DeleteOutlined
+  DeleteOutlined, PlayCircleOutlined, StopOutlined
 } from '@ant-design/icons';
 import {Button, Card, Col, Descriptions, Divider, Layout, List, Row, Select, Space, Spin, Table, Tooltip} from 'antd';
 import hljs from 'highlight.js';
 import React, {useCallback, useMemo, useState} from 'react';
-import {sentenceCase} from 'change-case';
+import {capitalCase, sentenceCase} from 'change-case';
 
 import {BUTTON} from '../../constants/antd-types';
 import frameworks from '../../lib/client-frameworks';
@@ -20,7 +20,6 @@ import SessionStyles from '../Session/Session.module.css';
 import * as PropTypes from 'prop-types';
 import Sider from 'antd/lib/layout/Sider';
 import {log} from '../../utils/logger';
-import {LOCATOR_STRATEGIES} from '../../constants/session-inspector';
 
 /** @type {React.CSSProperties} */
 const contentStyle = {
@@ -54,7 +53,7 @@ Flex.propTypes = {children: PropTypes.node};
 const MODULO = 1e9 + 7;
 
 const Recorder = (props) => {
-  const {showBoilerplate, showSourceActions, recordedActions, actionFramework, t} = props;
+  const {showBoilerplate, showActionsSource, recordedActions, actionFramework, t} = props;
   // actions panel
   const [actionSelect, setActionSelect] = useState({
     selectedRowKeys: [],
@@ -73,9 +72,7 @@ const Recorder = (props) => {
    *
    * @type {function({action: string, index: number})} callback
    */
-  const getActionName = useCallback(({action, index}) => {
-    return `${sentenceCase(action)} #${index}`;
-  }, []);
+  const getActionName = useCallback(({action, index}) => `${sentenceCase(action)} #${index}`, []);
   const dataSourceActions = useMemo(() => {
     const actionNameIndexes = new Map();
     return recordedActions?.map(({action, params}, index) => {
@@ -84,9 +81,9 @@ const Recorder = (props) => {
       actionNameIndexes.set(action, actionNameIndex);
       return {
         key: (index % MODULO) + '',
-        name: getActionName(actionNameIndex),
         type: action,
-        status: 'Ready',
+        name: getActionName(actionNameIndex),
+        actions: (index % 2) === 0, // TODO:
         params
       };
     });
@@ -94,19 +91,41 @@ const Recorder = (props) => {
   /** @type {any[]} */
   const columnsActions = [
     {
-      title: 'Type', // t('Type'),
+      title: t('actionsType'),
       dataIndex: 'type',
       key: 'type'
     },
     {
-      title: 'Name',
+      title: t('actionsName'),
       dataIndex: 'name',
       key: 'name'
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status'
+      title: t('actionsActions'),
+      dataIndex: 'actions',
+      key: 'actions',
+      render: (value, record) => {
+        if (value) {
+          return (
+            <Button.Group>
+              <Button
+                icon={<EditOutlined />}
+                className={SessionStyles.editSession}
+                onClick={() => {
+                  //
+                }}
+              />
+              <Button
+                icon={<DeleteOutlined />}
+                onClick={() => {
+                  //
+                }}
+              />
+            </Button.Group>
+          );
+        }
+        return null;
+      },
     }
     /*{
       title: 'Actions',
@@ -132,26 +151,6 @@ const Recorder = (props) => {
     },*/
   ];
   // properties panel
-  const dataSourceProperties0 = [
-    {
-      key: '1',
-      name: 'X',
-      values: '100.0',
-      unit: 'pt'
-    },
-    {
-      key: '2',
-      name: 'Y',
-      values: '220.0',
-      unit: 'pt'
-    },
-    {
-      key: '3',
-      name: 'Wait',
-      values: '1000',
-      unit: 'ms'
-    }
-  ];
   const dataSourceProperties = useMemo(() => {
     const data = [];
     if (actionSelect.selectedRowKeys.length === 1) {
@@ -302,7 +301,7 @@ const Recorder = (props) => {
                   // readOnly: true,
                   key: `${propertyKey}#${fingerIndex}}#A`,
                   name: 'Type',
-                  values: finger.type,
+                  values: capitalCase(finger.type),
                   unit: ''
                 });
                 switch (finger.type) {
@@ -392,7 +391,7 @@ const Recorder = (props) => {
                   // readOnly: true,
                   key: `${propertyKey}#${fingerIndex}}#A`,
                   name: 'Type',
-                  values: finger.type,
+                  values: capitalCase(finger.type),
                   unit: ''
                 });
                 switch (finger.type) {
@@ -451,12 +450,12 @@ const Recorder = (props) => {
   /** @type {any[]} */
   const columnsProperties = [
     {
-      title: 'Name',
+      title: t('actionPropName'),
       dataIndex: 'name',
       key: 'name'
     },
     {
-      title: 'Values',
+      title: t('actionPropValues'),
       dataIndex: 'values',
       // colSpan: 2,
       key: 'values'
@@ -481,45 +480,78 @@ const Recorder = (props) => {
   };
 
   const actionBar = () => {
-    const {setActionFramework, toggleShowBoilerplate, toggleShowSourceActions, clearRecording} = props;
+    const {setActionFramework, toggleShowBoilerplate, toggleShowActionsSource, clearRecording} = props;
 
     return (
       <Space size="middle">
+        {showActionsSource ? (
+          <>
+            {!!recordedActions.length && (
+              <Button.Group>
+                <Tooltip title={t('Show/Hide Boilerplate Code')}>
+                  <Button
+                    icon={<PicRightOutlined />}
+                    type={showBoilerplate ? BUTTON.PRIMARY : BUTTON.DEFAULT}
+                    onClick={toggleShowBoilerplate}
+                  />
+                </Tooltip>
+                <Tooltip title={t('Copy code to clipboard')}>
+                  <Button icon={<CopyOutlined />} onClick={() => clipboard.writeText(code())} />
+                </Tooltip>
+                <Tooltip title={t('Clear Actions')}>
+                  <Button icon={<ClearOutlined />} onClick={clearRecording} />
+                </Tooltip>
+              </Button.Group>
+            )}
+            <Select
+              defaultValue={actionFramework}
+              className={InspectorStyles['framework-dropdown']}
+              onChange={setActionFramework}
+            >
+              {Object.keys(frameworks).map((f) => (
+                <Select.Option value={f} key={f}>
+                  {frameworks[f].readableName}
+                </Select.Option>
+              ))}
+            </Select>
+            <Divider type="vertical" />
+          </>
+        ) : (
+          <>
+            {!!recordedActions.length && (
+              <>
+                <Button.Group>
+                  <Tooltip title={t('Play Actions')}>
+                    <Button
+                      disabled={recordedActions.length === 0}
+                      icon={<PlayCircleOutlined />}
+                      type={BUTTON.DEFAULT}
+                      onClick={() => {
+                      }}
+                    />
+                  </Tooltip>
+                  <Tooltip title={t('Stop playing Actions')}>
+                    <Button
+                      disabled={recordedActions.length === 0}
+                      icon={<StopOutlined />}
+                      type={BUTTON.DEFAULT}
+                      onClick={() => {
+                      }}
+                    />
+                  </Tooltip>
+                </Button.Group>
+                <Divider type="vertical" />
+              </>
+            )}
+          </>
+        )}
         <Tooltip title={t('Show/Hide Source Actions')}>
           <Button
-            onClick={toggleShowSourceActions}
-            icon={<FormOutlined />}
-            type={showSourceActions ? BUTTON.PRIMARY : BUTTON.DEFAULT}
+            icon={<PicRightOutlined />}
+            type={showActionsSource ? BUTTON.PRIMARY : BUTTON.DEFAULT}
+            onClick={toggleShowActionsSource}
           />
         </Tooltip>
-        {showSourceActions && (<>{!!recordedActions.length && (
-          <Button.Group>
-            <Tooltip title={t('Show/Hide Boilerplate Code')}>
-              <Button
-                onClick={toggleShowBoilerplate}
-                icon={<PicRightOutlined />}
-                type={showBoilerplate ? BUTTON.PRIMARY : BUTTON.DEFAULT}
-              />
-            </Tooltip>
-            <Tooltip title={t('Copy code to clipboard')}>
-              <Button icon={<CopyOutlined />} onClick={() => clipboard.writeText(code())} />
-            </Tooltip>
-            <Tooltip title={t('Clear Actions')}>
-              <Button icon={<ClearOutlined />} onClick={clearRecording} />
-            </Tooltip>
-          </Button.Group>
-        )}
-          <Select
-            defaultValue={actionFramework}
-            onChange={setActionFramework}
-            className={InspectorStyles['framework-dropdown']}
-          >
-            {Object.keys(frameworks).map((f) => (
-              <Select.Option value={f} key={f}>
-                {frameworks[f].readableName}
-              </Select.Option>
-            ))}
-          </Select></>)}
       </Space>
     );
   };
@@ -591,19 +623,16 @@ const Recorder = (props) => {
       className={InspectorStyles['interaction-tab-card']}
       extra={actionBar()}
     >
-      {!recordedActions.length && (
-        <div className={InspectorStyles['no-recorded-actions']}>
-          {t('enableRecordingAndPerformActions')}
-        </div>
-      )}
-      {showSourceActions ? (
-        <>
-          {!!recordedActions.length && (
-            <pre className={InspectorStyles['recorded-code']}>
-              <code dangerouslySetInnerHTML={{__html: code(false)}} />
-            </pre>
-          )}
-        </>) : (
+      {showActionsSource ? (!recordedActions.length ? (
+          <div className={InspectorStyles['no-recorded-actions']}>
+            {t('enableRecordingAndPerformActions')}
+          </div>
+        ) : (
+          <pre className={InspectorStyles['recorded-code']}>
+            <code dangerouslySetInnerHTML={{__html: code(false)}} />
+          </pre>
+        )
+      ) : (
         <Space className={InspectorStyles.spaceContainer} direction="vertical" size="middle">
           <Layout hasSider>
             <Layout.Content style={contentStyle}>
@@ -613,21 +642,21 @@ const Recorder = (props) => {
                 size="small"
                 scroll={{x: 'max-content'}}
                 pagination={false}
-                rowSelection={{
-                  /*type: 'radio',
+                /*rowSelection={{
+                  /!*type: 'radio',
                   getCheckboxProps: (_record) => {
                     return {
                       style: {
                         display: 'none',
                       },
                     };
-                  },*/
+                  },*!/
                   renderCell() {
                     // .ant-table-selection-column { display: none; } 필요
                     return null;
                   },
                   selectedRowKeys: actionSelect.selectedRowKeys
-                }}
+                }}*/
                 onRow={onActionsTableRow}
               />
             </Layout.Content>
@@ -640,13 +669,13 @@ const Recorder = (props) => {
                 pagination={false}
                 onRow={onPropertiesTableRow}
               />
-              <Divider />
-              <Descriptions title="Properties" layout={'vertical'} size={'small'}>
-                <Descriptions.Item label={t('propDescDescription')}>{'Desc'}</Descriptions.Item>
-                <Descriptions.Item label={t('propDescX')}>{'X'}</Descriptions.Item>
-                <Descriptions.Item label={t('propDescY')}>{'Y'}</Descriptions.Item>
-                <Descriptions.Item label={t('propDescType')}>{'Type'}</Descriptions.Item>
-              </Descriptions>
+              {/* <Divider />
+              <Descriptions title={t('properties')} size="small" bordered column="sm">
+                <Descriptions.Item span={3} label={t('propertiesDescription')}>{'Desc'}</Descriptions.Item>
+                <Descriptions.Item span={3} label={t('propertiesX')}>{'X'}</Descriptions.Item>
+                <Descriptions.Item span={3} label={t('propertiesY')}>{'Y'}</Descriptions.Item>
+                <Descriptions.Item span={3} label={t('propertiesType')}>{'Type'}</Descriptions.Item>
+              </Descriptions> */}
             </Sider>
           </Layout>
         </Space>
