@@ -1,6 +1,13 @@
-import {app, dialog, remote} from 'electron';
+import {app, dialog} from 'electron';
 import debug from 'electron-debug';
 import {existsSync} from 'fs';
+// import {randomUUID} from 'crypto';
+import {v4} from 'uuid';
+
+const randomUUID = () => {
+  const tokens = v4().split('-');
+  return tokens[2] + tokens[1] + tokens[0] + tokens[3] + tokens[4];
+};
 
 // import {installExtensions} from './debug';
 import {getAppiumSessionFilePath, isDev} from './helpers';
@@ -13,7 +20,7 @@ import NodeDetector from './node-detector';
 // import {exec, spawn} from 'node:child_process';
 import {spawn} from 'child_process';
 import {join, resolve} from 'path';
-import {homedir} from 'os';
+import {homedir, platform} from 'os';
 // import _logger from 'console';
 import {exec} from 'teen_process';
 import {log} from './logger';
@@ -25,15 +32,20 @@ import {getDevices} from './device-manager';
 export let openFilePath = getAppiumSessionFilePath(process.argv, app.isPackaged);
 
 let server;
-let compiler;
-let runner;
+let actionsTester;
 
 app.on('open-file', (event, filePath) => {
   openFilePath = filePath;
 });
 
 app.on('window-all-closed', () => {
+  if (actionsTester && !actionsTester.killed) {
+    log.log('Terminate actions runner...');
+    actionsTester.kill('SIGTERM');
+    actionsTester = null;
+  }
   if (server && !server.killed) {
+    log.log('Terminate Appium server...');
     server.kill('SIGTERM'); // NodeJS.Signals
     // process.kill(server.pid, 'SIGINT');
     server = null;
@@ -97,10 +109,10 @@ async function resolveNodePath() {
 
 /**
  * Execute Appium server in background
- * @param {string} nodePath
  * @returns {Promise<void>}
  */
-async function runAppiumServer(nodePath) {
+async function runAppiumServer() {
+  log.log('Starting Appium server...');
   /*const controller = new AbortController();
   const { signal } = controller;
   server = fork('../server/build/lib/main.js', [], {*/
@@ -108,19 +120,36 @@ async function runAppiumServer(nodePath) {
     // signal,
     stdio: ['pipe', 'inherit', 'inherit'],
   });*/
+  // const nodePath = await resolveExecutablePath('node');
+  const nodePath = await NodeDetector.detect();
+  if (!nodePath) {
+    log.error('node cannot be found');
+    await dialog.showMessageBox({
+      type: 'error',
+      buttons: ['OK'],
+      message: 'node cannot be found',
+    });
+    return;
+  }
+
+  log.log(`Node is installed at: ${nodePath}. ${
+    (await exec('node', ['--version'])).stdout.split('\n')[0]
+  }`);
+
+  const rootPath = process.env.NODE_ENV === 'development' ? app.getAppPath() : __dirname;
   // server = spawn(nodePath, [join(__dirname, '../server/build/lib/main.js')]/*, {
   // server = spawn(nodePath, ['../node_modules/appium/build/lib/main.js']/*, {
   server = spawn(nodePath, [
     // TODO: search appium server
     // join(__dirname, '../node_modules/ap\pium/build/lib/main.js'),
     // 'C:\\opt\\nodejs\\node_modules\\appium\\index.js',
-    join('C:\\Users\\keiches\\Projects\\open\\appium\\appium\\packages\\appium\\build\\lib\\main.js'),
+    join(rootPath, 'packages', 'server', 'packages', 'appium', 'build', 'lib', 'main.js'),
     // resolve(join('..', 'server', 'packages', 'appium')),
     // ../server/packages/appium
     'server',
     // '--show-config'
     '--config',
-    join(__dirname, '../configs/server.conf.js'),
+    join(rootPath, 'configs', 'server.conf.js'),
   ], {
     // stdio: ['pipe', 'inherit', 'inherit']
     // shell: true,
@@ -174,14 +203,6 @@ async function runAppiumServer(nodePath) {
   });
 
   log.log(`[appium-server] spawned: ${server.pid}`);
-
-  app.on('window-all-closed', () => {
-    // controller.abort();
-    if (server && !server.killed) {
-      server.kill('SIGTERM'); // NodeJS.Signals
-      server = null;
-    }
-  });
 }
 
 /**
@@ -190,33 +211,38 @@ async function runAppiumServer(nodePath) {
  * @returns {Promise<void>}
  */
 async function runActionsTester(testId) {
+  log.log(`Compiling test runner "${testId}"...`);
+  const rootPath = process.env.NODE_ENV === 'development' ? app.getAppPath() : __dirname;
   // #1 compile java to class
-  compiler = spawn(join(__dirname, '..', 'libs', 'actions-tester', 'compile'), [
+  actionsTester = spawn('bash', [
+    // process.env.NODE_ENV === 'development' ? join(app.getAppPath(), 'libs', 'actions-tester', `compile.${platform() === 'win32' ? 'cmd' : 'sh'}`) : join(__dirname, '..', 'libs', 'actions-tester', `compile.${platform() === 'win32' ? 'cmd' : 'sh'}`),
+    join(rootPath, 'packages', 'actions-tester', `compile.${platform() === 'win32' ? 'cmd' : 'sh'}`),
     testId,
   ], {
+    // detached: true, ==> actionsTester.unref();
+    detached: true,
     stdio: ['pipe', 'inherit', 'inherit']
     // shell: true,
     // cwd: 'C:\\Test\\Path',
-    // detached: true, ==> server.unref();
   });
 
-  server.stdout.on('data', (data) => {
+  actionsTester.stdout.on('data', (data) => {
     // if we get here, all we know is that the proc exited
-    log.log(`[appium-actions-tester] stdout: ${data}`);
+    log.log(`[actions-tester] compiler stdout: ${data}`);
     // exited with code 127 from signal SIGHUP
   });
 
-  server.stderr.on('data', (data) => {
-    log.error(`[appium-actions-tester] stderr: ${data}`);
+  actionsTester.stderr.on('data', (data) => {
+    log.error(`[actions-tester] compiler stderr: ${data}`);
   });
 
-  server.on('message', (message) => {
-    log.log('[appium-actions-tester] message:' + message);
+  actionsTester.on('message', (message) => {
+    log.log('[actions-tester] compiler message:' + message);
   });
 
-  server.on('error', (err) => {
+  actionsTester.on('error', (err) => {
     // This will be called with err being an AbortError if the controller aborts
-    log.error('[appium-actions-tester] error:' + err.toString());
+    log.error('[actions-tester] compiler error:' + err.toString());
     dialog.showMessageBox({
       type: 'error',
       buttons: ['OK'],
@@ -224,30 +250,91 @@ async function runActionsTester(testId) {
     });
   });
 
-  server.on('disconnect', () => {
-    log.warn('[appium-actions-tester] disconnect');
+  actionsTester.on('disconnect', () => {
+    log.warn('[actions-tester] compiler disconnect');
   });
 
-  server.on('close', (code, signal) => {
+  actionsTester.on('close', (code, signal) => {
     // if we get here, we know that the process stopped outside our control
     // but with a 0 exit code
     // app.quit();
-    log.log(`[appium-actions-tester] closed with code ${code} from signal ${signal}`);
+    log.log(`[actions-tester] compiler closed with code ${code} from signal ${signal}`);
   });
 
-  server.on('exit', (code) => {
-    log.log('[appium-actions-tester] exit on code: ' + code);
-  });
+  actionsTester.on('exit', (code, signal) => {
+    log.log(`[actions-tester] compiler existed with code ${code} from signal ${signal}`);
+    if (signal === null) {
+      log.log('Test runner compiled');
+      // TODO: when compiling is done successfully, start running
+      setTimeout(() => {
+        actionsTester.unref();
+        log.log('Starting test runner...');
+        // #2 run class
+        actionsTester = spawn(join(__dirname, '..', 'libs', 'actions-tester', 'run'), [
+          testId,
+        ], {
+          // detached: true, ==> actionsTester.unref();
+          detached: true,
+          stdio: ['pipe', 'inherit', 'inherit']
+          // shell: true,
+          // cwd: 'C:\\Test\\Path',
+        });
 
-  log.log(`[appium-actions-tester] spawned: ${server.pid}`);
+        actionsTester.stdout.on('data', (data) => {
+          // if we get here, all we know is that the proc exited
+          log.log(`[actions-tester] runner stdout: ${data}`);
+          // exited with code 127 from signal SIGHUP
+        });
 
-  app.on('window-all-closed', () => {
-    // controller.abort();
-    if (server && !server.killed) {
-      server.kill('SIGTERM'); // NodeJS.Signals
-      server = null;
+        actionsTester.stderr.on('data', (data) => {
+          log.error(`[actions-tester] runner stderr: ${data}`);
+        });
+
+        actionsTester.on('message', (message) => {
+          log.log('[actions-tester] message:' + message);
+        });
+
+        actionsTester.on('error', (err) => {
+          // This will be called with err being an AbortError if the controller aborts
+          log.error('[actions-tester] runner error:' + err.toString());
+          dialog.showMessageBox({
+            type: 'error',
+            buttons: ['OK'],
+            message: err.message,
+          });
+        });
+
+        actionsTester.on('disconnect', () => {
+          log.warn('[actions-tester] runner disconnect');
+        });
+
+        actionsTester.on('close', (code, signal) => {
+          // if we get here, we know that the process stopped outside our control
+          // but with a 0 exit code
+          // app.quit();
+          log.log(`[actions-tester] runner closed with code ${code} from signal ${signal}`);
+        });
+
+        actionsTester.on('exit', (code, signal) => {
+          log.log(`[actions-tester] runner existed with code ${code} from signal ${signal}`);
+          if (signal === null) {
+            // TODO: when compiling is done successfully, start running
+            log.log('Test runner stopped');
+          } else {
+            // TODO: send reasons about failed to run
+            log.error(`Failed to run test runner with error ${signal}`);
+          }
+        });
+
+        log.log(`[actions-tester] runner spawned: ${actionsTester.pid}`);
+      }, 1);
+    } else {
+      // TODO: send reasons about failed to compile
+      log.error(`Failed to compile test runner with error ${signal}`);
     }
   });
+
+  log.log(`[actions-tester] compiler spawned: ${actionsTester.pid}`);
 }
 
 // launchinfo for Windows, Linux
@@ -261,15 +348,12 @@ app.on('ready', async () => {
     // await installExtensions();
   }
 
-  const nodePath = await resolveNodePath();
-  if (nodePath) {
-    // @site: https://www.freecodecamp.org/korean/news/node-js-child-processes-everything-you-need-to-know-e69498fe970a/
-    // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
-    // await runAppiumServer(nodePath);
+  // @site: https://www.freecodecamp.org/korean/news/node-js-child-processes-everything-you-need-to-know-e69498fe970a/
+  // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
+  // await runAppiumServer();
 
-    // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
-    // await runActionsTester(nodePath);
-  }
+  // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
+  await runActionsTester(randomUUID());
 
   await getDevices();
 

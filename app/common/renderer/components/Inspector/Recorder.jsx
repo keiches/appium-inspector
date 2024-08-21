@@ -14,7 +14,7 @@ import {capitalCase, sentenceCase} from 'change-case';
 
 import {BUTTON} from '../../constants/antd-types';
 import frameworks from '../../lib/client-frameworks';
-import {clipboard} from '../../polyfills';
+import {clipboard, ipcRenderer} from '../../polyfills';
 import InspectorStyles from './Inspector.module.css';
 import SessionStyles from '../Session/Session.module.css';
 import * as PropTypes from 'prop-types';
@@ -466,6 +466,11 @@ const Recorder = (props) => {
       key: 'unit'
     }
   ];
+
+  const runActions = () => {
+    // NOTE: 지금은 무조건 실행으로 구성해본다.
+    // ipcRenderer.send('run-action-handler');
+  };
 
   const code = (raw = true) => {
     const {host, port, path, https, desiredCapabilities} = props.sessionDetails;
