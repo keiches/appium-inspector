@@ -291,10 +291,12 @@
   "setConnection": "Connection Settings",
   "deviceList": "Device List",
   "applicationList": "Application List",
-  "Show/Hide Source Actions": "Show/Hide Source Actions",
+  "showActionSource": "Show/Hide Action Source",
   "actionsType": "actionsType",
   "actionsName": "actionsName",
   "actionsActions": "actionsActions",
   "actionPropName": "actionPropName",
-  "actionPropValues": "actionPropValues"
+  "actionPropValues": "actionPropValues",
+  "startTesting": "Start Testing…",
+  "stopTesting": "Stop Testing…"
 }

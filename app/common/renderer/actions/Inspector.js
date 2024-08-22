@@ -50,7 +50,6 @@ export const CLEAR_RECORDING = 'CLEAR_RECORDING';
 export const SET_ACTION_FRAMEWORK = 'SET_ACTION_FRAMEWORK';
 export const RECORD_ACTION = 'RECORD_ACTION';
 export const SET_SHOW_BOILERPLATE = 'SET_SHOW_BOILERPLATE';
-export const SET_SHOW_ACTION_SOURCE = 'SET_SHOW_ACTION_SOURCE';
 
 export const SHOW_LOCATOR_TEST_MODAL = 'SHOW_LOCATOR_TEST_MODAL';
 export const HIDE_LOCATOR_TEST_MODAL = 'HIDE_LOCATOR_TEST_MODAL';
@@ -119,6 +118,7 @@ export const TOGGLE_REFRESHING_STATE = 'TOGGLE_REFRESHING_STATE';
 
 export const SET_GESTURE_UPLOAD_ERROR = 'SET_GESTURE_UPLOAD_ERROR';
 
+export const SET_SHOW_ACTION_SOURCE = 'SET_SHOW_ACTION_SOURCE';
 export const SET_DEVICE_LIST = 'SET_DEVICE_LIST';
 
 const KEEP_ALIVE_PING_INTERVAL = 20 * 1000;
@@ -1086,7 +1086,7 @@ export function toggleShowAttributes() {
 
 export function toggleShowActionSource() {
   return (dispatch, getState) => {
-    const show = !getState().inspector.showActionsSource;
+    const show = !getState().inspector.showActionSource;
     dispatch({type: SET_SHOW_ACTION_SOURCE, show});
   };
 }

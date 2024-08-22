@@ -50,10 +50,10 @@ function Flex(props) {
 
 Flex.propTypes = {children: PropTypes.node};
 
-const MODULO = 1e9 + 7;
+// const MODULO = 1e9 + 7;
 
 const Recorder = (props) => {
-  const {showBoilerplate, showActionsSource, recordedActions, actionFramework, t} = props;
+  const {showBoilerplate, showActionSource, recordedActions, actionFramework, t} = props;
   // actions panel
   const [actionSelect, setActionSelect] = useState({
     selectedRowKeys: [],
@@ -80,7 +80,8 @@ const Recorder = (props) => {
       actionNameIndex.index += 1;
       actionNameIndexes.set(action, actionNameIndex);
       return {
-        key: (index % MODULO) + '',
+        // key: (index % MODULO) + '',
+        key: index + '',
         type: action,
         name: getActionName(actionNameIndex),
         actions: (index % 2) === 0, // TODO:
@@ -466,10 +467,12 @@ const Recorder = (props) => {
       key: 'unit'
     }
   ];
+  const [isActionsPlayed, setIsActionsPlayed] = useState(false);
 
   const runActions = () => {
     // NOTE: 지금은 무조건 실행으로 구성해본다.
-    // ipcRenderer.send('run-action-handler');
+    // ipcRenderer.send('run-action-tester');
+    // ipcRenderer.on('run-action-tester');
   };
 
   const code = (raw = true) => {
@@ -484,12 +487,51 @@ const Recorder = (props) => {
     return hljs.highlight(rawCode, {language: framework.language}).value;
   };
 
+  const actionCode = () => {
+    const {host, port, path, https, desiredCapabilities} = props.sessionDetails;
+
+    // const framework = new frameworks[actionFramework](host, port, path, https, desiredCapabilities);
+    // eslint-disable-next-line dot-notation
+    const framework = new frameworks['javaJUnit5'](host, port, path, https, desiredCapabilities);
+    framework.actions = recordedActions;
+    let str = '';
+    let code;
+    let index = 0;
+    for (let {action, params} of framework.actions) {
+      const actionId = dataSourceActions[index].key;
+      const funcName = `codeFor_${action}`;
+      if (framework[funcName]) {
+        code = `try {
+          System.out.println("START[${actionId}]: '${action}'");
+          ${framework[funcName](...params)}
+          System.out.println("END[${actionId}]: '${action}'");
+        } catch (Exception e) {
+            System.out.println("ERROR[${actionId}]: failed to run action '${action}': " + e.getMessage());
+            throw new Exception();
+        }`;
+      } else {
+        code = `// Code generation for action '${action}' is not currently supported`;
+      }
+      str += `${code}\n`;
+    }
+    return str;
+  };
+
+  const onPlayActions = useCallback(() => {
+    setIsActionsPlayed(true);
+    ipcRenderer.send('create-test-template', actionCode());
+  }, []);
+
+  const onStopActions = useCallback(() => {
+    setIsActionsPlayed(false);
+  }, []);
+
   const actionBar = () => {
-    const {setActionFramework, toggleShowBoilerplate, toggleShowActionsSource, clearRecording} = props;
+    const {setActionFramework, toggleShowBoilerplate, toggleShowActionSource, clearRecording} = props;
 
     return (
       <Space size="middle">
-        {showActionsSource ? (
+        {showActionSource ? (
           <>
             {!!recordedActions.length && (
               <Button.Group>
@@ -526,22 +568,20 @@ const Recorder = (props) => {
             {!!recordedActions.length && (
               <>
                 <Button.Group>
-                  <Tooltip title={t('Play Actions')}>
+                  <Tooltip title={t('startTesting')}>
                     <Button
-                      disabled={recordedActions.length === 0}
+                      disabled={(recordedActions.length === 0) || isActionsPlayed}
                       icon={<PlayCircleOutlined />}
                       type={BUTTON.DEFAULT}
-                      onClick={() => {
-                      }}
+                      onClick={onPlayActions}
                     />
                   </Tooltip>
-                  <Tooltip title={t('Stop playing Actions')}>
+                  <Tooltip title={t('stopTesting')}>
                     <Button
-                      disabled={recordedActions.length === 0}
+                      disabled={(recordedActions.length === 0) || (!isActionsPlayed)}
                       icon={<StopOutlined />}
                       type={BUTTON.DEFAULT}
-                      onClick={() => {
-                      }}
+                      onClick={onStopActions}
                     />
                   </Tooltip>
                 </Button.Group>
@@ -550,11 +590,11 @@ const Recorder = (props) => {
             )}
           </>
         )}
-        <Tooltip title={t('Show/Hide Source Actions')}>
+        <Tooltip title={t('showActionSource')}>
           <Button
             icon={<PicRightOutlined />}
-            type={showActionsSource ? BUTTON.PRIMARY : BUTTON.DEFAULT}
-            onClick={toggleShowActionsSource}
+            type={showActionSource ? BUTTON.PRIMARY : BUTTON.DEFAULT}
+            onClick={toggleShowActionSource}
           />
         </Tooltip>
       </Space>
@@ -628,7 +668,7 @@ const Recorder = (props) => {
       className={InspectorStyles['interaction-tab-card']}
       extra={actionBar()}
     >
-      {showActionsSource ? (!recordedActions.length ? (
+      {showActionSource ? (!recordedActions.length ? (
           <div className={InspectorStyles['no-recorded-actions']}>
             {t('enableRecordingAndPerformActions')}
           </div>

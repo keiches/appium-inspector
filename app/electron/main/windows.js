@@ -7,6 +7,9 @@ import i18n from './i18next';
 import {openFilePath} from './main';
 import {APPIUM_SESSION_EXTENSION, isDev} from './helpers';
 import {rebuildMenus} from './menus';
+import {log} from './logger';
+
+import generator from './test/generator';
 
 const mainPath = isDev
   ? process.env.ELECTRON_RENDERER_URL
@@ -54,6 +57,21 @@ function buildSessionWindow() {
     if (!canceled) {
       mainWindow.webContents.send('save-file', filePath);
     }
+  });
+
+  ipcMain.on('create-test-template', async (event, codes, ...args) => {
+    log.debug('[create-test-template]', ...args);
+    await generator({
+      codes,
+      ...args,
+      remoteAddress: 'http://localhost:4723', // 'host:port'
+      capabilities: {
+        app: 'C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk',
+        appPackage: 'com.saucelabs.mydemoapp.rn',
+        appActivity: '.MainActivity',
+        deviceName: 'emulator-5554',
+      },
+    });
   });
 
   return window;

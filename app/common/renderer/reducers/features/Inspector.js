@@ -18,7 +18,6 @@ const INITIAL_STATE = {
   isRecording: false,
   isSourceRefreshOn: true,
   showBoilerplate: false,
-  showActionsSource: false,
   recordedActions: [],
   actionFramework: DEFAULT_FRAMEWORK,
   sessionDetails: {},
@@ -44,6 +43,7 @@ const INITIAL_STATE = {
   visibleCommandMethod: null,
   isAwaitingMjpegStream: true,
   showSourceAttrs: false,
+  showActionSource: false,
   devices: null,
 };
 
@@ -246,9 +246,9 @@ const inspectorSlice = createSlice({
       };
     },
 
-    SET_SHOW_SOURCE_ACTIONS(state, action) {
+    SET_SHOW_ACTION_SOURCE(state, action) {
       state.inspector = {
-        ...state.inspector, showActionsSource: action.show
+        ...state.inspector, showActionSource: action.show
       };
     },
 

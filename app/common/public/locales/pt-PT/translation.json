@@ -291,7 +291,7 @@
   "setConnection": "Connection Settings",
   "deviceList": "Device List",
   "applicationList": "Application List",
-  "Show/Hide Source Actions": "Show/Hide Source Actions",
+  "showActionSource": "Show/Hide Action Source",
   "actionsType": "actionsType",
   "actionsName": "actionsName",
   "actionsActions": "actionsActions",
