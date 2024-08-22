@@ -288,7 +288,7 @@
   "propertiesY": "Y",
   "duplicateCapabilityNameError": "Набор возможностей с таким именем уже существует",
   "getCurrentDevices": "Get Current Devices",
-  "connectivitySetting": "Connectivity Setting",
+  "setConnection": "Connection Settings",
   "deviceList": "Device List",
   "applicationList": "Application List",
   "Show/Hide Source Actions": "Show/Hide Source Actions",

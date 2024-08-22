@@ -288,7 +288,7 @@
   "propertiesY": "Y",
   "duplicateCapabilityNameError": "A capability set with the same name already exists",
   "getCurrentDevices": "Get Current Devices",
-  "connectivitySetting": "Connectivity Setting",
+  "setConnection": "Connection Settings",
   "deviceList": "Device List",
   "applicationList": "Application List",
   "Show/Hide Source Actions": "Show/Hide Source Actions",

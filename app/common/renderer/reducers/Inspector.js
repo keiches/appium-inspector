@@ -65,7 +65,6 @@ import {
   SET_SESSION_DETAILS,
   SET_SESSION_TIME,
   SET_SHOW_BOILERPLATE,
-  SET_SHOW_SOURCE_ACTIONS,
   SET_SHOW_CENTROIDS,
   SET_SIRI_COMMAND_VALUE,
   SET_SOURCE_AND_SCREENSHOT,
@@ -84,6 +83,8 @@ import {
   UNSELECT_HOVERED_CENTROID,
   UNSELECT_HOVERED_ELEMENT,
   UNSELECT_TICK_ELEMENT,
+  SET_GESTURE_UPLOAD_ERROR,
+  SET_SHOW_ACTION_SOURCE,
   SET_DEVICE_LIST,
 } from '../actions/Inspector';
 import {SCREENSHOT_INTERACTION_MODE} from '../constants/screenshot';
@@ -104,7 +105,6 @@ const INITIAL_STATE = {
   isRecording: false,
   isSourceRefreshOn: true,
   showBoilerplate: false,
-  showActionsSource: false,
   recordedActions: [],
   actionFramework: DEFAULT_FRAMEWORK,
   sessionDetails: {},
@@ -131,6 +131,8 @@ const INITIAL_STATE = {
   visibleCommandMethod: null,
   isAwaitingMjpegStream: true,
   showSourceAttrs: false,
+  gestureUploadErrors: null,
+  showActionSource: false,
   devices: null,
 };
 
@@ -312,9 +314,6 @@ export default function inspector(state = INITIAL_STATE, action) {
 
     case SET_SHOW_BOILERPLATE:
       return {...state, showBoilerplate: action.show};
-
-    case SET_SHOW_SOURCE_ACTIONS:
-      return {...state, showActionsSource: action.show};
 
     case SET_SESSION_DETAILS: {
       const automationName = action.driver.client.capabilities.automationName;
@@ -662,6 +661,12 @@ export default function inspector(state = INITIAL_STATE, action) {
 
     case TOGGLE_REFRESHING_STATE:
       return {...state, isSourceRefreshOn: !state.isSourceRefreshOn};
+
+    case SET_GESTURE_UPLOAD_ERROR:
+      return {...state, gestureUploadErrors: action.errors};
+
+    case SET_SHOW_ACTION_SOURCE:
+      return {...state, showActionSource: action.show};
 
     case SET_DEVICE_LIST:
       return {...state, devices: action.devices};
