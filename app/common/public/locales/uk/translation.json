@@ -281,11 +281,6 @@
   "invalidCapType": "Недійсний тип можливості: {{type}}",
   "whitespaceDetected": "Текст починається та/або закінчується пробілом",
   "pCloudyCredentialsRequired": "Необхідні ім'я користувача та API ключ від pCloudy!",
-  "properties": "Properties",
-  "propertiesDescription": "Description",
-  "propertiesType": "Type",
-  "propertiesX": "X",
-  "propertiesY": "Y",
   "duplicateCapabilityNameError": "Набір можливостей з таким ім'ям вже існує",
   "getCurrentDevices": "Get Current Devices",
   "setConnection": "Connection Settings",
@@ -297,6 +292,11 @@
   "actionsActions": "actionsActions",
   "actionPropName": "actionPropName",
   "actionPropValues": "actionPropValues",
+  "properties": "Properties",
+  "propertiesDescription": "Description",
+  "propertiesType": "Type",
+  "propertiesX": "X",
+  "propertiesY": "Y",
   "startTesting": "Start Testing…",
   "stopTesting": "Stop Testing…"
 }

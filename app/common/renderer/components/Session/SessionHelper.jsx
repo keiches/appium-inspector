@@ -5,9 +5,9 @@ import {
 } from '@ant-design/icons';
 import {Button, Card, Checkbox, Col, Form, List, Menu, Row, Select, Table} from 'antd';
 
-import {ServerTypes} from '../../actions/Session';
 import SessionStyles from './Session.module.css';
 import InspectorStyles from '../Inspector/Inspector.module.css';
+import {SERVER_TYPES} from '../../constants/session-builder';
 import {Header} from 'antd/es/layout/layout';
 import {log} from '../../utils/logger';
 
@@ -50,9 +50,9 @@ const formatCapsLambdaTest = (caps) => {
 
 const getSessionInfo = (session, serverType) => {
   switch (serverType) {
-    case ServerTypes.browserstack:
+    case SERVER_TYPES.BROWSERSTACK:
       return `${session.id} — ${formatCapsBrowserstack(session.capabilities)}`;
-    case ServerTypes.lambdatest:
+    case SERVER_TYPES.LAMBDATEST:
       return `${session.id} - ${formatCapsLambdaTest(session.capabilities)}`;
     default:
       return `${session.id} — ${formatCaps(session.capabilities)}`;

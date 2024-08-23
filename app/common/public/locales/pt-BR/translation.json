@@ -294,9 +294,11 @@
   "actionsActions": "actionsActions",
   "actionPropName": "actionPropName",
   "actionPropValues": "actionPropValues",
-  "properties": "속성",
-  "propertiesDescription": "설명",
-  "propertiesType": "종류",
+  "properties": "Properties",
+  "propertiesDescription": "Description",
+  "propertiesType": "Type",
   "propertiesX": "X",
-  "propertiesY": "Y"
+  "propertiesY": "Y",
+  "startTesting": "Start Testing…",
+  "stopTesting": "Stop Testing…"
 }

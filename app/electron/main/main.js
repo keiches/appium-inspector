@@ -1,13 +1,7 @@
 import {app, dialog} from 'electron';
 import debug from 'electron-debug';
-import {existsSync} from 'fs';
-// import {randomUUID} from 'crypto';
-import {v4} from 'uuid';
-
-const randomUUID = () => {
-  const tokens = v4().split('-');
-  return tokens[2] + tokens[1] + tokens[0] + tokens[3] + tokens[4];
-};
+import {existsSync, promises} from 'fs';
+import {normalize} from 'path';
 
 // import {installExtensions} from './debug';
 import {getAppiumSessionFilePath, isDev} from './helpers';
@@ -20,11 +14,13 @@ import NodeDetector from './node-detector';
 // import {exec, spawn} from 'node:child_process';
 import {spawn} from 'child_process';
 import {join, resolve} from 'path';
-import {homedir, platform} from 'os';
+import {homedir, tmpdir, platform} from 'os';
 // import _logger from 'console';
 import {exec} from 'teen_process';
 import {log} from './logger';
 import {getDevices} from './device-manager';
+import generator from './test/generator';
+import {ROOT_PATH, TEMP_PATH, uuid} from './utils';
 // import {spawn} from './utils';
 
 // const log = console || _logger;
@@ -32,17 +28,17 @@ import {getDevices} from './device-manager';
 export let openFilePath = getAppiumSessionFilePath(process.argv, app.isPackaged);
 
 let server;
-let actionsTester;
+let actionTester;
 
 app.on('open-file', (event, filePath) => {
   openFilePath = filePath;
 });
 
 app.on('window-all-closed', () => {
-  if (actionsTester && !actionsTester.killed) {
+  if (actionTester && !actionTester.killed) {
     log.log('Terminate actions runner...');
-    actionsTester.kill('SIGTERM');
-    actionsTester = null;
+    actionTester.kill('SIGTERM');
+    actionTester = null;
   }
   if (server && !server.killed) {
     log.log('Terminate Appium server...');
@@ -67,13 +63,16 @@ async function spawn(cmd) {
 }
 */
 
-const checkEnvironments = (process.env.NODE_ENV === 'development') ? () => {
-  log.log(`----App Path> ${app.getAppPath()}`);
-  // NOTE: in renderer/preload, use "remote.app.getAppPath()"
-  log.log(`----Current Directory> ${__dirname}`);
-  log.log(`----HOME> ${homedir()}`);
-  log.log(`----WORKING_HOME> ${resolve(homedir(), '.aav')}`);
-  log.log(`----WORKING_HOME exists> ${existsSync(resolve(homedir(), '.aav'))}`);
+const checkEnvironments = (process.env.NODE_ENV === 'development') ? async () => {
+  log.log(`----app path: ${app.getAppPath()}`);
+  log.log(`----__dirname: ${__dirname}`);
+  log.log(`----Home> ${homedir()}`);
+  log.log(`----TEMP> ${tmpdir()}`);
+    log.log(`----root path: ${ROOT_PATH}`);
+  log.log(`----REAL_TEMP> ${await promises.realpath(tmpdir())}`);
+  log.log(`----REAL_TEMP> ${TEMP_PATH}`);
+  log.log(`----WORKING_HOME> ${join(homedir(), '.aav')}`);
+  log.log(`----WORKING_HOME exists> ${existsSync(join(homedir(), '.aav'))}`);
   log.log(`----APPIUM_HOME> ${process.env.APPIUM_HOME}`);
   log.log(`----APPIUM_HOME> ${existsSync(process.env.APPIUM_HOME)}`);
   log.log(`----JAVA_HOME> ${process.env.JAVA_HOME}`);
@@ -82,7 +81,7 @@ const checkEnvironments = (process.env.NODE_ENV === 'development') ? () => {
   log.log(`----JDK_HOME> ${existsSync(process.env.JDK_HOME)}`);
   log.log(`----ANDROID_HOME> ${process.env.ANDROID_HOME}`);
   log.log(`----ANDROID_HOME> ${existsSync(process.env.ANDROID_HOME)}`);
-} : () => {};
+} : async () => {};
 
 /**
  * Get Node.Js executable path
@@ -136,21 +135,21 @@ async function runAppiumServer() {
     (await exec('node', ['--version'])).stdout.split('\n')[0]
   }`);
 
-  const rootPath = process.env.NODE_ENV === 'development' ? app.getAppPath() : __dirname;
   // server = spawn(nodePath, [join(__dirname, '../server/build/lib/main.js')]/*, {
   // server = spawn(nodePath, ['../node_modules/appium/build/lib/main.js']/*, {
   server = spawn(nodePath, [
     // TODO: search appium server
-    // join(__dirname, '../node_modules/ap\pium/build/lib/main.js'),
     // 'C:\\opt\\nodejs\\node_modules\\appium\\index.js',
-    join(rootPath, 'packages', 'server', 'packages', 'appium', 'build', 'lib', 'main.js'),
+    join(ROOT_PATH, 'packages', 'server', 'packages', 'appium', 'build', 'lib', 'main.js'),
     // resolve(join('..', 'server', 'packages', 'appium')),
     // ../server/packages/appium
     'server',
     // '--show-config'
     '--config',
-    join(rootPath, 'configs', 'server.conf.js'),
+    join(ROOT_PATH, 'configs', 'server.conf.js'),
   ], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    // stdio: ['ignore', openSync('stdout_server.txt', 'w'), openSync('stderr_server.txt', 'w')],
     // stdio: ['pipe', 'inherit', 'inherit']
     // shell: true,
     // cwd: 'C:\\Test\\Path',
@@ -206,41 +205,110 @@ async function runAppiumServer() {
 }
 
 /**
- * Execute actions handler in background
- * @param {string} testId
+ * Execute action tester in background
  * @returns {Promise<void>}
  */
-async function runActionsTester(testId) {
-  log.log(`Compiling test runner "${testId}"...`);
-  const rootPath = process.env.NODE_ENV === 'development' ? app.getAppPath() : __dirname;
-  // #1 compile java to class
-  actionsTester = spawn('bash', [
-    // process.env.NODE_ENV === 'development' ? join(app.getAppPath(), 'libs', 'actions-tester', `compile.${platform() === 'win32' ? 'cmd' : 'sh'}`) : join(__dirname, '..', 'libs', 'actions-tester', `compile.${platform() === 'win32' ? 'cmd' : 'sh'}`),
-    join(rootPath, 'packages', 'actions-tester', `compile.${platform() === 'win32' ? 'cmd' : 'sh'}`),
-    testId,
-  ], {
+async function runActionTester() {
+  log.log('Running action tester...');
+  log.log(`----0>>> ${ROOT_PATH}`);
+  log.log(`----1>>> ${await promises.realpath(ROOT_PATH)}`);
+  log.log(`----2>>> ${join(ROOT_PATH, 'packages', 'actions-tester', `compile.${platform() === 'win32' ? 'cmd' : 'sh'}`)}`);
+
+  const {testId, copied} = await generator({
+    androidVersion: '12',
+    codes: `// Test Action #1
+driver.findElement(AppiumBy.xpath("//*[@class='android.widget.ImageView' and ./parent::*[@class='android.view.ViewGroup'] and (./preceding-sibling::* | ./following-sibling::*)[@text='Sauce Labs Backpack']]")).click();
+// new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("//*[@contentDescription='Add To Cart button']")));
+// Test Action #2
+driver.findElement(AppiumBy.xpath("//*[@contentDescription='Add To Cart button']")).click();
+// new WebDriverWait(driver, 30).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("//*[@id='back']")));
+// Test Action #3
+driver.findElement(AppiumBy.xpath("//*[@id='back']")).click();
+// Test Action #4
+driver.findElement(AppiumBy.xpath("//*[@class='android.widget.ImageView' and ./parent::*[@class='android.view.ViewGroup'] and (./preceding-sibling::* | ./following-sibling::*)[@text='Sauce Labs Bike Light']]")).click();
+driver.findElement(AppiumBy.xpath("//*[@class='android.widget.ImageView' and ./parent::*[@contentDescription='counter plus button']]")).click();
+driver.findElement(AppiumBy.xpath("//*[@contentDescription='Add To Cart button']")).click();
+driver.findElement(AppiumBy.xpath("//*[@class='android.widget.ImageView' and ./parent::*[@contentDescription='cart badge']]")).click();
+// new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("//*[@text='Proceed To Checkout']")));
+driver.findElement(AppiumBy.xpath("//*[@text='Proceed To Checkout']")).click();
+driver.findElement(AppiumBy.xpath("//*[@contentDescription='Username input field']")).click();
+// new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("(//*[@id='key_pos_0_5']/*[@class='android.widget.TextView'])[1]")));
+driver.findElement(AppiumBy.xpath("(//*[@id='key_pos_0_5']/*[@class='android.widget.TextView'])[1]")).click();
+driver.findElement(AppiumBy.xpath("(//*[@id='key_pos_0_8']/*[@class='android.widget.TextView'])[1]")).click();
+driver.findElement(AppiumBy.xpath("(//*[@id='key_pos_0_6']/*[@class='android.widget.TextView'])[1]")).click();
+// new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("//*[@contentDescription='Password input field']")));
+driver.findElement(AppiumBy.xpath("//*[@contentDescription='Password input field']")).click();
+driver.findElement(AppiumBy.xpath("//*[@class='android.widget.TextView' and ./parent::*[@id='key_pos_2_7']]")).click();
+driver.findElement(AppiumBy.xpath("//*[@class='android.widget.TextView' and ./parent::*[@id='key_pos_0_2']]")).click();
+driver.findElement(AppiumBy.xpath("//*[@text='Login' and ./parent::*[@contentDescription='Login button']]")).click();`,
+    remoteAddress: 'http://localhost:4723', // 'host:port'
+    capabilities: {
+      app: 'C:\\\\Users\\\\keiches\\\\Projects\\\\sptek\\\\appium-app-validator\\\\apks\\\\Android-MyDemoAppRN.1.3.0.build-244.apk',
+      appPackage: 'com.saucelabs.mydemoapp.rn',
+      appActivity: '.MainActivity',
+      deviceName: 'emulator-5554',
+    },
+  });
+  // eslint-disable-next-line
+  console.log('----0', testId, copied?.length ?? 0);
+
+  if (!testId) {
+    return;
+  }
+
+  /** @type {string} */
+  let command;
+  /** @type {string[]} */
+  let args;
+  /** @type {Record<string, any>} */
+  let options;
+  if (platform() === 'win32') {
+    command = 'cmd.exe';
+    args = [
+      '/c',
+      join(ROOT_PATH, 'packages', 'actions-tester', 'compile.cmd'),
+      testId,
+    ];
+  } else {
+    command = 'bash';
+    args = [
+      join(ROOT_PATH, 'packages', 'actions-tester', 'compile.sh'),
+      testId,
+    ];
+  }
+  options = {
     // detached: true, ==> actionsTester.unref();
     detached: true,
-    stdio: ['pipe', 'inherit', 'inherit']
+    stdio: ['ignore', 'pipe', 'pipe'],
+    // stdio: ['ignore', openSync('stdout_tester.txt', 'w'), openSync('stderr_tester.txt', 'w')],
+    // stdio: ['pipe', 'ignore', 'inherit']
+    // stdio: [Stdin, Stdout, Stderr];
     // shell: true,
     // cwd: 'C:\\Test\\Path',
-  });
+  };
 
-  actionsTester.stdout.on('data', (data) => {
+  // #1 compile java to class
+  actionTester = spawn(command, args, options);
+
+  actionTester.stdout?.setEncoding?.('utf-8');
+  actionTester.stdout.on('data', (chunk) => {
     // if we get here, all we know is that the proc exited
-    log.log(`[actions-tester] compiler stdout: ${data}`);
+    log.log(`[actions-tester] compiler stdout: ${chunk?.toString()}`);
     // exited with code 127 from signal SIGHUP
   });
 
-  actionsTester.stderr.on('data', (data) => {
-    log.error(`[actions-tester] compiler stderr: ${data}`);
+  actionTester.stderr?.setEncoding?.('utf-8');
+  actionTester.stderr.on('data', (chunk) => {
+    const content = Buffer.concat([chunk]).toString();
+    console.log('--------', content);
+    log.error(`[actions-tester] compiler stderr: ${chunk?.toString()}`);
   });
 
-  actionsTester.on('message', (message) => {
+  actionTester.on('message', (message) => {
     log.log('[actions-tester] compiler message:' + message);
   });
 
-  actionsTester.on('error', (err) => {
+  actionTester.on('error', (err) => {
     // This will be called with err being an AbortError if the controller aborts
     log.error('[actions-tester] compiler error:' + err.toString());
     dialog.showMessageBox({
@@ -250,27 +318,27 @@ async function runActionsTester(testId) {
     });
   });
 
-  actionsTester.on('disconnect', () => {
+  actionTester.on('disconnect', () => {
     log.warn('[actions-tester] compiler disconnect');
   });
 
-  actionsTester.on('close', (code, signal) => {
+  actionTester.on('close', (code, signal) => {
     // if we get here, we know that the process stopped outside our control
     // but with a 0 exit code
     // app.quit();
     log.log(`[actions-tester] compiler closed with code ${code} from signal ${signal}`);
   });
 
-  actionsTester.on('exit', (code, signal) => {
+  actionTester.on('exit', (code, signal) => {
     log.log(`[actions-tester] compiler existed with code ${code} from signal ${signal}`);
     if (signal === null) {
       log.log('Test runner compiled');
       // TODO: when compiling is done successfully, start running
       setTimeout(() => {
-        actionsTester.unref();
+        actionTester.unref();
         log.log('Starting test runner...');
         // #2 run class
-        actionsTester = spawn(join(__dirname, '..', 'libs', 'actions-tester', 'run'), [
+        actionTester = spawn(join(__dirname, '..', 'libs', 'actions-tester', 'run'), [
           testId,
         ], {
           // detached: true, ==> actionsTester.unref();
@@ -280,21 +348,21 @@ async function runActionsTester(testId) {
           // cwd: 'C:\\Test\\Path',
         });
 
-        actionsTester.stdout.on('data', (data) => {
+        actionTester.stdout.on('data', (data) => {
           // if we get here, all we know is that the proc exited
           log.log(`[actions-tester] runner stdout: ${data}`);
           // exited with code 127 from signal SIGHUP
         });
 
-        actionsTester.stderr.on('data', (data) => {
+        actionTester.stderr.on('data', (data) => {
           log.error(`[actions-tester] runner stderr: ${data}`);
         });
 
-        actionsTester.on('message', (message) => {
+        actionTester.on('message', (message) => {
           log.log('[actions-tester] message:' + message);
         });
 
-        actionsTester.on('error', (err) => {
+        actionTester.on('error', (err) => {
           // This will be called with err being an AbortError if the controller aborts
           log.error('[actions-tester] runner error:' + err.toString());
           dialog.showMessageBox({
@@ -304,18 +372,18 @@ async function runActionsTester(testId) {
           });
         });
 
-        actionsTester.on('disconnect', () => {
+        actionTester.on('disconnect', () => {
           log.warn('[actions-tester] runner disconnect');
         });
 
-        actionsTester.on('close', (code, signal) => {
+        actionTester.on('close', (code, signal) => {
           // if we get here, we know that the process stopped outside our control
           // but with a 0 exit code
           // app.quit();
           log.log(`[actions-tester] runner closed with code ${code} from signal ${signal}`);
         });
 
-        actionsTester.on('exit', (code, signal) => {
+        actionTester.on('exit', (code, signal) => {
           log.log(`[actions-tester] runner existed with code ${code} from signal ${signal}`);
           if (signal === null) {
             // TODO: when compiling is done successfully, start running
@@ -326,7 +394,7 @@ async function runActionsTester(testId) {
           }
         });
 
-        log.log(`[actions-tester] runner spawned: ${actionsTester.pid}`);
+        log.log(`[actions-tester] runner spawned: ${actionTester.pid}`);
       }, 1);
     } else {
       // TODO: send reasons about failed to compile
@@ -334,7 +402,7 @@ async function runActionsTester(testId) {
     }
   });
 
-  log.log(`[actions-tester] compiler spawned: ${actionsTester.pid}`);
+  log.log(`[actions-tester] compiler spawned: ${actionTester.pid}`);
 }
 
 // launchinfo for Windows, Linux
@@ -342,18 +410,19 @@ async function runActionsTester(testId) {
 // launchinfo for macOS
 app.on('ready', async () => {
   if (isDev) {
-    checkEnvironments();
+    await checkEnvironments();
     debug();
     // TODO: uncomment this after upgrading to Electron 15+
     // await installExtensions();
   }
+  await resolveNodePath();
 
   // @site: https://www.freecodecamp.org/korean/news/node-js-child-processes-everything-you-need-to-know-e69498fe970a/
   // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
   // await runAppiumServer();
 
   // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
-  await runActionsTester(randomUUID());
+  await runActionTester(uuid());
 
   await getDevices();
 

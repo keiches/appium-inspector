@@ -1,20 +1,15 @@
-// import {app} from 'electron';
 // import fs from 'fs';
 import * as path from 'path';
 const {join, extname} = path;
-// import {tmpdir} from 'os';
-// import {realpathSync} from 'fs';
-import {existsSync} from 'fs';
-// import {randomUUID, randomBytes} from 'crypto';
+import {tmpdir} from 'os';
+import {randomUUID} from 'crypto';
 // import {CaseConverterEnum, generateTemplateFiles} from 'generate-template-files';
 // import replace from '@stdlib/string-replace';
-import templateFile from 'template-file';
+import * as templateFile from 'template-file';
 const {render} = templateFile;
 import copy from 'recursive-copy';
-// import copy from 'cpx2';
 import through from 'through2';
-import {ROOT_PATH, TEMP_PATH, uuid} from '../utils.js';
-// import temporaryDirectory from 'temp-dir';
+import temporaryDirectory from 'temp-dir';
 
 // import {log} from '../logger';
 // import {temporaryDirectory} from '../utils';
@@ -93,7 +88,9 @@ function generator1(codes) {
 }
 */
 
-const TEMP_DIR = join(TEMP_PATH, 'aav');
+// const temporaryDirectory = await realpath(tmpdir());
+
+const TEMP_DIR = join(temporaryDirectory, 'aav');
 // const filename = join(TEMP_DIR, 'UnitTest.java');
 // let contents = '';
 
@@ -103,8 +100,8 @@ const TEMP_DIR = join(TEMP_PATH, 'aav');
  */
 function generator1(codes) {
   // #0 create template directory
-  const dest = join(TEMP_DIR, uuid().replace(/-/g, ''));
-  copy('./template', dest, {
+  const source = join(TEMP_DIR, randomUUID());
+  copy('./template', source, {
     overwrite: true,
     expand: true,
     dot: true,
@@ -190,73 +187,44 @@ function generator1(codes) {
   });*/
 }
 
-const ANDROID_VERSIONS = {
-  '9': '28',
-  '10': '29',
-  '11': '30',
-  '12': '31',
-  '12L': '32',
-  '13': '33',
-  '14': '34',
-  '15': '35',
-};
 
 /**
  * @param {Object} options
- * @param {string} options.androidVersion
  * @param {string} options.codes
  * @param {string} options.remoteAddress
  * @param {string} options.capabilities
- * @return {Promise<{dest: String; copied: CopyOperation[]|void}>}
+ * @return {Promise<{source: string;}>}
  */
-async function generator({androidVersion, codes, remoteAddress, capabilities}) {
+async function generator({codes, remoteAddress, capabilities}) {
   // #0 create template directory
-  const src = join(ROOT_PATH, 'packages', 'action-tester', 'template');
-  const dest = join(TEMP_DIR, uuid().replace(/-/g, ''));
-  console.log('[generator] src =', src, existsSync(src));
-  if (!existsSync(src)) {
-    throw new Error();
-  }
-  console.log('[generator] dest =', dest, existsSync(dest));
-  return await copy(join(ROOT_PATH, 'packages', 'action-tester', 'template'), dest, {
+  const source = join(TEMP_DIR, randomUUID());
+  return await copy('./template', source, {
     overwrite: true,
     expand: true,
     dot: true,
     filter: [
-      // '**/*',
-      // 'libs/**/*',
-      // '!libs/android-*.jar',
-      '!libs',
-      'src/**/*',
+      'libs',
+      'src',
       '*.cmd',
     ],
     /*rename(filePath) {
       return `${filePath}.orig`;
     },*/
     transform(src, dest, stats) {
-      switch (extname(src)) {
-        case '.java':
-          return through(function(chunk, enc, done) {
-            done(null, render(chunk.toString(), {
-              codes,
-              remoteAddress: remoteAddress ?? 'http://localhost:4723', // 'host:port'
-              capabilities: {
-                app: 'C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk',
-                appPackage: 'com.saucelabs.mydemoapp.rn',
-                appActivity: '.MainActivity',
-                deviceName: 'emulator-5554',
-                ...capabilities,
-              },
-            }));
-          });
-        case '.cmd':
-          return through(function(chunk, enc, done) {
-            done(null, render(chunk.toString(), {
-              android: {
-                version: `-${androidVersion}-api-${ANDROID_VERSIONS[androidVersion]}`,
-              },
-            }));
-          });
+      if (extname(src) === '.java') {
+        return through(function(chunk, enc, done) {
+          done(null, render(chunk.toString(), {
+            codes,
+            remoteAddress: remoteAddress ?? 'http://localhost:4723', // 'host:port'
+            capabilities: {
+              app: 'C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk',
+              appPackage: 'com.saucelabs.mydemoapp.rn',
+              appActivity: '.MainActivity',
+              deviceName: 'emulator-5554',
+              ...capabilities,
+            },
+          }));
+        });
       }
       return null;
     },
@@ -273,8 +241,7 @@ async function generator({androidVersion, codes, remoteAddress, capabilities}) {
     .then((results) => {
       log.info(results.length + ' file(s) copied');
       return {
-        testId: dest,
-        copied: results,
+        source,
       };
     })
     .catch((error) => {
@@ -282,9 +249,9 @@ async function generator({androidVersion, codes, remoteAddress, capabilities}) {
     });
 }
 
-/*
+export default generator;
+
 generator({
-  androidVersion: process.argv[2],
   codes: 'a = 1;',
   remoteAddress: 'http://localhost:4723', // 'host:port'
   capabilities: {
@@ -295,8 +262,5 @@ generator({
   },
 }).then((r) => {
   // eslint-disable-next-line
-  console.log('----0');
+  console.log('----');
 });
-*/
-
-export default generator;

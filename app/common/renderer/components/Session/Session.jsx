@@ -103,15 +103,14 @@ const Session = (props) => {
             items={[
               {
                 label: t('setConnection'),
-                key: 'local',
-                children: <SessionHelper {...props} />,
+                key: SERVER_TYPES.LOCAL,
+                children: <ServerTabCustom {...props} />,
               },
               {
                 label: t('Appium Server'),
                 key: SERVER_TYPES.REMOTE,
                 children: <ServerTabCustom {...props} />,
               },
-              {label: t('Appium Server'), key: 'remote', children: <ServerTabCustom {...props} />},
               ..._(visibleProviders).map((providerName) => {
                 const provider = CloudProviders[providerName];
                 if (!provider) {
@@ -132,7 +131,7 @@ const Session = (props) => {
           <AdvancedServerParams {...props} />
         </div>
 
-        {serverType === 'local' ? (<SessionHelper {...props} />) : (
+        {serverType === SERVER_TYPES.LOCAL ? (<SessionHelper {...props} />) : (
         <Tabs
           activeKey={tabKey}
           onChange={switchTabs}

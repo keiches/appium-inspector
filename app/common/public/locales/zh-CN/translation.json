@@ -281,11 +281,6 @@
   "invalidCapType": "无效的capability类型: {{type}}",
   "whitespaceDetected": "文本开始和/或以空格结束",
   "pCloudyCredentialsRequired": "需要 pCloudy 用户名和 api 密钥！",
-  "properties": "Properties",
-  "propertiesDescription": "Description",
-  "propertiesType": "Type",
-  "propertiesX": "X",
-  "propertiesY": "Y",
   "duplicateCapabilityNameError": "A capability set with the same name already exists",
   "getCurrentDevices": "Get Current Devices",
   "setConnection": "Connection Settings",
@@ -297,6 +292,11 @@
   "actionsActions": "actionsActions",
   "actionPropName": "actionPropName",
   "actionPropValues": "actionPropValues",
+  "properties": "Properties",
+  "propertiesDescription": "Description",
+  "propertiesType": "Type",
+  "propertiesX": "X",
+  "propertiesY": "Y",
   "startTesting": "Start Testing…",
   "stopTesting": "Stop Testing…"
 }
