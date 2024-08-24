@@ -223,11 +223,10 @@ async function generator({androidVersion, codes, remoteAddress, capabilities}) {
     expand: true,
     dot: true,
     filter: [
-      // '**/*',
-      // 'libs/**/*',
+      '**/*',
       // '!libs/android-*.jar',
-      '!libs',
-      'src/**/*',
+      '!**/libs/**/*',
+      // 'src/**/*',
       '*.cmd',
     ],
     /*rename(filePath) {
@@ -273,7 +272,7 @@ async function generator({androidVersion, codes, remoteAddress, capabilities}) {
     .then((results) => {
       log.info(results.length + ' file(s) copied');
       return {
-        testId: dest,
+        dest,
         copied: results,
       };
     })

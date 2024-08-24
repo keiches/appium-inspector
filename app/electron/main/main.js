@@ -21,6 +21,7 @@ import {log} from './logger';
 import {getDevices} from './device-manager';
 import generator from './test/generator';
 import {ROOT_PATH, TEMP_PATH, uuid} from './utils';
+import JavaDetector from './java-detector';
 // import {spawn} from './utils';
 
 // const log = console || _logger;
@@ -100,10 +101,33 @@ async function resolveNodePath() {
   }
 
   log.log(`Node is installed at: ${nodePath}. ${
-    (await exec('node', ['--version'])).stdout.split('\n')[0]
+    (await exec(nodePath, ['--version'])).stdout.split('\n')[0]
   }`);
 
   return nodePath;
+}
+
+/**
+ * Get Java executable path
+ * @returns {Promise<string>}
+ */
+async function resolveJavaPath() {
+  // const nodePath = await resolveExecutablePath('node');
+  const javaPath = await JavaDetector.detect();
+  if (!javaPath) {
+    log.error('java cannot be found');
+    await dialog.showMessageBox({
+      type: 'error',
+      buttons: ['OK'],
+      message: 'java cannot be found',
+    });
+  }
+
+  log.log(`Java is installed at: ${javaPath}. ${
+    (await exec(javaPath, ['--version'])).stdout.split('\n')[0]
+  }`);
+
+  return javaPath;
 }
 
 /**
@@ -204,17 +228,21 @@ async function runAppiumServer() {
   log.log(`[appium-server] spawned: ${server.pid}`);
 }
 
+function getClassPath() {
+  return `libs/android{{android.version}}.jar;libs/junit-platform-launcher-1.10.3.jar;libs/aspectjrt-1.9.22.1.jar;libs/aspectjtools-1.9.22.1.jar;libs/java-client-9.2.3.jar;libs/selenium-api-4.21.0.jar;libs/selenium-remote-driver-4.21.0.jar;libs/auto-service-annotations-1.1.1.jar;libs/guava-33.2.0-jre.jar;libs/failureaccess-1.0.2.jar;libs/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;libs/jsr305-3.0.2.jar;libs/checker-qual-3.42.0.jar;libs/j2objc-annotations-3.0.0.jar;libs/opentelemetry-semconv-1.25.0-alpha.jar;libs/opentelemetry-api-1.38.0.jar;libs/opentelemetry-context-1.38.0.jar;libs/opentelemetry-exporter-logging-1.38.0.jar;libs/opentelemetry-sdk-common-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-spi-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-1.38.0.jar;libs/opentelemetry-api-incubator-1.38.0-alpha.jar;libs/opentelemetry-sdk-trace-1.38.0.jar;libs/opentelemetry-sdk-1.38.0.jar;libs/opentelemetry-sdk-metrics-1.38.0.jar;libs/opentelemetry-sdk-logs-1.38.0.jar;libs/byte-buddy-1.14.15.jar;libs/selenium-http-4.21.0.jar;libs/failsafe-3.3.2.jar;libs/selenium-json-4.21.0.jar;libs/selenium-manager-4.21.0.jar;libs/selenium-os-4.21.0.jar;libs/commons-exec-1.4.0.jar;libs/selenium-support-4.21.0.jar;libs/gson-2.11.0.jar;libs/error_prone_annotations-2.27.0.jar;libs/slf4j-api-2.0.16.jar;libs/slf4j-simple-2.0.16.jar;libs/junit-jupiter-5.10.3.jar;libs/junit-jupiter-api-5.10.3.jar;libs/opentest4j-1.3.0.jar;libs/junit-platform-commons-1.10.3.jar;libs/apiguardian-api-1.1.2.jar;libs/junit-jupiter-params-5.10.3.jar;libs/junit-jupiter-engine-5.10.3.jar;libs/junit-platform-engine-1.10.3.jar;libs/unirest-java-3.14.5-standalone.jar;libs/httpclient-4.5.13.jar;libs/httpcore-4.4.13.jar;libs/commons-logging-1.2.jar;libs/httpmime-4.5.13.jar;libs/httpcore-nio-4.4.13.jar;libs/httpasyncclient-4.1.5.jar;libs/commons-codec-1.15.jar;`.replace(/libs\//g, `${ROOT_PATH}/libs/`);
+}
+
 /**
  * Execute action tester in background
  * @returns {Promise<void>}
  */
 async function runActionTester() {
-  log.log('Running action tester...');
+  log.log('Running action tester...', await resolveJavaPath());
   log.log(`----0>>> ${ROOT_PATH}`);
   log.log(`----1>>> ${await promises.realpath(ROOT_PATH)}`);
   log.log(`----2>>> ${join(ROOT_PATH, 'packages', 'actions-tester', `compile.${platform() === 'win32' ? 'cmd' : 'sh'}`)}`);
 
-  const {testId, copied} = await generator({
+  const {dest, copied} = await generator({
     androidVersion: '12',
     codes: `// Test Action #1
 driver.findElement(AppiumBy.xpath("//*[@class='android.widget.ImageView' and ./parent::*[@class='android.view.ViewGroup'] and (./preceding-sibling::* | ./following-sibling::*)[@text='Sauce Labs Backpack']]")).click();
@@ -250,9 +278,9 @@ driver.findElement(AppiumBy.xpath("//*[@text='Login' and ./parent::*[@contentDes
     },
   });
   // eslint-disable-next-line
-  console.log('----0', testId, copied?.length ?? 0);
+  console.log('----0', dest, copied?.length ?? 0);
 
-  if (!testId) {
+  if (!dest) {
     return;
   }
 
@@ -267,13 +295,13 @@ driver.findElement(AppiumBy.xpath("//*[@text='Login' and ./parent::*[@contentDes
     args = [
       '/c',
       join(ROOT_PATH, 'packages', 'actions-tester', 'compile.cmd'),
-      testId,
+      dest,
     ];
   } else {
     command = 'bash';
     args = [
       join(ROOT_PATH, 'packages', 'actions-tester', 'compile.sh'),
-      testId,
+      dest,
     ];
   }
   options = {
@@ -285,10 +313,22 @@ driver.findElement(AppiumBy.xpath("//*[@text='Login' and ./parent::*[@contentDes
     // stdio: [Stdin, Stdout, Stderr];
     // shell: true,
     // cwd: 'C:\\Test\\Path',
+    cwd: dest,
+    env: {
+      ...process.env,
+      CLASSPATH: 'libs/android{{android.version}}.jar;libs/junit-platform-launcher-1.10.3.jar;libs/aspectjrt-1.9.22.1.jar;libs/aspectjtools-1.9.22.1.jar;libs/java-client-9.2.3.jar;libs/selenium-api-4.21.0.jar;libs/selenium-remote-driver-4.21.0.jar;libs/auto-service-annotations-1.1.1.jar;libs/guava-33.2.0-jre.jar;libs/failureaccess-1.0.2.jar;libs/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;libs/jsr305-3.0.2.jar;libs/checker-qual-3.42.0.jar;libs/j2objc-annotations-3.0.0.jar;libs/opentelemetry-semconv-1.25.0-alpha.jar;libs/opentelemetry-api-1.38.0.jar;libs/opentelemetry-context-1.38.0.jar;libs/opentelemetry-exporter-logging-1.38.0.jar;libs/opentelemetry-sdk-common-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-spi-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-1.38.0.jar;libs/opentelemetry-api-incubator-1.38.0-alpha.jar;libs/opentelemetry-sdk-trace-1.38.0.jar;libs/opentelemetry-sdk-1.38.0.jar;libs/opentelemetry-sdk-metrics-1.38.0.jar;libs/opentelemetry-sdk-logs-1.38.0.jar;libs/byte-buddy-1.14.15.jar;libs/selenium-http-4.21.0.jar;libs/failsafe-3.3.2.jar;libs/selenium-json-4.21.0.jar;libs/selenium-manager-4.21.0.jar;libs/selenium-os-4.21.0.jar;libs/commons-exec-1.4.0.jar;libs/selenium-support-4.21.0.jar;libs/gson-2.11.0.jar;libs/error_prone_annotations-2.27.0.jar;libs/slf4j-api-2.0.16.jar;libs/slf4j-simple-2.0.16.jar;libs/junit-jupiter-5.10.3.jar;libs/junit-jupiter-api-5.10.3.jar;libs/opentest4j-1.3.0.jar;libs/junit-platform-commons-1.10.3.jar;libs/apiguardian-api-1.1.2.jar;libs/junit-jupiter-params-5.10.3.jar;libs/junit-jupiter-engine-5.10.3.jar;libs/junit-platform-engine-1.10.3.jar;libs/unirest-java-3.14.5-standalone.jar;libs/httpclient-4.5.13.jar;libs/httpcore-4.4.13.jar;libs/commons-logging-1.2.jar;libs/httpmime-4.5.13.jar;libs/httpcore-nio-4.4.13.jar;libs/httpasyncclient-4.1.5.jar;libs/commons-codec-1.15.jar;',
+    }
   };
 
   // #1 compile java to class
-  actionTester = spawn(command, args, options);
+  // actionTester = spawn(command, args, options);
+  actionTester = spawn('javac', [
+    '-verbose',
+    '-d out',
+    '--class-path %CLASSPATH%',
+    // `--class-path ${getClassPath()}`,
+    'src/test/java/com/sptek/appium/UnitTest.java',
+  ], options);
 
   actionTester.stdout?.setEncoding?.('utf-8');
   actionTester.stdout.on('data', (chunk) => {
@@ -339,13 +379,14 @@ driver.findElement(AppiumBy.xpath("//*[@text='Login' and ./parent::*[@contentDes
         log.log('Starting test runner...');
         // #2 run class
         actionTester = spawn(join(__dirname, '..', 'libs', 'actions-tester', 'run'), [
-          testId,
+          dest,
         ], {
           // detached: true, ==> actionsTester.unref();
           detached: true,
-          stdio: ['pipe', 'inherit', 'inherit']
+          stdio: ['pipe', 'inherit', 'inherit'],
           // shell: true,
           // cwd: 'C:\\Test\\Path',
+          cwd: dest,
         });
 
         actionTester.stdout.on('data', (data) => {
@@ -422,7 +463,7 @@ app.on('ready', async () => {
   // await runAppiumServer();
 
   // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
-  await runActionTester(uuid());
+  await runActionTester();
 
   await getDevices();
 
