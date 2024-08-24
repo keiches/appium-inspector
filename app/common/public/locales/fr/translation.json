@@ -103,7 +103,6 @@
   "Copy XML Source to Clipboard": "Copier la source XML dans le presse-papier",
   "Download Source as .XML File": "Télécharger la source comme fichier .XML",
   "Copy Attributes to Clipboard": "Copier les attributs dans le presse-papiers",
-  "quitSessionAndClose": "Quitter la session et fermer l'inspecteur",
   "Session Inactive": "Session inactive",
   "Keep Session Running": "Garder la session active",
   "Quit Session": "Quitter la session",

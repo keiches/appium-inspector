@@ -103,7 +103,6 @@
   "Copy XML Source to Clipboard": "Die XML-Quelle in der Zwischenablage kopieren",
   "Download Source as .XML File": "Download Source as .XML File",
   "Copy Attributes to Clipboard": "Copy Attributes to Clipboard",
-  "quitSessionAndClose": "Session beenden und Inspektor schließen",
   "Session Inactive": "Die Session ist inaktiv",
   "Keep Session Running": "Keep Session Running",
   "Quit Session": "Session beenden",

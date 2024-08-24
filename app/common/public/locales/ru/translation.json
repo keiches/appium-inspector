@@ -103,7 +103,6 @@
   "Copy XML Source to Clipboard": "Копировать XML в буфер обмена",
   "Download Source as .XML File": "Скачать исходный код как .XML файл",
   "Copy Attributes to Clipboard": "Копировать атрибуты в буфер обмена",
-  "quitSessionAndClose": "Выйти из сессии и закрыть инспектор",
   "Session Inactive": "Сессия неактивна",
   "Keep Session Running": "Оставить сессию запущенной",
   "Quit Session": "Покинуть сессию",

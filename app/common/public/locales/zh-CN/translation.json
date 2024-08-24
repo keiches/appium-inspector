@@ -103,7 +103,6 @@
   "Copy XML Source to Clipboard": "将 XML 源复制到剪贴板",
   "Download Source as .XML File": "下载源文件为 .XML 文件",
   "Copy Attributes to Clipboard": "复制属性到剪贴板",
-  "quitSessionAndClose": "退出会话和关闭检查器",
   "Session Inactive": "会话不活动",
   "Keep Session Running": "保持会话运行",
   "Quit Session": "退出会话",
