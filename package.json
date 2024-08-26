@@ -1,6 +1,6 @@
 {
   "name": "appium-inspector",
-  "version": "2024.6.1",
+  "version": "2024.8.1",
   "description": "An app inspector for use with an Appium server",
   "repository": {
     "type": "git",
@@ -72,7 +72,7 @@
     "@xmldom/xmldom": "0.8.10",
     "antd": "4.24.16",
     "appium-adb": "9.11.7",
-    "axios": "1.7.4",
+    "axios": "1.7.5",
     "bluebird": "3.7.2",
     "change-case": "5.4.4",
     "cheerio": "1.0.0-rc.12",

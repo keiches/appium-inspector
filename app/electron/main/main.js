@@ -1,7 +1,6 @@
 import {app, dialog} from 'electron';
 import debug from 'electron-debug';
 import {existsSync, promises} from 'fs';
-import {normalize} from 'path';
 
 // import {installExtensions} from './debug';
 import {getAppiumSessionFilePath, isDev} from './helpers';
