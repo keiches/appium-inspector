@@ -115,7 +115,7 @@ public class UnitTest {
         createReportFile(report, "report");
     }
 
-    private void initLoggers() {
+    private void initLoggers() throws IOException {
         Logger thisLogger = Logger.getLogger("");
         thisLogger.setLevel(Level.ALL);
         Arrays.stream(thisLogger.getHandlers()).forEach(handler -> {

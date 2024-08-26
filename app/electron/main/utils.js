@@ -9,6 +9,7 @@ import {tmpdir} from 'os';
 // import {isFunction} from 'lodash';
 import {log} from './logger';
 import {randomBytes, randomUUID} from 'crypto';
+import {join} from 'path';
 // import {v4} from 'uuid';
 
 // NOTE: in renderer/preload, use "remote.app.getAppPath()".
@@ -16,8 +17,17 @@ export const ROOT_PATH = process.env.NODE_ENV === 'development' ? app.getAppPath
 // appium-app-validator\client
 // appium-app-validator\client\dist\main
 
+export const PACKAGES_PATH = join(ROOT_PATH, 'packages');
+
+export const JRM_PATH = join(PACKAGES_PATH, 'jrm');
+
 // NOTE: normally use tmpdir is ok, but macOS/Linux does not return actual temp dir.
 export const TEMP_PATH = realpathSync(tmpdir(), {encoding: 'utf8'});
+
+export const TESTER_PATH = join(PACKAGES_PATH, 'action-tester');
+export const TESTER_TEMPLATE_PATH = join(TESTER_PATH, 'template');
+export const TESTER_LIBS_PATH = join(TESTER_PATH, 'libs');
+export const TESTER_TEMP_PATH = join(TEMP_PATH, 'aav');
 
 export const uuid = (typeof randomUUID === 'function') ? randomUUID : () => randomBytes(16).toString('hex');
 /*

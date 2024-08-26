@@ -4,10 +4,11 @@ import {resolveExecutablePath} from './utils';
 // Look for java
 export class JavaDetector {
   /**
+   * @param {string} postfix
    * @returns {Promise<string|null>}
    */
-  static async retrieveUsingSystemCall() {
-    const javaPath = await resolveExecutablePath('java');
+  static async retrieveUsingSystemCall(postfix = '') {
+    const javaPath = await resolveExecutablePath(`java${postfix}`);
 
     if (!javaPath) {
       log.debug(`Java binary not found in PATH: ${process.env.PATH}`);
@@ -19,10 +20,11 @@ export class JavaDetector {
   }
 
   /**
+   * @param {string} [postfix]
    * @returns {Promise<string|null>}
    */
-  static async detect() {
-    const javaPath = await JavaDetector.retrieveUsingSystemCall();
+  static async detect(postfix) {
+    const javaPath = await JavaDetector.retrieveUsingSystemCall(postfix);
     if (javaPath) {
       return javaPath;
     } else {

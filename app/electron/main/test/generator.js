@@ -13,7 +13,7 @@ const {render} = templateFile;
 import copy from 'recursive-copy';
 // import copy from 'cpx2';
 import through from 'through2';
-import {ROOT_PATH, TEMP_PATH, uuid} from '../utils.js';
+import {ROOT_PATH, TEMP_PATH, TESTER_TEMP_PATH, TESTER_TEMPLATE_PATH, uuid} from '../utils.js';
 // import temporaryDirectory from 'temp-dir';
 
 // import {log} from '../logger';
@@ -93,17 +93,13 @@ function generator1(codes) {
 }
 */
 
-const TEMP_DIR = join(TEMP_PATH, 'aav');
-// const filename = join(TEMP_DIR, 'UnitTest.java');
-// let contents = '';
-
 /**
  * @param {string} codes
  * @return {Promise<boolean>}
  */
 function generator1(codes) {
   // #0 create template directory
-  const dest = join(TEMP_DIR, uuid().replace(/-/g, ''));
+  const dest = join(TESTER_TEMP_PATH, uuid().replace(/-/g, ''));
   copy('./template', dest, {
     overwrite: true,
     expand: true,
@@ -190,7 +186,7 @@ function generator1(codes) {
   });*/
 }
 
-const ANDROID_VERSIONS = {
+export const ANDROID_VERSIONS = {
   '9': '28',
   '10': '29',
   '11': '30',
@@ -211,14 +207,14 @@ const ANDROID_VERSIONS = {
  */
 async function generator({androidVersion, codes, remoteAddress, capabilities}) {
   // #0 create template directory
-  const src = join(ROOT_PATH, 'packages', 'action-tester', 'template');
-  const dest = join(TEMP_DIR, uuid().replace(/-/g, ''));
+  const src = TESTER_TEMPLATE_PATH;
+  const dest = join(TESTER_TEMP_PATH, uuid().replace(/-/g, ''));
   console.log('[generator] src =', src, existsSync(src));
   if (!existsSync(src)) {
     throw new Error();
   }
   console.log('[generator] dest =', dest, existsSync(dest));
-  return await copy(join(ROOT_PATH, 'packages', 'action-tester', 'template'), dest, {
+  return await copy(TESTER_TEMPLATE_PATH, dest, {
     overwrite: true,
     expand: true,
     dot: true,
