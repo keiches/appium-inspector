@@ -13,13 +13,14 @@ const {render} = templateFile;
 import copy from 'recursive-copy';
 // import copy from 'cpx2';
 import through from 'through2';
-import {ROOT_PATH, TEMP_PATH, TESTER_TEMP_PATH, TESTER_TEMPLATE_PATH, uuid} from '../utils.js';
 // import temporaryDirectory from 'temp-dir';
 
-// import {log} from '../logger';
 // import {temporaryDirectory} from '../utils';
+import {log} from '../logger';
+import ANDROID_VERSIONS from './android-versions.js';
+import {TESTER_TEMP_PATH, TESTER_TEMPLATE_PATH, uuid} from '../utils.js';
 
-const log = console;
+// const log = console;
 
 /*
 export function copyTemplate(templateDir, targetDir) {
@@ -97,6 +98,7 @@ function generator1(codes) {
  * @param {string} codes
  * @return {Promise<boolean>}
  */
+/*
 function generator1(codes) {
   // #0 create template directory
   const dest = join(TESTER_TEMP_PATH, uuid().replace(/-/g, ''));
@@ -109,9 +111,9 @@ function generator1(codes) {
       'src',
       '*.cmd',
     ],
-    /*rename(filePath) {
+    /!*rename(filePath) {
       return `${filePath}.orig`;
-    },*/
+    },*!/
     transform(src, dest, stats) {
       if (extname(src) === '.java') {
         return through(function (chunk, enc, done) {
@@ -147,7 +149,7 @@ function generator1(codes) {
     });
   // #1 copy template files to target directory
   // #2 render main test class
-  /*const renderFile('./templates/src/test/java/com/sptek/appium/UnitTest.java', {
+  /!*const renderFile('./templates/src/test/java/com/sptek/appium/UnitTest.java', {
     codes,
     remoteAddress: '', // 'host:port'
     capabilities: {
@@ -183,37 +185,28 @@ function generator1(codes) {
       //
       return !!result;
     });
-  });*/
+  });*!/
 }
-
-export const ANDROID_VERSIONS = {
-  '9': '28',
-  '10': '29',
-  '11': '30',
-  '12': '31',
-  '12L': '32',
-  '13': '33',
-  '14': '34',
-  '15': '35',
-};
+*/
 
 /**
  * @param {Object} options
- * @param {string} options.androidVersion
+ * @param {string} options.targetVersion
  * @param {string} options.codes
  * @param {string} options.remoteAddress
  * @param {string} options.capabilities
- * @return {Promise<{dest: String; copied: CopyOperation[]|void}>}
+ * @return {Promise<{dest: String; copied: import('recursive-copy').CopyOperation[]|void}>}
  */
-async function generator({androidVersion, codes, remoteAddress, capabilities}) {
+async function generator(options) {
+  const {targetVersion, codes, remoteAddress, capabilities} = options;
   // #0 create template directory
   const src = TESTER_TEMPLATE_PATH;
   const dest = join(TESTER_TEMP_PATH, uuid().replace(/-/g, ''));
-  console.log('[generator] src =', src, existsSync(src));
+  log.log('[generator] src =', src, existsSync(src));
   if (!existsSync(src)) {
-    throw new Error();
+    throw new Error(`template directory (${src}) not found`);
   }
-  console.log('[generator] dest =', dest, existsSync(dest));
+  log.log('[generator] dest =', dest, existsSync(dest));
   return await copy(TESTER_TEMPLATE_PATH, dest, {
     overwrite: true,
     expand: true,
@@ -236,6 +229,7 @@ async function generator({androidVersion, codes, remoteAddress, capabilities}) {
               codes,
               remoteAddress: remoteAddress ?? 'http://localhost:4723', // 'host:port'
               capabilities: {
+                // FIXME: 아래 코드를 제거
                 app: 'C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk',
                 appPackage: 'com.saucelabs.mydemoapp.rn',
                 appActivity: '.MainActivity',
@@ -248,7 +242,7 @@ async function generator({androidVersion, codes, remoteAddress, capabilities}) {
           return through(function(chunk, enc, done) {
             done(null, render(chunk.toString(), {
               android: {
-                version: `-${androidVersion}-api-${ANDROID_VERSIONS[androidVersion]}`,
+                version: `-${targetVersion}-api-${ANDROID_VERSIONS[targetVersion]}`,
               },
             }));
           });

@@ -1,5 +1,6 @@
 /** code from https://github.com/appium/appium-adb/blob/master/lib/helpers.js */
-import fs from 'fs';
+// import fs from 'fs';
+import {system, fs, zip, util, tempDir } from '@appium/support';
 
 const APKS_EXTENSION = '.apks';
 const APK_EXTENSION = '.apk';

@@ -60,7 +60,7 @@ function buildSessionWindow() {
   });
 
   ipcMain.on('create-test-template', async (event, codes, ...args) => {
-    log.debug('[create-test-template]', ...args);
+    log.debug('[create-test-template]', '__', codes, '__', ...args);
     await generator({
       codes,
       ...args,

@@ -46,17 +46,25 @@ import java.util.logging.Logger;
 
 // @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 @DisplayName("Appium App Validator - JUnit 5 Unit Test")
-public class UnitTest {
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(UnitTest.class);
+public class IOSUnitTest {
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(IOSUnitTest.class);
     private String reportDirectory = "reports";
     private String reportFormat = "xml";
     private String testName = "Appium App Validator - JUnit 5 Unit Test";
 
-    protected AndroidDriver driver = null;
+    protected IOSDriver driver = null;
 
-    UiAutomator2Options options = new UiAutomator2Options();
+    XCUITestOptions options = new XCUITestOptions();
 
-    public String getSessionId(AndroidDriver driver){
+    private URL getURL() {
+        try {
+            return new URL("{{remoteAddress}}");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getSessionId(IOSDriver driver){
         String sessionId;
         try {
             sessionId = driver.getSessionId().toString();
@@ -143,93 +151,31 @@ public class UnitTest {
 
         System.out.println("Setting up Appium capabilities...");
         try {
-            /* FormatStrategy formatStrategy = PrettyFormatStrategy.newBuilder()
-                    .showThreadInfo(false)  // (Optional) Whether to show thread info or not. Default true
-                    .methodCount(0)         // (Optional) How many method line to show. Default 2
-                    .methodOffset(3)        // (Optional) Skips some method invokes in stack trace. Default 5
-                    //.logStrategy(customLog) // (Optional) Changes the log strategy to print out. Default LogCat
-                    .tag("My custom tag")   // (Optional) Custom tag for each log. Default PRETTY_LOGGER
-                    .build();
-
-            Logger.addLogAdapter(new AndroidLogAdapter(formatStrategy)); */
-
-            // Create LogManager object
-            /*LogManager logManager
-                    = LogManager.getLogManager();
-
-            Enumeration<String> listOfNames
-                    = logManager.getLoggerNames();
-
-            System.out.println("Earlier List of Logger Names: ");
-            while (listOfNames.hasMoreElements())
-                System.out.println(listOfNames.nextElement());
-
-            String LoggerName = "GFG";
-
-            Logger logger = Logger.getLogger(LoggerName);
-
-            logger.addHandler(new FileHandler("appium_logs.xml"));
-            System.out.println("Adding Logger: " + LoggerName);
-            logManager.addLogger(logger);*/
-
             // Capabilities
             options.setCapability("reportDirectory", reportDirectory);
             options.setCapability("reportFormat", reportFormat);
             options.setCapability("testName", testName);
-            // NOTE: already includes in UiAutomator2Options
-            // options.setPlatformName("Android"); // optional
-            // options.setAutomationName(AutomationName.ANDROID_UIAUTOMATOR2); // optional
-            options.setDeviceName("{{capabilities.deviceName}}"); // "emulator-5554");
-            // options.setApp(System.getProperty("user.dir") + "/apps/Android-MyDemoAppRN.1.3.0.build-244.apk");
-            options.setApp("{{capabilities.app}}"); // "C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk");
-            options.setAppPackage("{{capabilities.appPackage}}"); // "com.saucelabs.mydemoapp.rn");
-            options.setAppActivity("{{capabilities.appActivity}}"); // ".MainActivity");
-
-            driver = new AndroidDriver(new URL("{{remoteAddress}}"), options); // "{{remoteAddress}}"), options);
-            driver.setLogLevel(Level.INFO);
-            driver.addLogcatConnectionListener(new Runnable() {
-               public void run() {
-                   System.out.println("------");
-               }
-           });
-            // @site: https://github.com/SeleniumHQ/seleniumhq.github.io/blob/trunk//examples/java/src/test/java/dev/selenium/troubleshooting/LoggingTest.java#L40-L41
-            System.out.println("--- session(" + driver.getSessionId() + ") ready!");
-            initLoggers();
-        } catch (MalformedURLException e) {
-            System.out.println("ERROR: failed to set up Appium capabilities: " + e.getMessage());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // for iOS
-    // @BeforeEach
-    // @DisabledOnOs(OS.MAC)
-    @Disabled
-    public void beforeEach_iOS() throws MalformedURLException {
-        log.info("Setting up Appium App Validator!");
-
-        System.out.println("Setting up Appium capabilities...");
-        try {
-            XCUITestOptions options = new XCUITestOptions();
             // NOTE: already includes in XCUITestOptions
-            // options.setPlatformName("iOS");
-            // options.setAutomationName(AutomationName.IOS_XCUI_TEST);
-            options.setDeviceName("{{capabilities.deviceName}}"); // "iPhone 13");
+            // options.setPlatformName("iOS"); // optional
+            // options.setAutomationName(AutomationName.IOS_XCUI_TEST); // optional
+            options.setDeviceName("{{capabilities.deviceName}}"); // "iPhone 15 Pro Max");
+            options.setPlatformVersion("{{capabilities.platformVersion}}"); // "17.5");
+            options.setCapability("includeSafariInWebviews", true); // TODO:
+            options.setCapability("newCommandTimeout", 3600); // TODO:
+            options.setCapability("connectHardwareKeyboard", true); // TODO:
             // options.setApp(System.getProperty("user.dir") + "/apps/iOS-Simulator-MyRNDemoApp.1.3.0-162.zip");
             // options.setApp("C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apps\\iOS-Simulator-MyRNDemoApp.1.3.0-162.zip");
             options.setApp("{{capabilities.app}}");
 
-            IOSDriver iOSDriver = new IOSDriver(new URL("{{remoteAddress}}"), options);
-            // driver = iOSDriver;
-            iOSDriver.setLogLevel(Level.INFO);
-            iOSDriver.addSyslogConnectionListener(new Runnable() {
+            driver = new IOSDriver(this.getURL(), options);
+            driver.setLogLevel(Level.INFO);
+            driver.addSyslogConnectionListener(new Runnable() {
                 public void run() {
                     System.out.println("------");
                 }
             });
             // @site: https://github.com/SeleniumHQ/seleniumhq.github.io/blob/trunk//examples/java/src/test/java/dev/selenium/troubleshooting/LoggingTest.java#L40-L41
-            System.out.println("--- session(" + iOSDriver.getSessionId() + ") ready!");
+            System.out.println("--- session(" + driver.getSessionId() + ") ready!");
             initLoggers();
             // Thread.sleep(4000);
             // driver.findElements(AppiumBy.name("store item text")).get(0).click();
