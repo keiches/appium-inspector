@@ -86,6 +86,7 @@ export function setupMainWindow() {
   mainWindow[pathLoadMethod](mainPath);
 
   mainWindow.webContents.on('did-finish-load', () => {
+    rebuildMenus(mainWindow);
     splashWindow.destroy();
     mainWindow.show();
     mainWindow.focus();
@@ -110,11 +111,6 @@ export function setupMainWindow() {
         },
       },
     ]).popup(mainWindow);
-  });
-
-  i18n.on('initialized', () => {
-    rebuildMenus(mainWindow);
-    i18n.off('initialized');
   });
 
   i18n.on('languageChanged', async (languageCode) => {
