@@ -1,6 +1,6 @@
 import {app, dialog} from 'electron';
 import debug from 'electron-debug';
-import {existsSync, openSync, promises} from 'fs';
+import {openSync, promises} from 'fs';
 
 // import {installExtensions} from './debug';
 import {getAppiumSessionFilePath, isDev} from './helpers';
@@ -384,7 +384,7 @@ app.on('ready', async () => {
 
   // @site: https://www.freecodecamp.org/korean/news/node-js-child-processes-everything-you-need-to-know-e69498fe970a/
   // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
-  // server = await runAppiumServer();
+  // serverProcess = await runAppiumServer();
 
   // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
   testerProcess = await runActionTester();
