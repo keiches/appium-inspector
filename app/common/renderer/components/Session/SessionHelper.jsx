@@ -66,8 +66,8 @@ const defaultCapabilities = {
   // "appium:deviceName": "emulator-5554",
   'appium:noReset': false,
   // "appium:udid": "emulator-5554",
+  // "appium:app": join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
   // "appium:appPackage": "com.saucelabs.mydemoapp.rn",
-  // "appium:app": "\"C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk\"",
   // "appium:appActivity": ".MainActivity"
   'appium:fullReset': false,
   'appium:printPageSourceOnFindFailure': true,
@@ -242,36 +242,36 @@ const SessionHelper = (props) => {
   const dataSourceApplications = [
     {
       key: '1',
-      package: 'com.saucelabs.mydemoapp.rn',
       platform: {
         name: 'Android',
         icon: AndroidOutlined,
       },
-      app: 'C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk',
+      app: 'apps/Android-MyDemoAppRN.1.3.0.build-244.apk',
+      package: 'com.saucelabs.mydemoapp.rn',
       activity: '.MainActivity',
       version: '384.0.150',
       status: 'Ready',
     },
     {
       key: '2',
-      package: 'com.sptek.mydemoapp',
       platform: {
         name: 'iOS',
         icon: AppleOutlined,
       },
-      app: 'C:\\Users\\keiches\\Projects\\appium\\ipas\\Android-MyDemoAppRN.1.3.0.build-244.zip',
+      app: 'apps/Android-MyDemoAppRN.1.3.0.build-244.zip',
+      package: 'com.saucelabs.mydemoapp.rn',
       activity: '.MainActivity',
       version: '23.6.7',
       status: 'Ready',
     },
     {
       key: '3',
-      package: 'com.google.android.calendar',
       platform: {
         name: 'Android',
         icon: AndroidOutlined,
       },
-      app: 'C:\\Users\\keiches\\Projects\\appium\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk',
+      app: 'apps/Android-MyDemoAppRN.1.3.0.build-244.apk',
+      appPackage: 'com.saucelabs.mydemoapp.rn',
       activity: '.MainActivity',
       version: '12.3.2',
       status: 'Ready',

@@ -277,7 +277,7 @@ generator({
   codes: 'a = 1;',
   remoteAddress: 'http://localhost:4723', // 'host:port'
   capabilities: {
-    app: 'C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk',
+    app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
     appPackage: 'com.saucelabs.mydemoapp.rn',
     appActivity: '.MainActivity',
     deviceName: 'emulator-5554',

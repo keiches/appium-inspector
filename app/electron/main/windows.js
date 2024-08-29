@@ -13,6 +13,7 @@ import {rebuildMenus} from './menus';
 import {log} from './logger';
 
 import generator from './test/generator';
+import {ROOT_PATH} from './utils';
 
 const mainPath = isDev
   ? process.env.ELECTRON_RENDERER_URL
@@ -67,13 +68,13 @@ function buildSessionWindow() {
     await generator({
       codes,
       ...args,
-      remoteAddress: 'http://localhost:4723', // 'host:port'
       capabilities: {
-        app: 'C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk',
+        deviceName: 'emulator-5554',
+        app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
         appPackage: 'com.saucelabs.mydemoapp.rn',
         appActivity: '.MainActivity',
-        deviceName: 'emulator-5554',
       },
+      remoteAddress: 'http://localhost:4723', // 'host:port'
     });
   });
 

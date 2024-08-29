@@ -1,5 +1,7 @@
 import generator from '../generator.js';
 import fs from 'fs';
+import {join} from 'path';
+import {ROOT_PATH} from '../../utils.js';
 // import commandLineArgs from 'command-line-args';
 
 /*
@@ -34,13 +36,13 @@ try {
   await generator({
     androidVersion: process.argv[2],
     codes: 'a = 2;',
-    remoteAddress: 'http://localhost:4723', // 'host:port'
     capabilities: {
-      app: 'C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk',
+      deviceName: 'emulator-5554',
+      app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
       appPackage: 'com.saucelabs.mydemoapp.rn',
       appActivity: '.MainActivity',
-      deviceName: 'emulator-5554',
     },
+    remoteAddress: 'http://localhost:4723', // 'host:port'
   });
   // eslint-disable-next-line
   console.log('----1');

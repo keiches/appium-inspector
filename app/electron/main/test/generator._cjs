@@ -118,13 +118,13 @@ function generator1(codes) {
         return through(function (chunk, enc, done) {
           done(null, render(chunk.toString(), {
             codes,
-            remoteAddress: 'http://localhost:4723', // 'host:port'
             capabilities: {
-              app: 'C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk',
+              deviceName: 'emulator-5554',
+              app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
               appPackage: 'com.saucelabs.mydemoapp.rn',
               appActivity: '.MainActivity',
-              deviceName: 'emulator-5554',
             },
+            remoteAddress: 'http://localhost:4723', // 'host:port'
           }));
         });
       }
@@ -215,14 +215,13 @@ async function generator({codes, remoteAddress, capabilities}) {
         return through(function(chunk, enc, done) {
           done(null, render(chunk.toString(), {
             codes,
-            remoteAddress: remoteAddress ?? 'http://localhost:4723', // 'host:port'
             capabilities: {
-              app: 'C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk',
+              app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
               appPackage: 'com.saucelabs.mydemoapp.rn',
               appActivity: '.MainActivity',
-              deviceName: 'emulator-5554',
               ...capabilities,
             },
+            remoteAddress: remoteAddress ?? 'http://localhost:4723', // 'host:port'
           }));
         });
       }
@@ -255,10 +254,10 @@ generator({
   codes: 'a = 1;',
   remoteAddress: 'http://localhost:4723', // 'host:port'
   capabilities: {
-    app: 'C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk',
+    deviceName: 'emulator-5554',
+    app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
     appPackage: 'com.saucelabs.mydemoapp.rn',
     appActivity: '.MainActivity',
-    deviceName: 'emulator-5554',
   },
 }).then((r) => {
   // eslint-disable-next-line
