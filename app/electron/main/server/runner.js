@@ -21,9 +21,12 @@ async function runner() {
     stdio: ['pipe', 'inherit', 'inherit'],
   });*/
   const nodePath = await resolveNodePath();
-  const fileIndex = toFormattedString(new Date());
+  const controller = new AbortController();
+  const { signal } = controller;
+  const fileIndex = (new Date()).toFormattedString();
   /** @type {import('teen_process').SubProcessOptions} */
   const spawnOptions = {
+    signal,
     stdio: ['ignore', 'pipe', 'pipe'],
     // stdio: ['pipe', 'inherit', 'inherit']
     // shell: true,
@@ -53,15 +56,15 @@ async function runner() {
   ], spawnOptions);
 
   child.stdout?.setEncoding?.('utf-8');
-  spawnOptions.stdio[1] === 'pipe' && child.stdout.on('data', (data) => {
+  spawnOptions.stdio[1] === 'pipe' && child.stdout.on('data', (/** @type {Buffer} */ data) => {
     // if we get here, all we know is that the proc exited
-    log.log(`[appium-server] stdout: ${data}`);
+    log.log(`[appium-server] stdout: ${data.toString()}`);
     // exited with code 127 from signal SIGHUP
   });
 
   child.stderr?.setEncoding?.('utf-8');
-  spawnOptions.stdio[2] === 'pipe' && child.stderr.on('data', (data) => {
-    log.error(`[appium-server] stderr: ${data}`);
+  spawnOptions.stdio[2] === 'pipe' && child.stderr.on('data', (/** @type {Buffer} */ data) => {
+    log.error(`[appium-server] stderr: ${data.toString('utf-8')}`);
   });
 
   child.on('message', (message) => {

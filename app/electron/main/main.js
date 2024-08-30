@@ -72,9 +72,12 @@ async function runAppiumServer() {
     stdio: ['pipe', 'inherit', 'inherit'],
   });*/
   const nodePath = await resolveNodePath();
+  const controller = new AbortController();
+  const { signal } = controller;
   const fileIndex = toFormattedString(new Date());
   /** @type {import('teen_process').SubProcessOptions} */
   const options = {
+    signal,
     // stdio: ['ignore', 'pipe', 'pipe'],
     stdio: ['ignore', openSync(`stdout_client_${fileIndex}.txt`, 'w'), openSync(`stderr_client_${fileIndex}.txt`, 'w')],
     // stdio: ['pipe', 'inherit', 'inherit']
@@ -104,15 +107,15 @@ async function runAppiumServer() {
   ], options);
 
   serverProcess.stdout?.setEncoding?.('utf-8');
-  options.stdio[1] === 'pipe' && serverProcess.stdout.on('data', (data) => {
+  options.stdio[1] === 'pipe' && serverProcess.stdout.on('data', (/** @type {Buffer} */ chunk) => {
     // if we get here, all we know is that the proc exited
-    log.log(`[appium-server] stdout: ${data}`);
+    log.log(`[appium-server] stdout: ${chunk.toString('utf-8')}`);
     // exited with code 127 from signal SIGHUP
   });
 
   serverProcess.stderr?.setEncoding?.('utf-8');
-  options.stdio[2] === 'pipe' && serverProcess.stderr.on('data', (data) => {
-    log.error(`[appium-server] stderr: ${data}`);
+  options.stdio[2] === 'pipe' && serverProcess.stderr.on('data', (/** @type {Buffer} */ chunk) => {
+    log.error(`[appium-server] stderr: ${chunk.toString('utf-8')}`);
   });
 
   serverProcess.on('message', (message) => {
@@ -243,14 +246,14 @@ driver.findElement(AppiumBy.xpath("//*[@text='Login' and ./parent::*[@contentDes
   ], options);
 
   testerProcess.stdout?.setEncoding?.('utf-8');
-  options.stdio[1] === 'pipe' && testerProcess.stdout.on('data', (chunk) => {
+  options.stdio[1] === 'pipe' && testerProcess.stdout.on('data', (/** @type {Buffer} */ chunk) => {
     // if we get here, all we know is that the proc exited
     log.log(`[actions-tester] compiler stdout: ${chunk?.toString()}`);
     // exited with code 127 from signal SIGHUP
   });
 
   testerProcess.stderr?.setEncoding?.('utf-8');
-  options.stdio[2] === 'pipe' && testerProcess.stderr.on('data', (chunk) => {
+  options.stdio[2] === 'pipe' && testerProcess.stderr.on('data', (/** @type {Buffer} */ chunk) => {
     /*const content = Buffer.concat([chunk]).toString();
     console.log('--------', content);*/
     log.error(`[actions-tester] compiler stderr: ${chunk?.toString()}`);
@@ -310,15 +313,15 @@ driver.findElement(AppiumBy.xpath("//*[@text='Login' and ./parent::*[@contentDes
         ], options);
 
         testerProcess.stdout?.setEncoding?.('utf-8');
-        options.stdio[1] === 'pipe' && testerProcess.stdout.on('data', (data) => {
+        options.stdio[1] === 'pipe' && testerProcess.stdout.on('data', (/** @type {Buffer} */ chunk) => {
           // if we get here, all we know is that the proc exited
-          log.log(`[actions-tester] runner stdout: ${data}`);
+          log.log(`[actions-tester] runner stdout: ${chunk.toString('utf-8')}`);
           // exited with code 127 from signal SIGHUP
         });
 
         testerProcess.stderr?.setEncoding?.('utf-8');
-        options.stdio[2] === 'pipe' && testerProcess.stderr.on('data', (data) => {
-          log.error(`[actions-tester] runner stderr: ${data}`);
+        options.stdio[2] === 'pipe' && testerProcess.stderr.on('data', (/** @type {Buffer} */ chunk) => {
+          log.error(`[actions-tester] runner stderr: ${chunk.toString('utf-8')}`);
         });
 
         testerProcess.on('message', (message) => {

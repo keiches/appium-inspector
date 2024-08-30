@@ -30,9 +30,12 @@ async function runner(options) {
 
   const {targetVersion} = options;
   const {java: javaPath, javac: javacPath} = await resolveJavaExecutePaths();
+  const serverController = new AbortController();
+  const { signal } = serverController;
   const fileIndex = (new Date()).toFormattedString();
   /** @type {import('teen_process').SubProcessOptions} */
   const spawnOptions = {
+    signal,
     // detached: true, ==> actionsTester.unref();
     detached: true,
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -111,6 +114,9 @@ async function runner(options) {
         log.log('Starting test runner...');
         // #2 run class
         isDev && (spawnOptions.stdio = ['ignore', openSync(`stdout_test_${fileIndex}.txt`, 'w'), openSync(`stderr_test_${fileIndex}.txt`, 'w')]);
+        const runnerController = new AbortController();
+        const { signal } = runnerController;
+        spawnOptions.signal = signal;
         // TODO: "teen_process::SubProcess"로 개선하자!
         child = spawn(javaPath, [
           // isDev ? '-verbose' : '',
