@@ -2,9 +2,8 @@ import {join} from 'path';
 import {spawn} from 'child_process';
 // import commandLineArgs from 'command-line-args';
 
-// import {spawn} from '../../utils.js';
+import {getExecutableName} from '../../../utils.js';
 import ANDROID_VERSIONS from '../android-versions.js';
-import {getExecutableName} from '../../utils.js';
 
 const log = console;
 

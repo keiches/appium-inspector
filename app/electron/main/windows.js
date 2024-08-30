@@ -1,19 +1,12 @@
 import {BrowserWindow, Menu, dialog, ipcMain, webContents} from 'electron';
 import settings from 'electron-settings';
 import {join} from 'path';
-import {createServer} from 'http';
-// import express from 'express';
-import {randomBytes} from 'crypto';
 
 import {PREFERRED_LANGUAGE} from '../../common/shared/setting-defs';
 import i18n from './i18next';
 import {openFilePath} from './main';
 import {APPIUM_SESSION_EXTENSION, isDev} from './helpers';
 import {rebuildMenus} from './menus';
-import {log} from './logger';
-
-import generator from './test/generator';
-import {ROOT_PATH} from './utils';
 
 const mainPath = isDev
   ? process.env.ELECTRON_RENDERER_URL
@@ -63,21 +56,6 @@ function buildSessionWindow() {
     }
   });
 
-  ipcMain.on('create-test-template', async (event, codes, ...args) => {
-    log.debug('[create-test-template]', '__', codes, '__', ...args);
-    await generator({
-      codes,
-      ...args,
-      capabilities: {
-        deviceName: 'emulator-5554',
-        app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
-        appPackage: 'com.saucelabs.mydemoapp.rn',
-        appActivity: '.MainActivity',
-      },
-      remoteAddress: 'http://localhost:4723', // 'host:port'
-    });
-  });
-
   return window;
 }
 
@@ -94,51 +72,6 @@ export function setupMainWindow() {
     splashWindow.destroy();
     mainWindow.show();
     mainWindow.focus();
-
-    const server = createServer(function (req, res) {
-      const port = randomBytes(16).toString('hex');
-      ipcMain.once(port, function (ev, status, head, body) {
-        res.writeHead(status, head);
-        res.end(body);
-      });
-      window.webContents.send('request', req, port);
-    });
-    const server1 = createServer(function (req, res) {
-      log.log(req.url);
-      if (req.url === '/123') {
-        // res.writeHead(200, {'content-type':'text/html; charset=utf-8`};
-        res.write('ah, you send 123.');
-        res.end();
-      } else {
-        const remoteAddress = res.socket.remoteAddress;
-        const remotePort = res.socket.remotePort;
-        // res.writeHead(200, {'content-type':'text/html; charset=utf-8`};
-        res.end(`Your IP address is ${remoteAddress} and your source port is ${remotePort}.`);
-      }
-    });
-
-    /*const server2 = express();
-    server2.get('/', (req, res) => {
-      return res.send('메인 페이지');
-    });
-
-    server2.get('/', (req, res) => {
-      return res.send('로그인 페이지');
-    });
-
-    server2.listen(8080, () => {
-      log.log('express server running on port 8080');
-    });*/
-
-    server.listen(8000, () => {
-      log.log('http server running on port #8000');
-    });
-
-    server1.listen(8001, () => {
-      log.log('http server running on port #8001');
-    });
-
-    log.log('http://localhost:8000/');
 
     if (isDev) {
       mainWindow.openDevTools();
@@ -184,6 +117,8 @@ export function setupMainWindow() {
       });
     });
   });
+
+  return mainWindow;
 }
 
 export function launchNewSessionWindow() {

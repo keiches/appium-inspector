@@ -3,9 +3,9 @@ import {openSync} from 'fs';
 import {homedir} from 'os';
 import {join, resolve} from 'path';
 
-import {log} from '../logger';
-import {PACKAGES_PATH, ROOT_PATH, resolveNodePath, spawn, toFormattedString} from '../utils';
-import {isDev} from '../helpers';
+import {isDev} from '../../helpers';
+import {log} from '../../logger';
+import {PACKAGES_PATH, ROOT_PATH, resolveNodePath, spawn} from '../../utils';
 
 /**
  * Execute Appium server in background

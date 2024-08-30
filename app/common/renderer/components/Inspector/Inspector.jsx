@@ -344,7 +344,7 @@ const Inspector = (props) => {
                   </div>
                   <div
                     id="selectedElementContainer"
-                    className={`${InspectorStyles['interaction-tab-container']} ${InspectorStyles['element-detail-container']} action-col`}
+                    className={`${InspectorStyles['interaction-tab-container']} ${InspectorStyles['element-detail-container'] ?? ''} action-col`}
                   >
                     <Card
                       title={

@@ -1,7 +1,7 @@
-import generator from '../generator.js';
 import fs from 'fs';
 import {join} from 'path';
-import {ROOT_PATH} from '../../utils.js';
+import generator from '../generator.js';
+import {ROOT_PATH} from '../../../utils.js';
 // import commandLineArgs from 'command-line-args';
 
 /*

@@ -2,11 +2,12 @@ import {dialog} from 'electron';
 import {openSync} from 'fs';
 import {join} from 'path';
 
-import ANDROID_VERSIONS from './android-versions.js';
-import {log} from '../logger.js';
-import {isDev} from '../helpers.js';
-import {JRM_PATH, TESTER_LIBS_PATH, TESTER_PATH, spawn, resolveJavaExecutePaths} from '../utils.js';
-import generator from './generator.js';
+import {isDev} from '../../helpers';
+import {log} from '../../logger';
+import {JRM_PATH, TESTER_LIBS_PATH, TESTER_PATH, spawn} from '../../utils';
+import ANDROID_VERSIONS from './android-versions';
+import generator from './generator';
+import {resolveJavaExecutePaths} from '../index.js';
 
 /**
  * Generate test template project and execute action tester in background
@@ -15,7 +16,7 @@ import generator from './generator.js';
  * @param {string} options.codes
  * @param {string} options.capabilities
  * @param {string} [options.remoteAddress]
- * @returns {Promise<ChildProcess|import('teen_process').SubProcess|undefined>}
+ * @returns {Promise<import('child_process').ChildProcess|import('teen_process').SubProcess|undefined>}
  */
 async function runner(options) {
   log.log('Starting action tester with', options);

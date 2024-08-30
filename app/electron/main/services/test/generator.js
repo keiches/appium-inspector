@@ -15,10 +15,10 @@ import copy from 'recursive-copy';
 import through from 'through2';
 // import temporaryDirectory from 'temp-dir';
 
+import {log} from '../../logger';
+import {TESTER_TEMP_PATH, TESTER_TEMPLATE_PATH, uuid} from '../../utils';
 // import {temporaryDirectory} from '../utils';
-import {log} from '../logger';
-import ANDROID_VERSIONS from './android-versions.js';
-import {TESTER_TEMP_PATH, TESTER_TEMPLATE_PATH, uuid} from '../utils.js';
+import ANDROID_VERSIONS from './android-versions';
 
 // const log = console;
 

@@ -5,7 +5,7 @@ import {
   PicRightOutlined,
   FormOutlined,
   EditOutlined,
-  DeleteOutlined, PlayCircleOutlined, StopOutlined
+  DeleteOutlined, PlayCircleOutlined, StopOutlined, TagOutlined
 } from '@ant-design/icons';
 import {Button, Card, Col, Descriptions, Divider, Layout, List, Row, Select, Space, Spin, Table, Tooltip} from 'antd';
 import hljs from 'highlight.js';
@@ -517,12 +517,12 @@ const Recorder = (props) => {
     return str;
   };
 
-  const onPlayActions = useCallback(() => {
+  const onStartTesting = useCallback(() => {
     setIsActionsPlayed(true);
-    ipcRenderer.send('create-test-template', actionCode());
+    ipcRenderer.send('start-test', actionCode());
   }, []);
 
-  const onStopActions = useCallback(() => {
+  const onStopTesting = useCallback(() => {
     setIsActionsPlayed(false);
   }, []);
 
@@ -573,7 +573,7 @@ const Recorder = (props) => {
                       disabled={(recordedActions.length === 0) || isActionsPlayed}
                       icon={<PlayCircleOutlined />}
                       type={BUTTON.DEFAULT}
-                      onClick={onPlayActions}
+                      onClick={onStartTesting}
                     />
                   </Tooltip>
                   <Tooltip title={t('stopTesting')}>
@@ -581,7 +581,7 @@ const Recorder = (props) => {
                       disabled={(recordedActions.length === 0) || (!isActionsPlayed)}
                       icon={<StopOutlined />}
                       type={BUTTON.DEFAULT}
-                      onClick={onStopActions}
+                      onClick={onStopTesting}
                     />
                   </Tooltip>
                 </Button.Group>
@@ -659,73 +659,83 @@ const Recorder = (props) => {
   };
 
   return (
-    <Card
-      title={
-        <span>
-          <CodeOutlined /> {t('Recorder')}
-        </span>
-      }
-      className={InspectorStyles['interaction-tab-card']}
-      extra={actionBar()}
-    >
-      {showActionSource ? (!recordedActions.length ? (
-          <div className={InspectorStyles['no-recorded-actions']}>
-            {t('enableRecordingAndPerformActions')}
-          </div>
-        ) : (
-          <pre className={InspectorStyles['recorded-code']}>
-            <code dangerouslySetInnerHTML={{__html: code(false)}} />
-          </pre>
-        )
-      ) : (
-        <Space className={InspectorStyles.spaceContainer} direction="vertical" size="middle">
-          <Layout hasSider>
-            <Layout.Content style={contentStyle}>
-              <Table
-                columns={columnsActions}
-                dataSource={dataSourceActions}
-                size="small"
-                scroll={{x: 'max-content'}}
-                pagination={false}
-                /*rowSelection={{
-                  /!*type: 'radio',
-                  getCheckboxProps: (_record) => {
-                    return {
-                      style: {
-                        display: 'none',
-                      },
-                    };
-                  },*!/
-                  renderCell() {
-                    // .ant-table-selection-column { display: none; } 필요
-                    return null;
-                  },
-                  selectedRowKeys: actionSelect.selectedRowKeys
-                }}*/
-                onRow={onActionsTableRow}
-              />
-            </Layout.Content>
-            <Sider style={siderStyle} collapsible={false} width="25%">
-              <Table
-                columns={columnsProperties}
-                dataSource={dataSourceProperties}
-                size="small"
-                scroll={{x: 'max-content'}}
-                pagination={false}
-                onRow={onPropertiesTableRow}
-              />
-              {/* <Divider />
-              <Descriptions title={t('properties')} size="small" bordered column="sm">
-                <Descriptions.Item span={3} label={t('propertiesDescription')}>{'Desc'}</Descriptions.Item>
-                <Descriptions.Item span={3} label={t('propertiesX')}>{'X'}</Descriptions.Item>
-                <Descriptions.Item span={3} label={t('propertiesY')}>{'Y'}</Descriptions.Item>
-                <Descriptions.Item span={3} label={t('propertiesType')}>{'Type'}</Descriptions.Item>
-              </Descriptions> */}
-            </Sider>
-          </Layout>
-        </Space>
-      )}
-    </Card>
+    <div id="recorder" className="action-row">
+      <div className="action-col">
+        <Card
+          title={
+            <span>
+              <CodeOutlined /> {t('Recorder')}
+            </span>
+          }
+          className={InspectorStyles['interaction-tab-card']}
+          extra={actionBar()}
+        >
+          {showActionSource ? (!recordedActions.length ? (
+              <div className={InspectorStyles['no-recorded-actions']}>
+                {t('enableRecordingAndPerformActions')}
+              </div>
+            ) : (
+              <pre className={InspectorStyles['recorded-code']}>
+                <code dangerouslySetInnerHTML={{__html: code(false)}} />
+              </pre>
+            )
+          ) : (
+            <Table
+              columns={columnsActions}
+              dataSource={dataSourceActions}
+              size="small"
+              scroll={{x: 'max-content'}}
+              pagination={false}
+              /*rowSelection={{
+                /!*type: 'radio',
+                getCheckboxProps: (_record) => {
+                  return {
+                    style: {
+                      display: 'none',
+                    },
+                  };
+                },*!/
+                renderCell() {
+                  // .ant-table-selection-column { display: none; } 필요
+                  return null;
+                },
+                selectedRowKeys: actionSelect.selectedRowKeys
+              }}*/
+              onRow={onActionsTableRow}
+            />
+          )}
+        </Card>
+      </div>
+      <div
+        id="selectedElementContainer"
+        className={`${InspectorStyles['interaction-tab-container']} ${InspectorStyles['element-detail-container'] ?? ''} action-col`}
+      >
+        <Card
+          title={
+            <span>
+              <TagOutlined /> {t('selectedElement')}
+            </span>
+          }
+          className={InspectorStyles['selected-element-card']}
+        >
+          <Table
+            columns={columnsProperties}
+            dataSource={dataSourceProperties}
+            size="small"
+            scroll={{x: 'max-content'}}
+            pagination={false}
+            onRow={onPropertiesTableRow}
+          />
+          {/* <Divider />
+          <Descriptions title={t('properties')} size="small" bordered column="sm">
+            <Descriptions.Item span={3} label={t('propertiesDescription')}>{'Desc'}</Descriptions.Item>
+            <Descriptions.Item span={3} label={t('propertiesX')}>{'X'}</Descriptions.Item>
+            <Descriptions.Item span={3} label={t('propertiesY')}>{'Y'}</Descriptions.Item>
+            <Descriptions.Item span={3} label={t('propertiesType')}>{'Type'}</Descriptions.Item>
+          </Descriptions> */}
+        </Card>
+      </div>
+    </div>
   );
 };
 

@@ -1,5 +1,5 @@
-import {log} from '../logger.js';
-import {resolveExecutablePath} from '../utils.js';
+import {log} from '../../logger';
+import {resolveExecutablePath} from '../index.js';
 
 // Look for java
 export class JavaDetector {

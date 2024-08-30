@@ -15,9 +15,7 @@ import {join, resolve} from 'path';
 import {homedir} from 'os';
 import {log} from './logger';
 import {getDevices} from './device-manager';
-import ANDROID_VERSIONS from './test/android-versions';
-import generator from './test/generator';
-import testRunner from './test/runner';
+import ANDROID_VERSIONS from './services/test/android-versions';
 import {
   JRM_PATH,
   PACKAGES_PATH,
@@ -26,11 +24,11 @@ import {
   TESTER_PATH,
   checkEnvironments,
   getExecutableName,
-  resolveJavaPath,
-  resolveNodePath,
   spawn,
-  toFormattedString,
 } from './utils.js';
+import generator from './services/test/generator';
+// import testRunner from './services/test/runner';
+import {start as startTestService} from './services';
 
 // const log = console || _logger;
 
@@ -44,19 +42,19 @@ app.on('open-file', (event, filePath) => {
 });
 
 app.on('window-all-closed', () => {
-  if (testerProcess && !testerProcess.killed) {
-    log.log('Terminate actions runner...');
-    testerProcess.kill('SIGTERM');
-    testerProcess = null;
-  }
+  app.quit();
+});
+
+const onAppQuit = () => {
   if (serverProcess && !serverProcess.killed) {
     log.log('Terminate Appium server...');
     serverProcess.kill('SIGTERM'); // NodeJS.Signals
     // process.kill(server.pid, 'SIGINT');
     serverProcess = null;
   }
-  app.quit();
-});
+};
+
+app.on('before-quit', onAppQuit).on('will-quit', onAppQuit);
 
 /**
  * Execute Appium server in background
@@ -390,45 +388,11 @@ app.on('ready', async () => {
   // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
   // serverProcess = await runAppiumServer();
 
-  // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
-  // testerProcess = await runActionTester();
-  testerProcess = testRunner({
-    targetVersion: '12',
-    codes: `// Test Action #1
-driver.findElement(AppiumBy.xpath("//*[@class='android.widget.ImageView' and ./parent::*[@class='android.view.ViewGroup'] and (./preceding-sibling::* | ./following-sibling::*)[@text='Sauce Labs Backpack']]")).click();
-// new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("//*[@contentDescription='Add To Cart button']")));
-// Test Action #2
-driver.findElement(AppiumBy.xpath("//*[@contentDescription='Add To Cart button']")).click();
-// new WebDriverWait(driver, 30).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("//*[@id='back']")));
-// Test Action #3
-driver.findElement(AppiumBy.xpath("//*[@id='back']")).click();
-// Test Action #4
-driver.findElement(AppiumBy.xpath("//*[@class='android.widget.ImageView' and ./parent::*[@class='android.view.ViewGroup'] and (./preceding-sibling::* | ./following-sibling::*)[@text='Sauce Labs Bike Light']]")).click();
-driver.findElement(AppiumBy.xpath("//*[@class='android.widget.ImageView' and ./parent::*[@contentDescription='counter plus button']]")).click();
-driver.findElement(AppiumBy.xpath("//*[@contentDescription='Add To Cart button']")).click();
-driver.findElement(AppiumBy.xpath("//*[@class='android.widget.ImageView' and ./parent::*[@contentDescription='cart badge']]")).click();
-// new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("//*[@text='Proceed To Checkout']")));
-driver.findElement(AppiumBy.xpath("//*[@text='Proceed To Checkout']")).click();
-driver.findElement(AppiumBy.xpath("//*[@contentDescription='Username input field']")).click();
-// new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("(//*[@id='key_pos_0_5']/*[@class='android.widget.TextView'])[1]")));
-driver.findElement(AppiumBy.xpath("(//*[@id='key_pos_0_5']/*[@class='android.widget.TextView'])[1]")).click();
-driver.findElement(AppiumBy.xpath("(//*[@id='key_pos_0_8']/*[@class='android.widget.TextView'])[1]")).click();
-driver.findElement(AppiumBy.xpath("(//*[@id='key_pos_0_6']/*[@class='android.widget.TextView'])[1]")).click();
-// new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("//*[@contentDescription='Password input field']")));
-driver.findElement(AppiumBy.xpath("//*[@contentDescription='Password input field']")).click();
-driver.findElement(AppiumBy.xpath("//*[@class='android.widget.TextView' and ./parent::*[@id='key_pos_2_7']]")).click();
-driver.findElement(AppiumBy.xpath("//*[@class='android.widget.TextView' and ./parent::*[@id='key_pos_0_2']]")).click();
-driver.findElement(AppiumBy.xpath("//*[@text='Login' and ./parent::*[@contentDescription='Login button']]")).click();`,
-    capabilities: {
-      deviceName: 'emulator-5554',
-      app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
-      appPackage: 'com.saucelabs.mydemoapp.rn',
-      appActivity: '.MainActivity',
-    },
-    remoteAddress: 'http://localhost:4723', // 'host:port'
-  });
-
   await getDevices();
 
-  setupMainWindow();
+  const mainWindow = setupMainWindow();
+
+  setTimeout(() => {
+    startTestService(mainWindow);
+  });
 });

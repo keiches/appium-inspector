@@ -11,8 +11,7 @@ import {log} from './logger';
 import {randomBytes, randomUUID} from 'crypto';
 import {join} from 'path';
 import {spawn as spawnNode} from 'child_process';
-import NodeDetector from './test/node-detector';
-import JavaDetector from './test/java-detector';
+import {resolveJavaExecutePaths, resolveNodePath} from './services';
 // import {v4} from 'uuid';
 
 // NOTE: in renderer/preload, use "remote.app.getAppPath()".
@@ -103,139 +102,6 @@ export async function spawn(file, args, options) {
   });
 }
 */
-
-/**
- * Return an executable path of cmd
- *
- * @param {string} cmd Standard output by command
- * @return {Promise<string|null>} The full path of cmd. `null` if the cmd is not found.
- */
-export async function resolveExecutablePath(cmd) {
-  let executablePath;
-  try {
-    executablePath = await which(cmd);
-    if (executablePath && (await exists(executablePath))) {
-      return executablePath;
-    }
-  } catch (err) {
-    if (/not found/gi.test(err.message)) {
-      log.debug(err);
-    } else {
-      log.warn(err);
-    }
-  }
-  log.debug(`No executable path of '${cmd}'.`);
-  if (executablePath) {
-    log.debug(`Does '${executablePath}' exist?`);
-  }
-  return null;
-}
-
-/**
- * Get Node.Js executable path
- * @returns {Promise<string>}
- */
-export async function resolveNodePath() {
-  // const nodePath = await resolveExecutablePath('node');
-  const nodePath = await NodeDetector.detect();
-  if (!nodePath) {
-    log.error('node cannot be found');
-    await dialog.showMessageBox({
-      type: 'error',
-      buttons: ['OK'],
-      message: 'node cannot be found',
-    });
-  }
-
-  if (process.env.NODE_ENV === 'development') {
-    log.log(`Node is installed at: ${nodePath}. ${
-      (await exec(nodePath, ['--version'])).stdout.split('\n')[0]
-    }`);
-  }
-
-  return nodePath;
-}
-
-/**
- * Get Java executable path
- * @returns {Promise<string>}
- */
-export async function resolveJavaPath() {
-  // const nodePath = await resolveExecutablePath('node');
-  const javaPath = await JavaDetector.detect();
-  if (!javaPath) {
-    log.error('java cannot be found');
-    await dialog.showMessageBox({
-      type: 'error',
-      buttons: ['OK'],
-      message: 'java cannot be found',
-    });
-  }
-
-  if (process.env.NODE_ENV === 'development') {
-    log.log(`Java is installed at: ${javaPath}. ${
-      (await exec(javaPath, ['--version'])).stdout.split('\n')[0]
-    }`);
-  }
-
-  return javaPath;
-}
-
-/**
- * Get Java executable path
- * @returns {Promise<string>}
- */
-export async function resolveJavaCompilerPath() {
-  const javacPath = await JavaDetector.detect('c');
-  if (!javacPath) {
-    log.error('java compiler cannot be found');
-    await dialog.showMessageBox({
-      type: 'error',
-      buttons: ['OK'],
-      message: 'java compiler cannot be found',
-    });
-  }
-
-  if (process.env.NODE_ENV === 'development') {
-    log.log(`Java is installed at: ${javacPath}. ${
-      (await exec(javacPath, ['--version'])).stdout.split('\n')[0]
-    }`);
-  }
-
-  return javacPath;
-}
-
-/**
- * Get Java and Java Compiler executable paths
- * @returns {Promise<{javac: (Promise<string>|string), java: (Promise<string>|string)}>}
- */
-export async function resolveJavaExecutePaths() {
-  let java;
-  let javac;
-  // NOTE: java는 설치 상황상, 내장하도록 했다!
-  let javaHome = JRM_PATH;
-  if (!existsSync(javaHome)) {
-    javaHome = process.env.JDK_HOME || process.env.JAVA_HOME;
-  }
-  if (javaHome) {
-    const javaPath = join(javaHome, 'bin');
-    java = join(javaPath, getExecutableName('java'));
-    if (!existsSync(java)) {
-      java = resolveJavaPath();
-    }
-    javac = join(javaPath, getExecutableName('javac'));
-    if (!existsSync(javac)) {
-      javac = resolveJavaCompilerPath();
-    }
-  } else {
-    java = resolveJavaPath();
-    javac = resolveJavaCompilerPath();
-  }
-  return {
-    java,
-    javac,
-  };
-}
 
 export const checkEnvironments = (process.env.NODE_ENV === 'development') ? async () => {
   const nodePath = await resolveNodePath();

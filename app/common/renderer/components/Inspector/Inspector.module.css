@@ -117,6 +117,16 @@
   max-width: 50%;
 }
 
+.inspector-main .interaction-tab-container #recorder :global(.action-col) {
+  min-width: 70%;
+  max-width: 70%;
+}
+
+.inspector-main .interaction-tab-container #recorder #selectedElementContainer {
+  min-width: 30%;
+  max-width: 30%;
+}
+
 .inspector-main .interaction-tab-container :global(.ant-card) {
   height: 100%;
 }

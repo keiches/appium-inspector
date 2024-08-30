@@ -89,7 +89,8 @@ public class AndroidUnitTest {
             HttpResponse<JsonNode> jsonNodeHttpResponse = Unirest.post(url)
                     .header("Content-Type", "application/json")
                     .body(body).asJson();
-        } catch (Exception e){
+        } catch (Exception e) {
+            e.printStackTrace();
             System.out.println("Failed to set Test info");
         }
     }
