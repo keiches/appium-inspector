@@ -51,7 +51,7 @@ export const getExecutableName = (name) => {
   return name;
 };
 
-async function exists(path) {
+export async function exists(path) {
   /*try {
     await fs.access(path);
     return true;

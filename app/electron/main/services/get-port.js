@@ -19,7 +19,7 @@ const releaseOldLockedPortsIntervalMs = 1000 * 15;
 // Lazily create interval on first use
 let interval;
 
-const getAvailablePort = options => new Promise((resolve, reject) => {
+const getAvailablePort = (options) => new Promise((resolve, reject) => {
   const server = net.createServer();
   server.unref();
   server.on('error', reject);
@@ -39,7 +39,7 @@ const portCheckSequence = function * (ports) {
   yield 0; // Fall back to 0 if anything else failed
 };
 
-export default async options => {
+export default async (options) => {
   let ports;
 
   if (options) {

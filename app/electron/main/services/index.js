@@ -1,17 +1,19 @@
 import {app, dialog, ipcMain} from 'electron';
+import which from 'which';
 import {createServer} from 'http';
 // import express from 'express';
 import {join} from 'path';
+import {existsSync} from 'fs';
+import {exec} from 'teen_process';
+
 import {log} from '../logger';
-import {getExecutableName, JRM_PATH, ROOT_PATH, uuid} from '../utils';
+import {getExecutableName, JRM_PATH, ROOT_PATH, exists} from '../utils';
 import getPort from './get-port';
+import serverRunner from './server/runner';
 import testRunner from './test/runner';
 
 import NodeDetector from './test/node-detector';
 import JavaDetector from './test/java-detector';
-import which from 'which';
-import {exec} from 'teen_process';
-import {existsSync} from 'fs';
 
 /**
  * Return an executable path of cmd
@@ -48,7 +50,7 @@ export async function resolveNodePath() {
   // const nodePath = await resolveExecutablePath('node');
   const nodePath = await NodeDetector.detect();
   if (!nodePath) {
-    log.error('node cannot be found');
+    log.error('Failed to find Node.js executable path');
     await dialog.showMessageBox({
       type: 'error',
       buttons: ['OK'],
@@ -73,7 +75,7 @@ export async function resolveJavaPath() {
   // const nodePath = await resolveExecutablePath('node');
   const javaPath = await JavaDetector.detect();
   if (!javaPath) {
-    log.error('java cannot be found');
+    log.error('Failed to find Java executable path');
     await dialog.showMessageBox({
       type: 'error',
       buttons: ['OK'],
@@ -97,7 +99,7 @@ export async function resolveJavaPath() {
 export async function resolveJavaCompilerPath() {
   const javacPath = await JavaDetector.detect('c');
   if (!javacPath) {
-    log.error('java compiler cannot be found');
+    log.error('Failed to find Java compiler executable path');
     await dialog.showMessageBox({
       type: 'error',
       buttons: ['OK'],
@@ -146,21 +148,25 @@ export async function resolveJavaExecutePaths() {
   };
 }
 
+export async function startAppiumServer() {
+  return serverRunner();
+}
+
 /**
  * Start Tester process and message server
- * @param window
- * @returns {import('http').Server<IncomingMessage, ServerResponse>}
+ * @param {BrowserWindow} window
+ * @returns {import('http').Server<import('http').IncomingMessage, import('http').ServerResponse>}
  */
-export function start(window) {
+export function startTestServer(window) {
   let testerRunner;
-  /** @type {import('http').Server<IncomingMessage, ServerResponse>} */
+  /** @type {import('http').Server<import('http').IncomingMessage, import('http').ServerResponse>} */
   let messageServer;
 
   const onAppQuit = () => {
     if (messageServer) {
       log.log('Terminate Message Server...');
       messageServer.close(() => {
-        console.log('Message Server closed.');
+        log.log('Message Server closed.');
         // process.exit(0);
       });
       messageServer = null;
@@ -178,7 +184,7 @@ export function start(window) {
   process.on('SIGINT', onAppQuit);
   process.on('SIGTERM', onAppQuit);
 
-  messageServer = createServer((req, res) => {
+  messageServer = createServer((/** @type {import('http').IncomingMessage} */ req, /** @type {import('http').ServerResponse} */ res) => {
     log.log('Requesting...:', req.url);
     /* NOTE: 별도의 uuid로 session 별로 구분하는 것이 안전할 듯...
     const port = uuid();
@@ -201,7 +207,7 @@ export function start(window) {
         req.on('end', () => {
           // console.log('Received message from Java:', body);
           const message = Buffer.concat(body).toString();
-          console.log('Received message from Java: ', message);
+          log.log('Received message from Java: ', message);
           // window.webContents.send('message-from-java', body);
           // Java 프로세스에 응답 보내기
           res.writeHead(200, {'Content-Type': 'text/plain'});
@@ -229,22 +235,22 @@ export function start(window) {
     log.log('express server running on port 8080');
   });*/
 
-  getPort({port: 8000}).then((port) => {
-    messageServer.listen(port, () => {
-      log.log(`message server running on port #${port}`);
-    });
+  getPort({port: 8000})
+    // eslint-disable-next-line promise/prefer-await-to-then
+    .then((port) => {
+      messageServer.listen(port, () => {
+        log.log(`message server running on port #${port}`);
+      });
 
-    log.log(`message server on http://localhost:${port}/`);
-  });
+      log.log(`message server on http://localhost:${port}/`);
 
-  ipcMain.on('start-test', async (event, codes, ...args) => {
-    log.debug('[start-test]', '__', codes, '__', ...args);
-
-    // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
-    // testerProcess = await runActionTester();
-    testerRunner = testRunner({
-      targetVersion: '12',
-      codes: `// Test Action #1
+      // Message Server가 실행되지 못했다면, Test Server도 실행할 수 없음
+      ipcMain.on('start-test', async (event, codes, ...args) => {
+        log.debug('[start-test]', '__', codes, '__', ...args);
+        // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
+        testerRunner = testRunner({
+          targetVersion: '12',
+          codes: `// Test Action #1
 driver.findElement(AppiumBy.xpath("//*[@class='android.widget.ImageView' and ./parent::*[@class='android.view.ViewGroup'] and (./preceding-sibling::* | ./following-sibling::*)[@text='Sauce Labs Backpack']]")).click();
 // new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("//*[@contentDescription='Add To Cart button']")));
 // Test Action #2
@@ -269,28 +275,33 @@ driver.findElement(AppiumBy.xpath("//*[@contentDescription='Password input field
 driver.findElement(AppiumBy.xpath("//*[@class='android.widget.TextView' and ./parent::*[@id='key_pos_2_7']]")).click();
 driver.findElement(AppiumBy.xpath("//*[@class='android.widget.TextView' and ./parent::*[@id='key_pos_0_2']]")).click();
 driver.findElement(AppiumBy.xpath("//*[@text='Login' and ./parent::*[@contentDescription='Login button']]")).click();`,
-      capabilities: {
-        deviceName: 'emulator-5554',
-        app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
-        appPackage: 'com.saucelabs.mydemoapp.rn',
-        appActivity: '.MainActivity',
-      },
-      remoteAddress: 'http://localhost:8000', // 'host:port'
+          capabilities: {
+            deviceName: 'emulator-5554',
+            app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
+            appPackage: 'com.saucelabs.mydemoapp.rn',
+            appActivity: '.MainActivity',
+          },
+          remoteAddress: 'http://localhost:8000', // 'host:port'
+        });
+        /*
+        await generator({
+          codes,
+          ...args,
+          capabilities: {
+            deviceName: 'emulator-5554',
+            app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
+            appPackage: 'com.saucelabs.mydemoapp.rn',
+            appActivity: '.MainActivity',
+          },
+          remoteAddress: 'http://localhost:4723', // 'host:port'
+        });
+        */
+      });
+    })
+    // eslint-disable-next-line promise/prefer-await-to-then,promise/prefer-await-to-callbacks
+    .catch((err) => {
+      log.error('Failed to get available port:', err);
     });
-    /*
-    await generator({
-      codes,
-      ...args,
-      capabilities: {
-        deviceName: 'emulator-5554',
-        app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
-        appPackage: 'com.saucelabs.mydemoapp.rn',
-        appActivity: '.MainActivity',
-      },
-      remoteAddress: 'http://localhost:4723', // 'host:port'
-    });
-    */
-  });
 
   return messageServer;
 }

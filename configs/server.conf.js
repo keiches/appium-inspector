@@ -25,7 +25,7 @@ module.exports = {
     "keep-alive-timeout": 600,
     "local-timezone": true,
     // "log": "/tmp/appium.log",
-    "log": "C:\\Temp\\appium-server.log",
+    "log": "./appium-server.log",
     "log-level": "info",
     "log-format": "text",
     "log-no-colors": true,
@@ -33,12 +33,9 @@ module.exports = {
     "long-stacktrace": false,
     "no-perms-check": false,
     "plugin": {
-      "device-farm": {
+      "device-manager": {
         "platform": "android", // "ios",
-        "androidDeviceType": "both",
-        // "androidDeviceType": "real",
-        "iosDeviceType": "both",
-        // "iosDeviceType": "simulated",
+        "deviceType": "both",
         /*"liveStreaming":true,
         "skipChromeDownload":true,
         "deviceAvailabilityTimeoutMs":300000,
@@ -62,7 +59,7 @@ module.exports = {
     // "tmp": "/tmp",
     // "trace-dir": "/tmp/appium-instruments",
     "use-drivers": ["uiautomator2"],
-    "use-plugins": ["images", "gestures", "device-farm", "element-wait"],
+    "use-plugins": ["images", "gestures", "device-manager", "element-wait"],
     // "webhook": "https://some-url.com"
   }
 };
