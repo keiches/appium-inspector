@@ -1,9 +1,10 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {
   MobileOutlined, ReloadOutlined, AndroidOutlined, AppleOutlined,
-  DownloadOutlined, ShakeOutlined, StopOutlined, DeleteOutlined, // ResetOutlined,
+  PlusOutlined,
+  DownloadOutlined, ShakeOutlined, StopOutlined, DeleteOutlined, MinusOutlined, CaretRightOutlined // ResetOutlined,
 } from '@ant-design/icons';
-import {Button, Card, Checkbox, Col, Form, List, Menu, Row, Select, Table} from 'antd';
+import {Button, Card, Checkbox, Col, Form, List, Menu, Row, Select, Table, Tooltip} from 'antd';
 
 import SessionStyles from './Session.module.css';
 import InspectorStyles from '../Inspector/Inspector.module.css';
@@ -78,6 +79,7 @@ const SessionHelper = (props) => {
     serverType,
     attachSessId,
     devices: currentDevices,
+    getDeviceList,
     t,
   } = props;
 
@@ -148,48 +150,38 @@ const SessionHelper = (props) => {
   /** @type {import('antd/lib/menu').ItemType[]} */
   const menuItemsDevices = [
     {
-      icon: MobileOutlined,
-      label: '+',
-    },
-    {
-      icon: MobileOutlined,
-      label: '-',
+      title: 'Add a device',
+      icon: PlusOutlined,
     }, {
-      icon: MobileOutlined,
-      label: 'x',
+      title: 'Delete the device',
+      icon: MinusOutlined,
     }, {
-      icon: MobileOutlined,
-      label: '*',
+      title: 'Start the Device',
+      icon: CaretRightOutlined,
+    }, {
+      title: 'Delete all devices',
+      icon: DeleteOutlined,
+    }, {
+      title: 'Read connected devices',
+      icon: ReloadOutlined,
+      onClick: (e) => {
+        log.log('Devices: menu clicked:', e.item);
+      },
     },
-  ].map(({icon, label}, index) => ({
+  ].map(({title, icon, onClick}, index) => ({
     key: String(index + 1),
+    title,
     icon: React.createElement(icon),
-    label,
+    onClick,
   }));
-  const dataSourceDevices = [
-    {
-      key: '1',
-      name: 'Pixel_7_API_31',
-      platform: {
-        name: 'Android', // TODO: read using adb
-        version: '12.0',
-        icon: AndroidOutlined, // TODO: assign according to platform.name
-      },
-      udid: 'emulator-5554', // TODO: read using adb
-      status: 'Ready',
-    },
-    {
-      key: '2',
-      name: 'Pixel_5_API_33',
-      platform: {
-        name: 'iOS', // TODO: read using libs
-        version: '17.5.1', // TODO: read using libs
-        icon: AppleOutlined, // TODO: assign according to platform.name
-      },
-      udid: 'emulator-5554', // TODO: read using adb
-      status: 'Ready',
-    },
-  ];
+  async function onDevicesMenuClick(info) {
+    log.log('menu clicked:', info);
+    switch (info.key) {
+      case '5':
+        await getDeviceList('android', 'all');
+        break;
+    }
+  }
   /** @type {any[]} */
   const columnsDevices = [
     {
@@ -215,30 +207,74 @@ const SessionHelper = (props) => {
       key: 'status',
     },
   ];
+  const dataSourceDevices = [
+    {
+      key: '1',
+      name: 'Pixel_7_API_31',
+      platform: {
+        name: 'Android', // TODO: read using adb
+        version: '12.0',
+        icon: AndroidOutlined, // TODO: assign according to platform.name
+      },
+      udid: 'emulator-5554', // TODO: read using adb
+      status: 'Ready',
+    },
+    {
+      key: '2',
+      name: 'Pixel_5_API_33',
+      platform: {
+        name: 'iOS', // TODO: read using libs
+        version: '17.5.1', // TODO: read using libs
+        icon: AppleOutlined, // TODO: assign according to platform.name
+      },
+      udid: 'emulator-5554', // TODO: read using adb
+      status: 'Ready',
+    },
+  ];
   /** @type {import('antd/lib/menu').ItemType[]} */
   const menuItemsApplications = [
     {
-      icon: DownloadOutlined,
-      label: '+',
+      title: 'Add a application',
+      icon: PlusOutlined,
     },
     {
-      icon: ShakeOutlined,
-      label: '-',
+      title: 'Delete the application',
+      icon: MinusOutlined,
     }, {
+      title: 'x',
       icon: StopOutlined,
-      label: 'x',
     }, {
+      title: '*',
       icon: DeleteOutlined,
-      label: '*',
     }, {
+      title: '*',
       icon: DeleteOutlined,
-      label: '*',
     },
-  ].map(({icon, label}, index) => ({
+  ].map(({title, icon, onClick}, index) => ({
     key: String(index + 1),
+    title,
     icon: React.createElement(icon),
-    label,
+    onClick,
   }));
+  /** @type {any[]} */
+  const columnsApplications = [
+    {
+      title: 'Platform',
+      dataIndex: 'platform',
+      key: 'platform',
+      render: ({name, icon}, record) => React.createElement(icon),
+    },
+    {
+      title: 'Name',
+      dataIndex: 'package',
+      key: 'package',
+    },
+    {
+      title: 'Version',
+      dataIndex: 'version',
+      key: 'version',
+    },
+  ];
   const dataSourceApplications = [
     {
       key: '1',
@@ -275,25 +311,6 @@ const SessionHelper = (props) => {
       activity: '.MainActivity',
       version: '12.3.2',
       status: 'Ready',
-    },
-  ];
-  /** @type {any[]} */
-  const columnsApplications = [
-    {
-      title: 'Platform',
-      dataIndex: 'platform',
-      key: 'platform',
-      render: ({name, icon}, record) => React.createElement(icon),
-    },
-    {
-      title: 'Name',
-      dataIndex: 'package',
-      key: 'package',
-    },
-    {
-      title: 'Version',
-      dataIndex: 'version',
-      key: 'version',
     },
   ];
 
@@ -473,7 +490,27 @@ const SessionHelper = (props) => {
               selectable={false}
               items={menuItemsDevices}
               style={{flex: 1, minWidth: 0}}
+              onClick={onDevicesMenuClick}
             />
+            {/*<Menu
+              mode="horizontal"
+              selectable={false}
+              style={{flex: 1, minWidth: 0}}
+              onClick={(...args) => {log.log('menu clicked:', ...args)}}
+            >
+              {menuItemsDevices.map((menuItem) => {
+                return (
+                  <Tooltip title={menuItem.title}>
+                    <Menu.Item
+                      key={menuItem.key}
+                      onClick={(e) => menuItem.onClick({item: {...e.item, key: menuItem.key}})}
+                    >
+                      {menuItem.icon}
+                    </Menu.Item>
+                  </Tooltip>
+                );
+              })}
+            </Menu>*/}
           </Row>
           <Row>
             <Col span={24}>

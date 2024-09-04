@@ -1,6 +1,6 @@
 import {notification} from 'antd';
 import axios from 'axios';
-import {includes, isPlainObject, isUndefined, toPairs, union, values, without} from 'lodash';
+import _, {includes, isPlainObject, isUndefined, toPairs, union, values, without} from 'lodash';
 import moment from 'moment';
 import {v4 as UUID} from 'uuid';
 import {Web2Driver} from 'web2driver';
@@ -18,7 +18,7 @@ import i18n from '../i18next';
 import {fs, ipcRenderer, util, getSetting, setSetting} from '../polyfills';
 import {log} from '../utils/logger';
 import {addVendorPrefixes} from '../utils/other';
-import {quitSession, setSessionDetails} from './Inspector';
+import {applyClientMethod, quitSession, SET_DEVICE_LIST, setSessionDetails, setVisibleCommandResult} from './Inspector';
 
 export const NEW_SESSION_REQUESTED = 'NEW_SESSION_REQUESTED';
 export const NEW_SESSION_LOADING = 'NEW_SESSION_LOADING';
@@ -1173,5 +1173,30 @@ export function initFromQueryString(loadNewSession) {
       }
       loadNewSession(caps);
     }
+  };
+}
+
+/**
+ * Get device list
+ */
+export function getDeviceList(platform, deviceType) {
+  return async (dispatch, getState) => {
+    const applyAction = applyClientMethod({
+      methodName: 'executeScript',
+      args: ['device-manager:list', [{
+        platform,
+        deviceType,
+      }]],
+    });
+    const devices = await applyAction(dispatch, getState);
+    dispatch({type: SET_DEVICE_LIST, devices});
+    // TODO: for develop, must be removed
+    setTimeout(() => {
+      const result = JSON.stringify(devices, null, '  ');
+      const truncatedResult = _.truncate(result, {length: 2000});
+      log.info(truncatedResult);
+      setVisibleCommandResult(result, 'device-manager:list')(dispatch);
+    }, 1);
+    //
   };
 }

@@ -18,7 +18,6 @@ import {clipboard, ipcRenderer} from '../../polyfills';
 import InspectorStyles from './Inspector.module.css';
 import SessionStyles from '../Session/Session.module.css';
 import * as PropTypes from 'prop-types';
-import Sider from 'antd/lib/layout/Sider';
 import {log} from '../../utils/logger';
 
 /** @type {React.CSSProperties} */
@@ -519,8 +518,18 @@ const Recorder = (props) => {
 
   const onStartTesting = useCallback(() => {
     setIsActionsPlayed(true);
-    ipcRenderer.send('start-test', actionCode());
-  }, []);
+    ipcRenderer.send('start-test', {
+      targetVersion: 12,
+      codes: actionCode(),
+      capabilities: {
+        deviceName: 'emulator-5554',
+        app: 'apps/Android-MyDemoAppRN.1.3.0.build-244.apk',
+        appPackage: 'com.saucelabs.mydemoapp.rn',
+        appActivity: '.MainActivity',
+      },
+      remoteAddress: 'http://localhost:8000', // 'host:port'
+    });
+  }, [recordedActions?.length > 0]);
 
   const onStopTesting = useCallback(() => {
     setIsActionsPlayed(false);

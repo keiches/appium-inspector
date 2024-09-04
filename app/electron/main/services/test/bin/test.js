@@ -38,7 +38,7 @@ async function runner() {
     const spawnOptions = {
       // detached: true, ==> actionsTester.unref();
       // detached: true,
-      stdio: ['ignore', 'pipe', 'pipe'],
+      stdio: ['pipe', 'pipe', 'pipe'],
       // stdio: ['ignore', openSync('stdout_tester.txt', 'w'), openSync('stderr_tester.txt', 'w')],
       // stdio: ['pipe', 'ignore', 'inherit']
       // stdio: [Stdin, Stdout, Stderr];

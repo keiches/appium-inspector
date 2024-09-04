@@ -46,7 +46,7 @@ const HeaderButtons = (props) => {
   } = props;
 
   const getCurrentDevices = async () => {
-    await getDeviceList('android', 'both', 'none');
+    await getDeviceList('android', 'all');
   };
 
   const deviceControls = (

@@ -1091,17 +1091,17 @@ export function toggleShowActionSource() {
   };
 }
 
+// TODO: remove "getDeviceList"
 /**
  * Get device list
  */
-export function getDeviceList(platform, androidDeviceType, iosDeviceType) {
+export function getDeviceList(platform, deviceType) {
   return async (dispatch, getState) => {
     const applyAction = applyClientMethod({
       methodName: 'executeScript',
-      args: ['devices:list', [{
+      args: ['device-manager:list', [{
         platform,
-        androidDeviceType,
-        iosDeviceType,
+        deviceType,
       }]],
     });
     const devices = await applyAction(dispatch, getState);
@@ -1111,7 +1111,7 @@ export function getDeviceList(platform, androidDeviceType, iosDeviceType) {
       const result = JSON.stringify(devices, null, '  ');
       const truncatedResult = _.truncate(result, {length: 2000});
       log.info(truncatedResult);
-      setVisibleCommandResult(result, 'devices:list')(dispatch);
+      setVisibleCommandResult(result, 'device-manager:list')(dispatch);
     }, 1);
     //
   };

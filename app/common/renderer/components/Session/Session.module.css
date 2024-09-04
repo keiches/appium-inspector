@@ -131,13 +131,6 @@
   width: 0px;
 }
 
-.sessionsHelper,
-.sessionsHelper :global(.ant-table),
-.sessionsHelper :global(.ant-table-wrapper) {
-  width: 100%;
-  height: 100%;
-}
-
 .newSessionForm {
   overflow-y: auto;
   overflow-x: hidden;
@@ -324,6 +317,24 @@
   flex: 1;
 }
 
+.sessionHelper,
+.sessionHelper :global(.ant-table),
+.sessionHelper :global(.ant-table-wrapper) {
+  width: 100%;
+  height: 100%;
+}
+
 .sessionHelper > :global(.ant-col):not(:first-child) {
   padding-left: 16px;
 }
+
+/*.sessionHelper :global(.ant-menu-title-content) {
+  position: relative;
+}
+
+.sessionHelper :global(.ant-menu-title-content .anticon:not(:first-child)) {
+  position: absolute;
+  font-size: 8px;
+  right: -4px;
+  bottom: -4px;
+}*/

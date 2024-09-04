@@ -1,9 +1,6 @@
-import {app, dialog} from 'electron';
-import which from 'which';
-// import {fs, system} from '@appium/support';
-// import fs from 'fs';
-// import {exec} from 'teen_process';
-import {exec, SubProcess} from 'teen_process';
+import {app} from 'electron';
+
+import {SubProcess} from 'teen_process';
 import {constants, existsSync, promises, realpathSync} from 'fs';
 import {homedir, platform, tmpdir} from 'os';
 // import {isFunction} from 'lodash';
@@ -13,6 +10,8 @@ import {join} from 'path';
 import {spawn as spawnNode} from 'child_process';
 import {resolveJavaExecutePaths, resolveNodePath} from './services';
 // import {v4} from 'uuid';
+
+import './prototype-date';
 
 // NOTE: in renderer/preload, use "remote.app.getAppPath()".
 export const ROOT_PATH = process.env.NODE_ENV === 'development' ? app.getAppPath() : __dirname;
@@ -115,8 +114,8 @@ export const checkEnvironments = (process.env.NODE_ENV === 'development') ? asyn
   log.log(`----Temp: ${tmpdir()}`);
   log.log(`----Temp path: ${await promises.realpath(tmpdir())}`);
   log.log(`----TEMP_PATH: ${TEMP_PATH}`);
-  log.log(`----WORKING_HOME: ${join(homedir(), '.aav')}`);
-  log.log(`----WORKING_HOME exists: ${existsSync(join(homedir(), '.aav'))}`);
+  log.log(`----WORKING_HOME: ${join(homedir(), '.appium')}`);
+  log.log(`----WORKING_HOME exists: ${existsSync(join(homedir(), '.appium'))}`);
   log.log(`----APPIUM_HOME: ${process.env.APPIUM_HOME}`);
   log.log(`----APPIUM_HOME exists: ${existsSync(process.env.APPIUM_HOME)}`);
   log.log(`----JAVA_HOME: ${process.env.JAVA_HOME}`);
@@ -132,16 +131,3 @@ export const checkEnvironments = (process.env.NODE_ENV === 'development') ? asyn
   log.log(`----ANDROID_HOME: ${process.env.ANDROID_HOME}`);
   log.log(`----ANDROID_HOME exists: ${existsSync(process.env.ANDROID_HOME)}`);
 } : async () => {};
-
-/**
- * Convert date to formatted string
- * @param date
- * @returns {string}
- */
-export function toFormattedString(date) {
-  return `${date.getFullYear()}${('0' + (date.getMonth() + 1)).slice(-2)}${('0' + date.getDate()).slice(-2)}${('0' + date.getHours()).slice(-2)}${('0' + date.getMinutes()).slice(-2)}${('0' + date.getSeconds()).slice(-2)}`;
-}
-
-Date.prototype.toFormattedString = function () {
-  return toFormattedString(this);
-};

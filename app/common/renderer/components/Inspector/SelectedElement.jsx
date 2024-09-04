@@ -171,9 +171,11 @@ const SelectedElement = (props) => {
     findDataSource = findElementsExecutionTimes;
   }
 
-  let tapIcon = <AimOutlined />;
+  let tapIcon;
   if (!(elementInteractionsNotAvailable || selectedElementId) || selectedElementSearchInProgress) {
     tapIcon = <LoadingOutlined />;
+  } else {
+    tapIcon = <AimOutlined />;
   }
 
   return (

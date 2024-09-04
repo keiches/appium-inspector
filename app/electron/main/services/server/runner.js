@@ -133,11 +133,11 @@ async function runner() {
     env: {
       // ...process.env,
       // 'APPIUM_HOME': join(__dirname, '.appium'),
-      APPIUM_HOME: resolve(ROOT_PATH, '..', '.aav'),
+      APPIUM_HOME: resolve(ROOT_PATH, '..', '.appium'),
       ANDROID_HOME: process.env.ANDROID_HOME,
     },
   };
-  log.info(`[appium-server] APPIUM_HOME("${resolve(ROOT_PATH, '..', '.aav')}") found`);
+  log.info(`[appium-server] APPIUM_HOME("${resolve(ROOT_PATH, '..', '.appium')}") found`);
   // isDev && (spawnOptions.stdio = ['ignore', openSync(`stdout_server_${fileIndex}.txt`, 'w'), openSync(`stderr_server_${fileIndex}.txt`, 'w')]);
   if (!(await exists(join(PACKAGES_PATH, 'server', 'packages', 'appium', 'build', 'lib', 'main.js')))) {
     log.error(`[appium-server] "${join(PACKAGES_PATH, 'server', 'packages', 'appium', 'build', 'lib', 'main.js')}" not found`);
@@ -192,7 +192,7 @@ async function runner() {
 
   // lines-stderr is just the same
   child.on('lines-stdout', (lines) => {
-    log.log('[appium-server] lines:', lines);
+    log.log('[appium-server] lines-stdout:', lines);
     // ['foo', 'bar', 'baz']
     // automatically handles rejoining lines across stream chunks
   });
@@ -200,7 +200,7 @@ async function runner() {
   // stream-line gives you one line at a time, with [STDOUT] or [STDERR]
   // prepended
   child.on('stream-line', (line) => {
-    log.log('[appium-server] line:', line);
+    log.log('[appium-server] stream-line:', line);
     // [STDOUT] foo
   });
 
@@ -231,7 +231,7 @@ async function runner() {
   });
 
   child.on('disconnect', () => {
-    log.warn('[appium-server] disconnected');
+    log.warn('[appium-server] disconnect');
   });
 
   child.on('close', (code, signal) => {

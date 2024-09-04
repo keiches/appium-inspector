@@ -2,7 +2,7 @@ import {app, dialog, ipcMain} from 'electron';
 import which from 'which';
 import {createServer} from 'http';
 // import express from 'express';
-import {join} from 'path';
+import {join, normalize} from 'path';
 import {existsSync} from 'fs';
 import {exec} from 'teen_process';
 
@@ -154,7 +154,7 @@ export async function startAppiumServer() {
 
 /**
  * Start Tester process and message server
- * @param {BrowserWindow} window
+ * @param {Electron.BrowserWindow} window
  * @returns {import('http').Server<import('http').IncomingMessage, import('http').ServerResponse>}
  */
 export function startTestServer(window) {
@@ -245,57 +245,20 @@ export function startTestServer(window) {
       log.log(`message server on http://localhost:${port}/`);
 
       // Message Server가 실행되지 못했다면, Test Server도 실행할 수 없음
-      ipcMain.on('start-test', async (event, codes, ...args) => {
-        log.debug('[start-test]', '__', codes, '__', ...args);
+      ipcMain.on('start-test', async (event, ...args) => {
+        // NOTE: args.length === 1이어야 함
+        const {targetVersion, codes, capabilities, remoteAddress} = args[0];
+        log.debug('[start-test]', '__', codes.substring(0, 10), '__', ...args);
         // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
         testerRunner = testRunner({
-          targetVersion: '12',
-          codes: `// Test Action #1
-driver.findElement(AppiumBy.xpath("//*[@class='android.widget.ImageView' and ./parent::*[@class='android.view.ViewGroup'] and (./preceding-sibling::* | ./following-sibling::*)[@text='Sauce Labs Backpack']]")).click();
-// new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("//*[@contentDescription='Add To Cart button']")));
-// Test Action #2
-driver.findElement(AppiumBy.xpath("//*[@contentDescription='Add To Cart button']")).click();
-// new WebDriverWait(driver, 30).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("//*[@id='back']")));
-// Test Action #3
-driver.findElement(AppiumBy.xpath("//*[@id='back']")).click();
-// Test Action #4
-driver.findElement(AppiumBy.xpath("//*[@class='android.widget.ImageView' and ./parent::*[@class='android.view.ViewGroup'] and (./preceding-sibling::* | ./following-sibling::*)[@text='Sauce Labs Bike Light']]")).click();
-driver.findElement(AppiumBy.xpath("//*[@class='android.widget.ImageView' and ./parent::*[@contentDescription='counter plus button']]")).click();
-driver.findElement(AppiumBy.xpath("//*[@contentDescription='Add To Cart button']")).click();
-driver.findElement(AppiumBy.xpath("//*[@class='android.widget.ImageView' and ./parent::*[@contentDescription='cart badge']]")).click();
-// new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("//*[@text='Proceed To Checkout']")));
-driver.findElement(AppiumBy.xpath("//*[@text='Proceed To Checkout']")).click();
-driver.findElement(AppiumBy.xpath("//*[@contentDescription='Username input field']")).click();
-// new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("(//*[@id='key_pos_0_5']/*[@class='android.widget.TextView'])[1]")));
-driver.findElement(AppiumBy.xpath("(//*[@id='key_pos_0_5']/*[@class='android.widget.TextView'])[1]")).click();
-driver.findElement(AppiumBy.xpath("(//*[@id='key_pos_0_8']/*[@class='android.widget.TextView'])[1]")).click();
-driver.findElement(AppiumBy.xpath("(//*[@id='key_pos_0_6']/*[@class='android.widget.TextView'])[1]")).click();
-// new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("//*[@contentDescription='Password input field']")));
-driver.findElement(AppiumBy.xpath("//*[@contentDescription='Password input field']")).click();
-driver.findElement(AppiumBy.xpath("//*[@class='android.widget.TextView' and ./parent::*[@id='key_pos_2_7']]")).click();
-driver.findElement(AppiumBy.xpath("//*[@class='android.widget.TextView' and ./parent::*[@id='key_pos_0_2']]")).click();
-driver.findElement(AppiumBy.xpath("//*[@text='Login' and ./parent::*[@contentDescription='Login button']]")).click();`,
-          capabilities: {
-            deviceName: 'emulator-5554',
-            app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
-            appPackage: 'com.saucelabs.mydemoapp.rn',
-            appActivity: '.MainActivity',
-          },
-          remoteAddress: 'http://localhost:8000', // 'host:port'
-        });
-        /*
-        await generator({
+          targetVersion,
           codes,
-          ...args,
           capabilities: {
-            deviceName: 'emulator-5554',
-            app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
-            appPackage: 'com.saucelabs.mydemoapp.rn',
-            appActivity: '.MainActivity',
+            ...capabilities,
+            app: capabilities.app ? join(ROOT_PATH, normalize(capabilities.app)) : undefined,
           },
-          remoteAddress: 'http://localhost:4723', // 'host:port'
+          remoteAddress: remoteAddress ?? 'http://localhost:8000', // 'host:port'
         });
-        */
       });
     })
     // eslint-disable-next-line promise/prefer-await-to-then,promise/prefer-await-to-callbacks

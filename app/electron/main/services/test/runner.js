@@ -68,7 +68,7 @@ driver.findElement(AppiumBy.xpath("//!*[@text='Login' and ./parent::*[@contentDe
   const options = {
     // detached: true, ==> actionsTester.unref();
     detached: true,
-    // stdio: ['ignore', 'pipe', 'pipe'],
+    // stdio: ['pipe', 'pipe', 'pipe'],
     stdio: ['ignore', openSync(`stdout_compile_${fileIndex}.txt`, 'w'), openSync(`stderr_compile_${fileIndex}.txt`, 'w')],
     // stdio: ['ignore', openSync('stdout_tester.txt', 'w'), openSync('stderr_tester.txt', 'w')],
     // stdio: ['pipe', 'ignore', 'inherit']
@@ -269,7 +269,7 @@ async function runner(options) {
     signal,
     // detached: true, ==> actionsTester.unref();
     detached: true,
-    stdio: ['ignore', 'pipe', 'pipe'],
+    stdio: 'pipe',
     // stdio: ['ignore', openSync(`stdout_compile_${fileIndex}.txt`, 'w'), openSync(`stderr_compile_${fileIndex}.txt`, 'w')],
     // stdio: ['ignore', openSync('stdout_tester.txt', 'w'), openSync('stderr_tester.txt', 'w')],
     // stdio: ['pipe', 'ignore', 'inherit']
@@ -288,7 +288,7 @@ async function runner(options) {
 
   const classPath = normalizeTarget(`libs/android-${targetVersion}-api-${ANDROID_VERSIONS[targetVersion]}.jar;libs/junit-platform-launcher-1.10.3.jar;libs/aspectjrt-1.9.22.1.jar;libs/aspectjtools-1.9.22.1.jar;libs/java-client-9.2.3.jar;libs/selenium-api-4.21.0.jar;libs/selenium-remote-driver-4.21.0.jar;libs/auto-service-annotations-1.1.1.jar;libs/guava-33.2.0-jre.jar;libs/failureaccess-1.0.2.jar;libs/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;libs/jsr305-3.0.2.jar;libs/checker-qual-3.42.0.jar;libs/j2objc-annotations-3.0.0.jar;libs/opentelemetry-semconv-1.25.0-alpha.jar;libs/opentelemetry-api-1.38.0.jar;libs/opentelemetry-context-1.38.0.jar;libs/opentelemetry-exporter-logging-1.38.0.jar;libs/opentelemetry-sdk-common-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-spi-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-1.38.0.jar;libs/opentelemetry-api-incubator-1.38.0-alpha.jar;libs/opentelemetry-sdk-trace-1.38.0.jar;libs/opentelemetry-sdk-1.38.0.jar;libs/opentelemetry-sdk-metrics-1.38.0.jar;libs/opentelemetry-sdk-logs-1.38.0.jar;libs/byte-buddy-1.14.15.jar;libs/selenium-http-4.21.0.jar;libs/failsafe-3.3.2.jar;libs/selenium-json-4.21.0.jar;libs/selenium-manager-4.21.0.jar;libs/selenium-os-4.21.0.jar;libs/commons-exec-1.4.0.jar;libs/selenium-support-4.21.0.jar;libs/gson-2.11.0.jar;libs/error_prone_annotations-2.27.0.jar;libs/slf4j-api-2.0.16.jar;libs/slf4j-simple-2.0.16.jar;libs/junit-jupiter-5.10.3.jar;libs/junit-jupiter-api-5.10.3.jar;libs/opentest4j-1.3.0.jar;libs/junit-platform-commons-1.10.3.jar;libs/apiguardian-api-1.1.2.jar;libs/junit-jupiter-params-5.10.3.jar;libs/junit-jupiter-engine-5.10.3.jar;libs/junit-platform-engine-1.10.3.jar;libs/unirest-java-3.14.5-standalone.jar;libs/httpclient-4.5.13.jar;libs/httpcore-4.4.13.jar;libs/commons-logging-1.2.jar;libs/httpmime-4.5.13.jar;libs/httpcore-nio-4.4.13.jar;libs/httpasyncclient-4.1.5.jar;libs/commons-codec-1.15.jar;`);
   // #1 compile java to class
-  isDev && (spawnOptions.stdio = ['ignore', openSync(`stdout_compile_${fileIndex}.txt`, 'w'), openSync(`stderr_compile_${fileIndex}.txt`, 'w')]);
+  // isDev && (spawnOptions.stdio = ['ignore', openSync(`stdout_compile_${fileIndex}.txt`, 'w'), openSync(`stderr_compile_${fileIndex}.txt`, 'w')]);
   // TODO: "teen_process::SubProcess"로 개선하자!
   child = spawn(javacPath, [
     // isDev ? '-verbose' : '',
@@ -300,6 +300,50 @@ async function runner(options) {
     // TODO: Android or iOS
     join(dest, 'src', 'test', 'java', 'com', 'sptek', 'appium', 'AndroidUnitTest.java'),
   ], spawnOptions);
+
+  child.on('exit', (code, signal) => {
+    // if we get here, all we know is that the proc exited
+    log.log(`exited with code ${code} from signal ${signal}`);
+    // exited with code 127 from signal SIGHUP
+    log.log(`[appium-tester] exited with code ${code} from signal ${signal}`);
+  });
+
+  child.on('stop', (code, signal) => {
+    // if we get here, we know that we intentionally stopped the proc
+    // by calling proc.stop
+    log.log(`[appium-tester] stop with code ${code} from signal ${signal}`);
+  });
+
+  child.on('end', (code, signal) => {
+    // if we get here, we know that the process stopped outside of our control
+    // but with a 0 exit code
+    log.log(`[appium-tester] ended with code ${code} from signal ${signal}`);
+  });
+
+  child.on('die', (code, signal) => {
+    // if we get here, we know that the process stopped outside of our control
+    // with a non-zero exit code
+    log.log(`[appium-tester] died with code ${code} from signal ${signal}`);
+  });
+
+  child.on('output', (stdout, stderr) => {
+    stdout && log.log(`[appium-tester] output::stdout: ${stdout}`);
+    stderr && log.log(`[appium-tester] output::stderr: ${stderr}`);
+  });
+
+  // lines-stderr is just the same
+  child.on('lines-stdout', (lines) => {
+    log.log('[appium-tester] lines-stdout:', lines);
+    // ['foo', 'bar', 'baz']
+    // automatically handles rejoining lines across stream chunks
+  });
+
+  // stream-line gives you one line at a time, with [STDOUT] or [STDERR]
+  // prepended
+  child.on('stream-line', (line) => {
+    log.log('[appium-tester] stream-line:', line);
+    // [STDOUT] foo
+  });
 
   child.stdout?.setEncoding?.('utf-8');
   spawnOptions.stdio[1] === 'pipe' && child.stdout.on('data', (chunk) => {
@@ -328,7 +372,7 @@ async function runner(options) {
   });
 
   child.on('disconnect', () => {
-    log.warn('[actions-tester] compiler disconnected');
+    log.warn('[actions-tester] compiler disconnect');
   });
 
   child.on('close', (code, signal) => {
