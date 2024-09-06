@@ -1,0 +1,13 @@
+{
+  "name": "node-polyfills",
+  "version": "0.0.1",
+  "main": "index.mjs",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["Node.js", "polyfills", "14.x"],
+  "author": "Kim, Hansoo <keiches@gmail.com>",
+  "license": "ISC",
+  "description": "Node.js polyfills for old Node.js -14.x"
+}

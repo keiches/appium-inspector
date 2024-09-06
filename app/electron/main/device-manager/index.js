@@ -1,11 +1,15 @@
-// import ADB from 'appium-adb';
 // import {dialog} from 'electron';
+// import ADB from 'appium-adb';
+// import ADB from '../services/adb';
+import ADB from './adb';
+
 // import {t} from '../helpers';
 import {log} from '../logger';
 
 export async function getDevices() {
   try {
     // TODO:
+    const adb = await ADB.createADB();
     /*const adb = await ADB.createADB();
 
     const device = await adb.getPIDsByName('com.android.phone');
