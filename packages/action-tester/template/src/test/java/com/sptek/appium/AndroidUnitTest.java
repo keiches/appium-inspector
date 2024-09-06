@@ -35,6 +35,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,13 +59,17 @@ public class AndroidUnitTest {
 
     private URL getURL() {
         try {
-            return new URL("{{remoteAddress}}");
+            // return new URL("{{remoteAddress}}");
+            return Paths.get("{{remoteAddress}}").toUri().toURL();
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            // e.printStackTrace();
+            System.out.println("Error creating URL1 " + e.toString());
+            log.error("Error creating URL", e);
         }
+        return null;
     }
 
-    public String getSessionId(AndroidDriver driver){
+    public String getSessionId(AndroidDriver driver) {
         String sessionId;
         try {
             sessionId = driver.getSessionId().toString();
@@ -90,8 +95,9 @@ public class AndroidUnitTest {
                     .header("Content-Type", "application/json")
                     .body(body).asJson();
         } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to set Test info");
+            // e.printStackTrace();
+            System.out.println("Failed to set Test info1");
+            log.error("Error set Test Info2", e);
         }
     }
 
@@ -195,7 +201,7 @@ public class AndroidUnitTest {
             options.setAppPackage("{{capabilities.appPackage}}"); // "com.saucelabs.mydemoapp.rn");
             options.setAppActivity("{{capabilities.appActivity}}"); // ".MainActivity");
 
-            driver = new AndroidDriver(new URL("{{remoteAddress}}"), options); // "{{remoteAddress}}"), options);
+            driver = new AndroidDriver(getURL(), options); // "{{remoteAddress}}"), options);
             driver.setLogLevel(Level.INFO);
             driver.addLogcatConnectionListener(new Runnable() {
                public void run() {
@@ -205,44 +211,6 @@ public class AndroidUnitTest {
             // @site: https://github.com/SeleniumHQ/seleniumhq.github.io/blob/trunk//examples/java/src/test/java/dev/selenium/troubleshooting/LoggingTest.java#L40-L41
             System.out.println("--- session(" + driver.getSessionId() + ") ready!");
             initLoggers();
-        } catch (MalformedURLException e) {
-            System.out.println("ERROR: failed to set up Appium capabilities: " + e.getMessage());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // for iOS
-    // @BeforeEach
-    // @DisabledOnOs(OS.MAC)
-    @Disabled
-    public void beforeEach_iOS() throws MalformedURLException {
-        log.info("Setting up Appium App Validator!");
-
-        System.out.println("Setting up Appium capabilities...");
-        try {
-            XCUITestOptions options = new XCUITestOptions();
-            // NOTE: already includes in XCUITestOptions
-            // options.setPlatformName("iOS");
-            // options.setAutomationName(AutomationName.IOS_XCUI_TEST);
-            options.setDeviceName("{{capabilities.deviceName}}"); // "iPhone 13");
-            // options.setApp(System.getProperty("user.dir") + "/apps/iOS-Simulator-MyRNDemoApp.1.3.0-162.zip");
-            // options.setApp("C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apps\\iOS-Simulator-MyRNDemoApp.1.3.0-162.zip");
-            options.setApp("{{capabilities.app}}");
-
-            IOSDriver iOSDriver = new IOSDriver(new URL("{{remoteAddress}}"), options);
-            // driver = iOSDriver;
-            iOSDriver.setLogLevel(Level.INFO);
-            iOSDriver.addSyslogConnectionListener(new Runnable() {
-                public void run() {
-                    System.out.println("------");
-                }
-            });
-            // @site: https://github.com/SeleniumHQ/seleniumhq.github.io/blob/trunk//examples/java/src/test/java/dev/selenium/troubleshooting/LoggingTest.java#L40-L41
-            System.out.println("--- session(" + iOSDriver.getSessionId() + ") ready!");
-            initLoggers();
-            // Thread.sleep(4000);
-            // driver.findElements(AppiumBy.name("store item text")).get(0).click();
         } catch (MalformedURLException e) {
             System.out.println("ERROR: failed to set up Appium capabilities: " + e.getMessage());
         } catch (IOException e) {

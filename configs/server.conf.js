@@ -25,7 +25,7 @@ module.exports = {
     "keep-alive-timeout": 600,
     "local-timezone": true,
     // "log": "/tmp/appium.log",
-    "log": "./appium-server.log",
+    "log": "./aav-server.log",
     "log-level": "info",
     "log-format": "text",
     "log-no-colors": true,
@@ -35,7 +35,7 @@ module.exports = {
     "plugin": {
       "device-manager": {
         "platform": "android", // "ios",
-        "deviceType": "both",
+        "deviceType": "all",
         /*"liveStreaming":true,
         "skipChromeDownload":true,
         "deviceAvailabilityTimeoutMs":300000,

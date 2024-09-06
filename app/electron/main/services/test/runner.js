@@ -1,8 +1,8 @@
 import {dialog} from 'electron';
-import {openSync} from 'fs';
+// import {openSync} from 'fs';
 import {join} from 'path';
 
-import {isDev} from '../../helpers';
+// import {isDev} from '../../helpers';
 import {log} from '../../logger';
 import {JRM_PATH, TESTER_LIBS_PATH, TESTER_PATH, spawn} from '../../utils';
 import ANDROID_VERSIONS from './android-versions';
@@ -19,7 +19,7 @@ async function runActionTester() {
   log.log('Running action tester...', await resolveJavaPath());
   log.log(`----0>>> ${ROOT_PATH}`);
   log.log(`----1>>> ${await promises.realpath(ROOT_PATH)}`);
-  // log.log(`----2>>> ${join(PACKAGES_PATH, 'actions-tester', `compile.${platform() === 'win32' ? 'cmd' : 'sh'}`)}`);
+  // log.log(`----2>>> ${join(PACKAGES_PATH, 'tester-compile', `compile.${platform() === 'win32' ? 'cmd' : 'sh'}`)}`);
 
   const {dest, copied} = await generator({
     targetVersion: '12',
@@ -103,7 +103,7 @@ driver.findElement(AppiumBy.xpath("//!*[@text='Login' and ./parent::*[@contentDe
   testerProcess.stdout?.setEncoding?.('utf-8');
   options.stdio[1] === 'pipe' && testerProcess.stdout.on('data', (/!** @type {Buffer} *!/ chunk) => {
     // if we get here, all we know is that the proc exited
-    log.log(`[actions-tester] compiler stdout: ${chunk?.toString()}`);
+    log.log(`[tester-compile] compiler stdout: ${chunk?.toString()}`);
     // exited with code 127 from signal SIGHUP
   });
 
@@ -111,16 +111,16 @@ driver.findElement(AppiumBy.xpath("//!*[@text='Login' and ./parent::*[@contentDe
   options.stdio[2] === 'pipe' && testerProcess.stderr.on('data', (/!** @type {Buffer} *!/ chunk) => {
     /!*const content = Buffer.concat([chunk]).toString();
     console.log('--------', content);*!/
-    log.error(`[actions-tester] compiler stderr: ${chunk?.toString()}`);
+    log.error(`[tester-compile] compiler stderr: ${chunk?.toString()}`);
   });
 
   testerProcess.on('message', (message) => {
-    log.log('[actions-tester] compiler message:' + message);
+    log.log('[tester-compile] compiler message:' + message);
   });
 
   testerProcess.on('error', (err) => {
     // This will be called with err being an AbortError if the controller aborts
-    log.error('[actions-tester] compiler error:' + err.toString());
+    log.error('[tester-compile] compiler error:' + err.toString());
     dialog.showMessageBox({
       type: 'error',
       buttons: ['OK'],
@@ -129,14 +129,14 @@ driver.findElement(AppiumBy.xpath("//!*[@text='Login' and ./parent::*[@contentDe
   });
 
   testerProcess.on('disconnect', () => {
-    log.warn('[actions-tester] compiler disconnect');
+    log.warn('[tester-compile] compiler disconnect');
   });
 
   testerProcess.on('close', (code, signal) => {
     // if we get here, we know that the process stopped outside our control
     // but with a 0 exit code
     // app.quit();
-    log.log(`[actions-tester] compiler closed with code ${code} from signal ${signal}`);
+    log.log(`[tester-compile] compiler closed with code ${code} from signal ${signal}`);
     if (signal === null) {
       log.log('Test runner compiled');
       // TODO: when compiling is done successfully, start running
@@ -145,7 +145,7 @@ driver.findElement(AppiumBy.xpath("//!*[@text='Login' and ./parent::*[@contentDe
         log.log('Starting test runner...');
         // #2 run class
         options.stdio = ['ignore', openSync(`stdout_test_${fileIndex}.txt`, 'w'), openSync(`stderr_test_${fileIndex}.txt`, 'w')];
-        /!*actionTester = spawn(join(__dirname, '..', 'libs', 'actions-tester', 'run'), [
+        /!*actionTester = spawn(join(__dirname, '..', 'libs', 'tester-compile', 'run'), [
           dest,
         ], {
           // detached: true, ==> actionsTester.unref();
@@ -170,22 +170,22 @@ driver.findElement(AppiumBy.xpath("//!*[@text='Login' and ./parent::*[@contentDe
         testerProcess.stdout?.setEncoding?.('utf-8');
         options.stdio[1] === 'pipe' && testerProcess.stdout.on('data', (/!** @type {Buffer} *!/ chunk) => {
           // if we get here, all we know is that the proc exited
-          log.log(`[actions-tester] runner stdout: ${chunk.toString('utf-8')}`);
+          log.log(`[tester-compile] runner stdout: ${chunk.toString('utf-8')}`);
           // exited with code 127 from signal SIGHUP
         });
 
         testerProcess.stderr?.setEncoding?.('utf-8');
         options.stdio[2] === 'pipe' && testerProcess.stderr.on('data', (/!** @type {Buffer} *!/ chunk) => {
-          log.error(`[actions-tester] runner stderr: ${chunk.toString('utf-8')}`);
+          log.error(`[tester-compile] runner stderr: ${chunk.toString('utf-8')}`);
         });
 
         testerProcess.on('message', (message) => {
-          log.log('[actions-tester] message:' + message);
+          log.log('[tester-compile] message:' + message);
         });
 
         testerProcess.on('error', (err) => {
           // This will be called with err being an AbortError if the controller aborts
-          log.error('[actions-tester] runner error:' + err.toString());
+          log.error('[tester-compile] runner error:' + err.toString());
           dialog.showMessageBox({
             type: 'error',
             buttons: ['OK'],
@@ -194,14 +194,14 @@ driver.findElement(AppiumBy.xpath("//!*[@text='Login' and ./parent::*[@contentDe
         });
 
         testerProcess.on('disconnect', () => {
-          log.warn('[actions-tester] runner disconnect');
+          log.warn('[tester-compile] runner disconnect');
         });
 
         testerProcess.on('close', (code, signal) => {
           // if we get here, we know that the process stopped outside our control
           // but with a 0 exit code
           // app.quit();
-          log.log(`[actions-tester] runner closed with code ${code} from signal ${signal}`);
+          log.log(`[tester-compile] runner closed with code ${code} from signal ${signal}`);
           if (code === 0 && signal === null) {
             // TODO: when compiling is done successfully, start running
             log.log('Test runner stopped');
@@ -212,10 +212,10 @@ driver.findElement(AppiumBy.xpath("//!*[@text='Login' and ./parent::*[@contentDe
         });
 
         testerProcess.on('exit', (code, signal) => {
-          log.log(`[actions-tester] runner existed with code ${code} from signal ${signal}`);
+          log.log(`[tester-compile] runner existed with code ${code} from signal ${signal}`);
         });
 
-        log.log(`[actions-tester] runner spawned: ${testerProcess.pid}`);
+        log.log(`[tester-compile] runner spawned: ${testerProcess.pid}`);
       }, 1);
     } else {
       // TODO: send reasons about failed to compile
@@ -224,10 +224,10 @@ driver.findElement(AppiumBy.xpath("//!*[@text='Login' and ./parent::*[@contentDe
   });
 
   testerProcess.on('exit', (code, signal) => {
-    log.log(`[actions-tester] compiler existed with code ${code} from signal ${signal}`);
+    log.log(`[tester-compile] compiler existed with code ${code} from signal ${signal}`);
   });
 
-  log.log(`[actions-tester] compiler spawned: ${testerProcess.pid}`);
+  log.log(`[tester-compile] compiler spawned: ${testerProcess.pid}`);
 }
 */
 
@@ -249,11 +249,11 @@ function normalizeTarget(targetPath) {
  * @returns {Promise<import('child_process').ChildProcess|import('teen_process').SubProcess|undefined>}
  */
 async function runner(options) {
-  log.log('Starting action tester with', options);
+  log.log('[tester-compile] starting action tester with', options);
   let child;
   const {dest, copied} = await generator(options);
   // eslint-disable-next-line
-  console.log('----0', dest, copied?.length ?? 0);
+  log.log('[tester-compile] template generated:', copied?.length ?? 0, 'files', 'to', dest);
 
   if (!dest) {
     return;
@@ -268,8 +268,8 @@ async function runner(options) {
   const spawnOptions = {
     signal,
     // detached: true, ==> actionsTester.unref();
-    detached: true,
-    stdio: 'pipe',
+    // detached: false,
+    // stdio: 'pipe',
     // stdio: ['ignore', openSync(`stdout_compile_${fileIndex}.txt`, 'w'), openSync(`stderr_compile_${fileIndex}.txt`, 'w')],
     // stdio: ['ignore', openSync('stdout_tester.txt', 'w'), openSync('stderr_tester.txt', 'w')],
     // stdio: ['pipe', 'ignore', 'inherit']
@@ -346,24 +346,24 @@ async function runner(options) {
   });
 
   child.stdout?.setEncoding?.('utf-8');
-  spawnOptions.stdio?.[1] === 'pipe' && child.stdout.on('data', (chunk) => {
+  /*spawnOptions.stdio?.[1] === 'pipe' &&*/ child.stdout.on('data', (chunk) => {
     // if we get here, all we know is that the proc exited
-    log.log('[actions-tester] compiler stdout:', chunk?.toString());
+    log.log('[tester-compile] compiler stdout:', chunk?.toString());
     // exited with code 127 from signal SIGHUP
   });
 
   child.stderr?.setEncoding?.('utf-8');
-  spawnOptions.stdio?.[2] === 'pipe' && child.stderr.on('data', (chunk) => {
-    log.error('[actions-tester] compiler stderr:', chunk?.toString());
+  /*spawnOptions.stdio?.[2] === 'pipe' &&*/ child.stderr.on('data', (chunk) => {
+    log.error('[tester-compile] compiler stderr:', chunk?.toString());
   });
 
   child.on('message', (message) => {
-    log.log('[actions-tester] compiler message:', message);
+    log.log('[tester-compile] compiler message:', message);
   });
 
   child.on('error', (err) => {
     // This will be called with err being an AbortError if the controller aborts
-    log.error('[actions-tester] compiler error:', err.toString());
+    log.error('[tester-compile] compiler error:', err.toString());
     dialog.showMessageBox({
       type: 'error',
       buttons: ['OK'],
@@ -372,20 +372,20 @@ async function runner(options) {
   });
 
   child.on('disconnect', () => {
-    log.warn('[actions-tester] compiler disconnect');
+    log.warn('[tester-compile] compiler disconnect');
   });
 
   child.on('close', (code, signal) => {
     // if we get here, we know that the process stopped outside our control
     // but with a 0 exit code
     // app.quit();
-    log.log(`[actions-tester] compiler closed with code ${code} from signal ${signal}`);
+    log.log(`[tester-compile] compiler closed with code ${code} from signal ${signal}`);
     if (code === 0 && signal === null) {
-      log.log('Test runner compiled');
+      log.log('[test-runner] tester compiled');
       // TODO: when compiling is done successfully, start running
       setTimeout(() => {
         child.unref();
-        log.log('Starting test runner...');
+        log.log('[test-runner] starting test runner...');
         // #2 run class
         // isDev && (spawnOptions.stdio = ['ignore', openSync(`stdout_test_${fileIndex}.txt`, 'w'), openSync(`stderr_test_${fileIndex}.txt`, 'w')]);
         const testerController = new ProcessAbortController();
@@ -403,24 +403,24 @@ async function runner(options) {
         ], spawnOptions);
 
         child.stdout?.setEncoding?.('utf-8');
-        spawnOptions.stdio?.[1] === 'pipe' && child.stdout.on('data', (data) => {
+        /*spawnOptions.stdio?.[1] === 'pipe' &&*/ child.stdout.on('data', (data) => {
           // if we get here, all we know is that the proc exited
-          log.log(`[actions-tester] runner stdout: ${data}`);
+          log.log(`[tester-compile] runner stdout: ${data}`);
           // exited with code 127 from signal SIGHUP
         });
 
         child.stderr?.setEncoding?.('utf-8');
-        spawnOptions.stdio?.[2] === 'pipe' && child.stderr.on('data', (data) => {
-          log.error(`[actions-tester] runner stderr: ${data}`);
+        /*spawnOptions.stdio?.[2] === 'pipe' &&*/ child.stderr.on('data', (data) => {
+          log.error(`[tester-compile] runner stderr: ${data}`);
         });
 
         child.on('message', (message) => {
-          log.log('[actions-tester] message:' + message);
+          log.log('[tester-compile] message:' + message);
         });
 
         child.on('error', (err) => {
           // This will be called with err being an AbortError if the controller aborts
-          log.error('[actions-tester] runner error:' + err.toString());
+          log.error('[tester-compile] runner error:' + err.toString());
           dialog.showMessageBox({
             type: 'error',
             buttons: ['OK'],
@@ -429,40 +429,40 @@ async function runner(options) {
         });
 
         child.on('disconnect', () => {
-          log.warn('[actions-tester] runner disconnect');
+          log.warn('[tester-compile] runner disconnect');
         });
 
         child.on('close', (code, signal) => {
           // if we get here, we know that the process stopped outside our control
           // but with a 0 exit code
           // app.quit();
-          log.log(`[actions-tester] runner closed with code ${code} from signal ${signal}`);
+          log.log(`[tester-compile] runner closed with code ${code} from signal ${signal}`);
           if (code === 0 && signal === null) {
             // TODO: when compiling is done successfully, start running
-            log.log('Test runner stopped');
+            log.log('[tester-compile] test runner stopped');
           } else {
             // TODO: send reasons about failed to run
-            log.error(`Failed to run test runner with code ${code} from signal ${signal}`);
+            log.error(`[tester-compile] failed to run test runner with code ${code} from signal ${signal}`);
           }
         });
 
         child.on('exit', (code, signal) => {
-          log.log(`[actions-tester] runner existed with code ${code} from signal ${signal}`);
+          log.log(`[tester-compile] runner existed with code ${code} from signal ${signal}`);
         });
 
-        log.log(`[actions-tester] runner spawned: ${child.pid}`);
+        log.log(`[tester-compile] runner spawned: ${child.pid}`);
       }, 1);
     } else {
       // TODO: send reasons about failed to compile
-      log.error('Failed to compile test runner with error');
+      log.error('[tester-compile] failed to compile test runner with error');
     }
   });
 
   child.on('exit', (code, signal) => {
-    log.log(`[actions-tester] compiler existed with code ${code} from signal ${signal}`);
+    log.log(`[tester-compile] compiler existed with code ${code} from signal ${signal}`);
   });
 
-  log.log(`[actions-tester] compiler spawned: ${child.pid}`);
+  log.log(`[tester-compile] compiler spawned: ${child.pid}`);
 
   return child;
 }

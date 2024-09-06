@@ -35,6 +35,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,13 +59,17 @@ public class IOSUnitTest {
 
     private URL getURL() {
         try {
-            return new URL("{{remoteAddress}}");
+            // return new URL("{{remoteAddress}}");
+            return Paths.get("{{remoteAddress}}").toUri().toURL();
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            // e.printStackTrace();
+            System.out.println("Error creating URL1 " + e.toString());
+            log.error("Error creating URL", e);
         }
+        return null;
     }
 
-    public String getSessionId(IOSDriver driver){
+    public String getSessionId(IOSDriver driver) {
         String sessionId;
         try {
             sessionId = driver.getSessionId().toString();
@@ -90,8 +95,9 @@ public class IOSUnitTest {
                     .header("Content-Type", "application/json")
                     .body(body).asJson();
         } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to set Test info");
+            // e.printStackTrace();
+            System.out.println("Failed to set Test info1");
+            log.error("Error set Test Info2", e);
         }
     }
 
@@ -168,7 +174,7 @@ public class IOSUnitTest {
             // options.setApp("C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apps\\iOS-Simulator-MyRNDemoApp.1.3.0-162.zip");
             options.setApp("{{capabilities.app}}");
 
-            driver = new IOSDriver(this.getURL(), options);
+            driver = new IOSDriver(getURL(), options);
             driver.setLogLevel(Level.INFO);
             driver.addSyslogConnectionListener(new Runnable() {
                 public void run() {

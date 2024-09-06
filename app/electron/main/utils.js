@@ -81,10 +81,10 @@ export function spawn(file, args, options) {
     stdio: ['ignore', 'pipe', 'pipe'],
     ...options,
   });*/
-  if (process.env.NODE_NATIVE) {
-    return spawnNode(file, args, options);
+  if (process.env.NODE_EXTENDS) {
+    return new SubProcess(file, args, options);
   }
-  return new SubProcess(file, args, options);
+  return spawnNode(file, args, options);
 }
 
 /*

@@ -227,7 +227,6 @@ async function generator(options) {
           return through(function(chunk, enc, done) {
             done(null, render(chunk.toString(), {
               codes,
-              remoteAddress: remoteAddress ?? 'http://localhost:4723', // 'host:port'
               capabilities: {
                 // FIXME: 아래 코드를 제거
                 app: 'C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk',
@@ -236,6 +235,7 @@ async function generator(options) {
                 deviceName: 'emulator-5554',
                 ...capabilities,
               },
+              remoteAddress: remoteAddress ?? 'http://localhost:4723', // 'host:port'
             }));
           });
         case '.cmd':

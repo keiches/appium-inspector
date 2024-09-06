@@ -124,7 +124,7 @@ async function runner() {
   const spawnOptions = {
     signal,
     // stdio: ['ignore', 'pipe', 'pipe'],
-    stdio: 'pipe',
+    // stdio: 'pipe',
     // stdio: ['pipe', 'inherit', 'inherit']
     // shell: true,
     // cwd: 'C:\\Test\\Path',
@@ -138,20 +138,23 @@ async function runner() {
     },
   };
   log.info(`[appium-server] APPIUM_HOME("${resolve(ROOT_PATH, '..', '.appium')}") found`);
+  // TODO: set actual appium server path
+  // const serverPath = join(PACKAGES_PATH, 'server', 'packages', 'appium', 'build', 'lib', 'main.js');
+  const serverPath = join(PACKAGES_PATH, 'server', 'packages', 'appium', 'index.js');
   // isDev && (spawnOptions.stdio = ['ignore', openSync(`stdout_server_${fileIndex}.txt`, 'w'), openSync(`stderr_server_${fileIndex}.txt`, 'w')]);
-  if (!(await exists(join(PACKAGES_PATH, 'server', 'packages', 'appium', 'build', 'lib', 'main.js')))) {
-    log.error(`[appium-server] "${join(PACKAGES_PATH, 'server', 'packages', 'appium', 'build', 'lib', 'main.js')}" not found`);
+  if (!(await exists(serverPath))) {
+    log.error(`[appium-server] "${serverPath}" not found`);
   } else {
-    log.info(`[appium-server] "${join(PACKAGES_PATH, 'server', 'packages', 'appium', 'build', 'lib', 'main.js')}" found`);
+    log.info(`[appium-server] "${serverPath}" found`);
   }
   // TODO: "teen_process::SubProcess"로 개선하자!
   const child = spawn(nodePath, [
-    // isDev ? '-inspect' : '',
-    // TODO: set actual appium server path
-    join(PACKAGES_PATH, 'server', 'packages', 'appium', 'build', 'lib', 'main.js'),
+    isDev ? '--inspect' : '',
+    serverPath,
     // resolve(join('..', 'server', 'packages', 'appium')),
     // ../server/packages/appium
     'server',
+    '--allow-cors',
     // '--show-config'
     '--config',
     join(ROOT_PATH, 'configs', 'server.conf.js'),
