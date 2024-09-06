@@ -346,14 +346,14 @@ async function runner(options) {
   });
 
   child.stdout?.setEncoding?.('utf-8');
-  spawnOptions.stdio[1] === 'pipe' && child.stdout.on('data', (chunk) => {
+  spawnOptions.stdio?.[1] === 'pipe' && child.stdout.on('data', (chunk) => {
     // if we get here, all we know is that the proc exited
     log.log('[actions-tester] compiler stdout:', chunk?.toString());
     // exited with code 127 from signal SIGHUP
   });
 
   child.stderr?.setEncoding?.('utf-8');
-  spawnOptions.stdio[2] === 'pipe' && child.stderr.on('data', (chunk) => {
+  spawnOptions.stdio?.[2] === 'pipe' && child.stderr.on('data', (chunk) => {
     log.error('[actions-tester] compiler stderr:', chunk?.toString());
   });
 
@@ -387,7 +387,7 @@ async function runner(options) {
         child.unref();
         log.log('Starting test runner...');
         // #2 run class
-        isDev && (spawnOptions.stdio = ['ignore', openSync(`stdout_test_${fileIndex}.txt`, 'w'), openSync(`stderr_test_${fileIndex}.txt`, 'w')]);
+        // isDev && (spawnOptions.stdio = ['ignore', openSync(`stdout_test_${fileIndex}.txt`, 'w'), openSync(`stderr_test_${fileIndex}.txt`, 'w')]);
         const testerController = new ProcessAbortController();
         const { signal } = testerController;
         spawnOptions.signal = signal;
@@ -403,14 +403,14 @@ async function runner(options) {
         ], spawnOptions);
 
         child.stdout?.setEncoding?.('utf-8');
-        spawnOptions.stdio[1] === 'pipe' && child.stdout.on('data', (data) => {
+        spawnOptions.stdio?.[1] === 'pipe' && child.stdout.on('data', (data) => {
           // if we get here, all we know is that the proc exited
           log.log(`[actions-tester] runner stdout: ${data}`);
           // exited with code 127 from signal SIGHUP
         });
 
         child.stderr?.setEncoding?.('utf-8');
-        spawnOptions.stdio[2] === 'pipe' && child.stderr.on('data', (data) => {
+        spawnOptions.stdio?.[2] === 'pipe' && child.stderr.on('data', (data) => {
           log.error(`[actions-tester] runner stderr: ${data}`);
         });
 
