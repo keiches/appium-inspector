@@ -295,6 +295,7 @@
   "gestureNameCannotBeEmptyError": "Название жеста не может быть пустым",
   "gestureInvalidJsonError": "Негодный файл JSON. Невозможно разобрать содержимое файла",
   "gestureImportedFrom": "Жест импортирован из '{{fileName}}'",
+  "invalidSessionFile": "Invalid session file",
   "getCurrentDevices": "Get Current Devices",
   "setConnection": "Connection Settings",
   "deviceList": "Device List",

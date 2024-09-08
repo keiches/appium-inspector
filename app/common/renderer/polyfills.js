@@ -18,16 +18,10 @@ export function setSetting(setting, value) {
   settings.set(setting, value);
 }
 
-export function getSettingSync(setting) {
-  return settings.getSync(setting);
-}
-
 export {
-  clipboard,
-  shell,
+  copyToClipboard,
+  openLink,
   ipcRenderer,
   i18NextBackend,
   i18NextBackendOptions,
-  fs,
-  util,
 } from '#local-polyfills'; // eslint-disable-line import/no-unresolved

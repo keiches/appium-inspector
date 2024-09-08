@@ -25,8 +25,8 @@ import {
   SESSION_EXPIRY_PROMPT_TIMEOUT,
 } from '../../constants/session-inspector';
 import {SCREENSHOT_INTERACTION_MODE} from '../../constants/screenshot';
-import {clipboard} from '../../polyfills';
-import {downloadFile} from '../../utils/other';
+import {copyToClipboard} from '../../polyfills';
+import {downloadFile} from '../../utils/file-handling';
 import Commands from './Commands.jsx';
 import GestureEditor from './GestureEditor.jsx';
 import HeaderButtons from './HeaderButtons.jsx';
@@ -325,7 +325,7 @@ const Inspector = (props) => {
                               type="text"
                               id="btnSourceXML"
                               icon={<CopyOutlined />}
-                              onClick={() => clipboard.writeText(sourceXML)}
+                              onClick={() => copyToClipboard(sourceXML)}
                             />
                           </Tooltip>
                           <Tooltip title={t('Download Source as .XML File')}>

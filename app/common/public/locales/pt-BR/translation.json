@@ -295,6 +295,7 @@
   "gestureNameCannotBeEmptyError": "Nome do gesto não pode ser vazio",
   "gestureInvalidJsonError": "Arquivo JSON inválido. Não é possível analisar o conteúdo do arquivo",
   "gestureImportedFrom": "Gesto importado de '{{fileName}}'",
+  "invalidSessionFile": "Arquivo de sessão inválido",
   "getCurrentDevices": "Get Current Devices",
   "setConnection": "Connection Settings",
   "deviceList": "Device List",

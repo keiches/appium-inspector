@@ -14,7 +14,7 @@ import {capitalCase, sentenceCase} from 'change-case';
 
 import {BUTTON} from '../../constants/antd-types';
 import frameworks from '../../lib/client-frameworks';
-import {clipboard, ipcRenderer} from '../../polyfills';
+import {copyToClipboard, ipcRenderer} from '../../polyfills';
 import InspectorStyles from './Inspector.module.css';
 import SessionStyles from '../Session/Session.module.css';
 import * as PropTypes from 'prop-types';
@@ -552,7 +552,7 @@ const Recorder = (props) => {
                   />
                 </Tooltip>
                 <Tooltip title={t('Copy code to clipboard')}>
-                  <Button icon={<CopyOutlined />} onClick={() => clipboard.writeText(code())} />
+                  <Button icon={<CopyOutlined />} onClick={() => copyToClipboard(code())} />
                 </Tooltip>
                 <Tooltip title={t('Clear Actions')}>
                   <Button icon={<ClearOutlined />} onClick={clearRecording} />

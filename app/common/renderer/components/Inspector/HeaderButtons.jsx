@@ -20,7 +20,7 @@ import {IoChevronBackOutline, IoPhonePortraitOutline} from 'react-icons/io5';
 import {BUTTON} from '../../constants/antd-types';
 import {LINKS} from '../../constants/common';
 import {APP_MODE} from '../../constants/session-inspector';
-import {shell} from '../../polyfills';
+import {openLink} from '../../polyfills';
 import InspectorStyles from './Inspector.module.css';
 
 const HeaderButtons = (props) => {
@@ -151,9 +151,7 @@ const HeaderButtons = (props) => {
             title={
               <>
                 {t('contextDropdownInfo')}{' '}
-                <a
-                  onClick={(e) => e.preventDefault() || shell.openExternal(LINKS.HYBRID_MODE_DOCS)}
-                >
+                <a onClick={(e) => e.preventDefault() || openLink(LINKS.HYBRID_MODE_DOCS)}>
                   {LINKS.HYBRID_MODE_DOCS}
                 </a>
               </>

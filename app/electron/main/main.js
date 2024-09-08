@@ -1,24 +1,28 @@
-import {app, ipcMain} from 'electron';
+import {app} from 'electron';
 import debug from 'electron-debug';
+import {resolve} from 'path';
 
-// import {installExtensions} from './debug';
-import {getAppiumSessionFilePath, isDev} from './helpers';
+import {installExtensions} from './debug';
+import {isDev, setupIPCListeners} from './helpers';
 import {setupMainWindow} from './windows';
 import {log} from './logger';
 import {getDevices} from './device-manager';
 import {checkEnvironments, ROOT_PATH} from './utils.js';
 import {startAppiumServer, startTestServer} from './services';
 import testRunner from './services/test/runner';
-import {join, normalize, resolve} from 'path';
 
 // const log = console || _logger;
-
-export let openFilePath = getAppiumSessionFilePath(process.argv, app.isPackaged);
+// Used when opening Inspector through an .appiumsession file (Windows/Linux).
+// This value is not set in dev mode, since accessing argv[1] there throws an error,
+// and this flow only makes sense for the installed Inspector app anyway
+export let openFilePath = process.platform === 'darwin' || isDev ? null : process.argv[1];
 
 let appiumServer;
 let testerRunner;
 
+// Used when opening Inspector through an .appiumsession file (macOS)
 app.on('open-file', (event, filePath) => {
+  event.preventDefault();
   openFilePath = filePath;
 });
 
@@ -30,8 +34,14 @@ const onAppQuit = () => {
   if (appiumServer && !appiumServer.killed) {
     log.log('Terminate Appium server...');
     appiumServer.kill?.('SIGTERM'); // NodeJS.Signals
-    // process.kill(server.pid, 'SIGINT');
+    // process.kill(appiumServer.pid, 'SIGINT');
     appiumServer = null;
+  }
+  if (testerRunner && !testerRunner.killed) {
+    log.log('Terminate Tester runner...');
+    testerRunner.kill?.('SIGTERM'); // NodeJS.Signals
+    // process.kill(testerRunner.pid, 'SIGINT');
+    testerRunner = null;
   }
 };
 
@@ -44,8 +54,7 @@ app.on('ready', async () => {
   if (isDev) {
     await checkEnvironments();
     debug();
-    // TODO: uncomment this after upgrading to Electron 15+
-    // await installExtensions();
+    await installExtensions();
   }
 
   // @site: https://www.freecodecamp.org/korean/news/node-js-child-processes-everything-you-need-to-know-e69498fe970a/
@@ -63,6 +72,7 @@ app.on('ready', async () => {
       //
     });
 
+  setupIPCListeners();
   const mainWindow = setupMainWindow();
 
   setTimeout(() => {

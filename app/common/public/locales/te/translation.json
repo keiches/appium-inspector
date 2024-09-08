@@ -1,5 +1,5 @@
 {
-  "appiumInspector": "Appium Inspector",
+  "appiumInspector": "Appium App Validator",
   "Edit": "సవరించు",
   "Redo": "మళ్లీ చేయుము",
   "Cut": "కత్తిరించు",
@@ -295,6 +295,7 @@
   "gestureNameCannotBeEmptyError": "Gesture name cannot be empty",
   "gestureInvalidJsonError": "Invalid JSON file. Unable to parse the file content",
   "gestureImportedFrom": "Gesture imported from '{{fileName}}'",
+  "invalidSessionFile": "Invalid session file",
   "getCurrentDevices": "Get Current Devices",
   "setConnection": "Connection Settings",
   "deviceList": "Device List",
