@@ -9,7 +9,7 @@ import {getDevices} from './device-manager';
 import {checkEnvironments, ROOT_PATH} from './utils.js';
 import {startAppiumServer, startTestServer} from './services';
 import testRunner from './services/test/runner';
-import {join, normalize} from 'path';
+import {join, normalize, resolve} from 'path';
 
 // const log = console || _logger;
 
@@ -50,7 +50,7 @@ app.on('ready', async () => {
 
   // @site: https://www.freecodecamp.org/korean/news/node-js-child-processes-everything-you-need-to-know-e69498fe970a/
   // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
-  // appiumServer = await startAppiumServer();
+  appiumServer = await startAppiumServer();
 
   // DEBUG:
   getDevices()
@@ -67,19 +67,20 @@ app.on('ready', async () => {
 
   setTimeout(() => {
     // 이 경우는 대기를 하지 않아도 되므로, synchronization 하지 않음
-     testerRunner = startTestServer(mainWindow);
-    /*log.debug('[start-test]......');
+     // testerRunner = startTestServer(mainWindow);
+    log.debug('[start-test]......');
     // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
     testerRunner = testRunner({
       targetVersion: '12',
       codes: 'var a = 2;',
       capabilities: {
         deviceName: 'emulator-5554',
-        app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk').replaceAll(/\\/g, '\\\\'),
+        app: resolve(ROOT_PATH, '..', 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk').replaceAll(/\\/g, '\\\\'),
         appPackage: 'com.saucelabs.mydemoapp.rn',
         appActivity: '.MainActivity',
       },
-      remoteAddress: 'http://localhost:8000', // 'host:port'
-    });*/
+      remoteAddress: 'http://localhost:4723', // 'host:port'
+      reportAddress: 'http://localhost:9090',
+    });
   }, 1);
 });

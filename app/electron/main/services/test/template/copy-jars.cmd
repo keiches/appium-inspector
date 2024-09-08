@@ -4,7 +4,7 @@ rem copy /b /y /v %ANDROID_HOME%\platforms\android-31\data\res libs
 rem copy /b /y /v %USERPROFILE%\Projects\appium2_sample_01\target\test-classes libs
 copy /b /y /v %USERPROFILE%\.m2\repository\org\aspectj\aspectjrt\1.9.22.1\aspectjrt-1.9.22.1.jar libs
 copy /b /y /v %USERPROFILE%\.m2\repository\org\aspectj\aspectjtools\1.9.22.1\aspectjtools-1.9.22.1.jar libs
-copy /b /y /v %USERPROFILE%\.m2\repository\io\appium\java-client\9.2.3\java-client-9.2.3.jar libs
+copy /b /y /v %USERPROFILE%\.m2\repository\io\appium\java-client\9.2.3\java-client-9.3.0.jar libs
 copy /b /y /v %USERPROFILE%\.m2\repository\org\seleniumhq\selenium\selenium-api\4.21.0\selenium-api-4.21.0.jar libs
 copy /b /y /v %USERPROFILE%\.m2\repository\org\seleniumhq\selenium\selenium-remote-driver\4.21.0\selenium-remote-driver-4.21.0.jar libs
 copy /b /y /v %USERPROFILE%\.m2\repository\com\google\auto\service\auto-service-annotations\1.1.1\auto-service-annotations-1.1.1.jar libs

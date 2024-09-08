@@ -29,7 +29,7 @@
     "test:integration": "vitest run integration",
     "test:e2e": "echo 'Currently not functional - TODO: fixme'",
     "dev:browser": "vite",
-    "dev:electron": "electron-vite -w --inspect-brk=9229 --sourcemap",
+    "dev:electron": "APPIUM_HOME=/Users/keiches/Projects/SPTek/appium-app-validator/.aav electron-vite -w --inspect-brk=9089 --sourcemap",
     "build": "npm run build:browser && npm run build:electron",
     "build:browser": "vite build",
     "build:electron": "electron-vite build",

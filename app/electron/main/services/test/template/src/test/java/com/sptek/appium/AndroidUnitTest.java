@@ -1,54 +1,35 @@
 package com.sptek.appium;
 
-/*import com.orhanobut.logger.AndroidLogAdapter;
-import com.orhanobut.logger.DiskLogAdapter;
-import com.orhanobut.logger.FormatStrategy;
-import com.orhanobut.logger.Logger;
-import com.orhanobut.logger.PrettyFormatStrategy;*/
-
-import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
-import io.appium.java_client.ios.IOSDriver;
-import io.appium.java_client.ios.options.XCUITestOptions;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.condition.DisabledOnJre;
-import org.junit.jupiter.api.condition.DisabledOnOs;
-import org.junit.jupiter.api.condition.JRE;
-import org.junit.jupiter.api.condition.OS;
-// import org.openqa.selenium.By; // to AppiumBy
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.Point;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.interactions.Pause;
-import org.openqa.selenium.interactions.PointerInput;
-import org.openqa.selenium.interactions.Sequence;
 import org.openqa.selenium.manager.SeleniumManager;
 import org.openqa.selenium.remote.RemoteWebDriver;
+// import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+// import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
-import java.nio.file.Paths;
-import java.time.Duration;
+// import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.UUID;
+import java.util.Objects;
 import java.util.logging.FileHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.UUID;
 
 // @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 @DisplayName("Appium App Validator - JUnit 5 Unit Test")
 public class AndroidUnitTest {
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(AndroidUnitTest.class);
+    // private static final org.slf4j.Logger log = LoggerFactory.getLogger(AndroidUnitTest.class);
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger("");
     private String reportDirectory = "reports";
     private String reportFormat = "xml";
     private String testName = "Appium App Validator - JUnit 5 Unit Test";
@@ -57,13 +38,23 @@ public class AndroidUnitTest {
 
     UiAutomator2Options options = new UiAutomator2Options();
 
+    /*
+    // NOTE: Additional initializing
+    static {
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
+    }*/
+
     private URL getURL() {
         try {
+            // System.out.println("URL #1: " + URI.create("{{remoteAddress}}").toURL().toString());
+            log.debug("URL #2: {}", URI.create("{{remoteAddress}}").toURL().toString());
+            return URI.create("{{remoteAddress}}").toURL();
+            // return Paths.get("{{remoteAddress}}"); // .toUri().toURL();
             // return new URL("{{remoteAddress}}");
-            return Paths.get("{{remoteAddress}}").toUri().toURL();
         } catch (MalformedURLException e) {
             // e.printStackTrace();
-            System.out.println("Error creating URL1 " + e.toString());
+            // System.out.println("Error creating URL1 " + e.toString());
             log.error("Error creating URL", e);
         }
         return null;
@@ -136,20 +127,25 @@ public class AndroidUnitTest {
         Arrays.stream(thisLogger.getHandlers()).forEach(handler -> {
             handler.setLevel(Level.FINE);
         });
-        thisLogger.addHandler(new FileHandler("this_logs.xml"));
-        Logger localLogger = Logger.getLogger(this.getClass().getName());
+        thisLogger.addHandler(new FileHandler("global_logs.xml"));
+        /*Logger selfLogger = Logger.getLogger(AndroidUnitTest.class.getName()); // this.getClass().getName());
+        selfLogger.setLevel(Level.ALL);
+        // Handler handler = new FileHandler("appium_logs.xml");
+        // driverLogger.addHandler(handler);
+        selfLogger.addHandler(new FileHandler("client_logs.xml"));*/
+        /*Logger localLogger = Logger.getLogger(this.getClass().getName());
         localLogger.setLevel(Level.ALL);
-        localLogger.addHandler(new FileHandler("local_logs.xml"));
+        localLogger.addHandler(new FileHandler("local_logs.xml"));*/
         Logger driverLogger = Logger.getLogger(RemoteWebDriver.class.getName()); // this.getClass().getName());
         driverLogger.setLevel(Level.ALL);
         // Handler handler = new FileHandler("appium_logs.xml");
         // driverLogger.addHandler(handler);
-        driverLogger.addHandler(new FileHandler("appium_logs.xml"));
-        Logger seleniumLogger = Logger.getLogger(SeleniumManager.class.getName()); // this.getClass().getName());
+        driverLogger.addHandler(new FileHandler("server_logs.xml"));
+        /*Logger seleniumLogger = Logger.getLogger(SeleniumManager.class.getName()); // this.getClass().getName());
         seleniumLogger.setLevel(Level.ALL);
         // Handler handler = new FileHandler("selenium_logs.xml");
         // seleniumLogger.addHandler(handler);
-        seleniumLogger.addHandler(new FileHandler("selenium_logs.xml"));
+        seleniumLogger.addHandler(new FileHandler("selenium_logs.xml"));*/
     }
 
     @BeforeEach
@@ -201,7 +197,7 @@ public class AndroidUnitTest {
             options.setAppPackage("{{capabilities.appPackage}}"); // "com.saucelabs.mydemoapp.rn");
             options.setAppActivity("{{capabilities.appActivity}}"); // ".MainActivity");
 
-            driver = new AndroidDriver(new URL("{{remoteAddress}}"), options); // "{{remoteAddress}}"), options);
+            driver = new AndroidDriver(Objects.requireNonNull(getURL()), options); // "{{remoteAddress}}"), options);
             driver.setLogLevel(Level.INFO);
             driver.addLogcatConnectionListener(new Runnable() {
                public void run() {

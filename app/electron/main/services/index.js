@@ -2,7 +2,7 @@ import {app, dialog, ipcMain} from 'electron';
 import which from 'which';
 import {createServer} from 'http';
 // import express from 'express';
-import {join, normalize} from 'path';
+import {join, normalize, resolve} from 'path';
 import {existsSync} from 'fs';
 import {exec} from 'teen_process';
 
@@ -255,7 +255,7 @@ export function startTestServer(window) {
           codes,
           capabilities: {
             ...capabilities,
-            app: capabilities.app ? join(ROOT_PATH, normalize(capabilities.app)) : undefined,
+            app: capabilities.app ? resolve(ROOT_PATH, '..', normalize(capabilities.app)) : undefined,
           },
           remoteAddress: remoteAddress ?? 'http://localhost:8000', // 'host:port'
         });

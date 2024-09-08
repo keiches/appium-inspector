@@ -1,5 +1,5 @@
 import fs from 'fs';
-import {join} from 'path';
+import {join, resolve} from 'path';
 import generator from '../generator.js';
 import {ROOT_PATH} from '../../../utils.js';
 // import commandLineArgs from 'command-line-args';
@@ -38,7 +38,7 @@ try {
     codes: 'a = 2;',
     capabilities: {
       deviceName: 'emulator-5554',
-      app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
+      app: resolve(ROOT_PATH, '..', 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
       appPackage: 'com.saucelabs.mydemoapp.rn',
       appActivity: '.MainActivity',
     },

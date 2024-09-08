@@ -81,10 +81,10 @@ export function spawn(file, args, options) {
     stdio: ['ignore', 'pipe', 'pipe'],
     ...options,
   });*/
-  if (process.env.NODE_EXTENDS) {
-    return new SubProcess(file, args, options);
+  if (process.env.NODE_NATIVE) {
+    return spawnNode(file, args, options);
   }
-  return spawnNode(file, args, options);
+  return new SubProcess(file, args, options);
 }
 
 /*
@@ -114,8 +114,8 @@ export const checkEnvironments = (process.env.NODE_ENV === 'development') ? asyn
   log.log(`----Temp: ${tmpdir()}`);
   log.log(`----Temp path: ${await promises.realpath(tmpdir())}`);
   log.log(`----TEMP_PATH: ${TEMP_PATH}`);
-  log.log(`----WORKING_HOME: ${join(homedir(), '.appium')}`);
-  log.log(`----WORKING_HOME exists: ${existsSync(join(homedir(), '.appium'))}`);
+  log.log(`----WORKING_HOME: ${join(homedir(), '.aav')}`);
+  log.log(`----WORKING_HOME exists: ${existsSync(join(homedir(), '.aav'))}`);
   log.log(`----APPIUM_HOME: ${process.env.APPIUM_HOME}`);
   log.log(`----APPIUM_HOME exists: ${existsSync(process.env.APPIUM_HOME)}`);
   log.log(`----JAVA_HOME: ${process.env.JAVA_HOME}`);

@@ -1,48 +1,26 @@
 package com.sptek.appium;
 
-/*import com.orhanobut.logger.AndroidLogAdapter;
-import com.orhanobut.logger.DiskLogAdapter;
-import com.orhanobut.logger.FormatStrategy;
-import com.orhanobut.logger.Logger;
-import com.orhanobut.logger.PrettyFormatStrategy;*/
-
-import io.appium.java_client.AppiumBy;
-import io.appium.java_client.android.AndroidDriver;
-import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.ios.IOSDriver;
 import io.appium.java_client.ios.options.XCUITestOptions;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.condition.DisabledOnJre;
-import org.junit.jupiter.api.condition.DisabledOnOs;
-import org.junit.jupiter.api.condition.JRE;
-import org.junit.jupiter.api.condition.OS;
-// import org.openqa.selenium.By; // to AppiumBy
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.Point;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.interactions.Pause;
-import org.openqa.selenium.interactions.PointerInput;
-import org.openqa.selenium.interactions.Sequence;
 import org.openqa.selenium.manager.SeleniumManager;
 import org.openqa.selenium.remote.RemoteWebDriver;
+// import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.Duration;
+import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.UUID;
 import java.util.logging.FileHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.UUID;
 
 // @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 @DisplayName("Appium App Validator - JUnit 5 Unit Test")
@@ -173,7 +151,7 @@ public class IOSUnitTest {
             // options.setApp("C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apps\\iOS-Simulator-MyRNDemoApp.1.3.0-162.zip");
             options.setApp("{{capabilities.app}}");
 
-            driver = new IOSDriver(this.getURL(), options);
+            driver = new IOSDriver(Objects.requireNonNull(getURL()), options);
             driver.setLogLevel(Level.INFO);
             driver.addSyslogConnectionListener(new Runnable() {
                 public void run() {

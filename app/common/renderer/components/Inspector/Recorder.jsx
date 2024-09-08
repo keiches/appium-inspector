@@ -520,7 +520,7 @@ const Recorder = (props) => {
     setIsActionsPlayed(true);
     ipcRenderer.send('start-test', {
       targetVersion: 12,
-      codes: actionCode(),
+      codes: actionCode() || 'var a = 3;',
       capabilities: {
         deviceName: 'emulator-5554',
         app: 'apps/Android-MyDemoAppRN.1.3.0.build-244.apk',

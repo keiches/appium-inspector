@@ -27,17 +27,19 @@
 
 ---
 
-Appium Inspector is a GUI assistant tool for Appium, providing visual inspection of the application
+Appium App Validator is a GUI assistant tool for Appium, providing visual inspection of the application
 under test. It can show the application page screenshot along with its page source, and includes
 various features for interacting with the app.
 
 When inspecting a mobile app, the Inspector looks like this:
 
-![Appium Inspector screenshot](./docs/assets/images/inspector-window.png)
+![Appium App Validator screenshot](./docs/assets/images/valdator-window.png)
+
+forked from ![Appium Inspector screenshot](./docs/assets/images/inspector-window.png)
 
 ## Installation
 
-Appium Inspector is released in two formats:
+Appium App Validator is released in two formats:
 
 1. Standalone desktop application for macOS, Windows, and Linux - download it from the
    [**Releases**](https://github.com/appium/appium-inspector/releases) section
