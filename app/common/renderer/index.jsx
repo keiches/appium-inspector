@@ -14,8 +14,10 @@ root.render(
   </ErrorBoundary>,
 );
 
+// noinspection JSUnresolvedReference
 if (module.hot) {
   module.hot.accept('./Root', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const NextRoot = require('./Root.jsx').default;
     root.render(
       <ErrorBoundary>
