@@ -12,6 +12,7 @@ import {resolveJavaExecutePaths, resolveNodePath} from './services';
 // import {v4} from 'uuid';
 
 import './prototype-date';
+import './prototype-string';
 
 // NOTE: in renderer/preload, use "remote.app.getAppPath()".
 export const ROOT_PATH = process.env.NODE_ENV === 'development' ? app.getAppPath() : __dirname;
@@ -74,6 +75,7 @@ export async function exists(path) {
  * @returns {ChildProcess|import('teen_process').SubProcess}
  */
 export function spawn(file, args, options) {
+  log.debug('[SPAWN]', args, options);
   /*return new SubProcess(file, args, {
     cwd: __dirname,
     env,

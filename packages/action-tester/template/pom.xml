@@ -125,15 +125,14 @@
             <version>9.3.0</version>
         </dependency>
 
-        <!--<dependency>
+<!--<dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>5.9.2</version>
             <scope>test</scope>
         </dependency>-->
-
         <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
-        <dependency>
+<dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>5.10.3</version>
@@ -200,11 +199,11 @@
         </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-android -->
-        <dependency>
+        <!-- <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-android</artifactId>
             <version>1.7.36</version>
-        </dependency>
+        </dependency> -->
 
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
         <dependency>

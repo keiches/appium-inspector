@@ -1,4 +1,4 @@
-import electronLog from 'electron-log/main';
+/*import electronLog from 'electron-log/main';
 
 if (process.env.ELECTRON_LOG) {
   // Optional, initialize the logger for any renderer process
@@ -10,7 +10,7 @@ if (process.env.ELECTRON_LOG) {
   electronLog.transports.console.level = level;
 
   Object.assign(console, electronLog.functions);
-}
+}*/
 
 class Logger {
   constructor() {

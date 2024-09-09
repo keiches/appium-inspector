@@ -25,22 +25,25 @@ import java.util.UUID;
 // @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 @DisplayName("Appium App Validator - JUnit 5 Unit Test")
 public class IOSUnitTest {
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(IOSUnitTest.class);
+    // private static final org.slf4j.Logger log = LoggerFactory.getLogger(IOSUnitTest.class);
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger("");
     private String reportDirectory = "reports";
     private String reportFormat = "xml";
     private String testName = "Appium App Validator - JUnit 5 Unit Test";
 
     protected IOSDriver driver = null;
-
     XCUITestOptions options = new XCUITestOptions();
 
     private URL getURL() {
         try {
-            // return new URL("{{remoteAddress}}");
-            return Paths.get("{{remoteAddress}}").toUri().toURL();
+            // System.out.println("URL #1: " + URI.create("{{remoteAddress}}").toURL().toString());
+            log.debug("URL #2: {}", URI.create("{{remoteAddress}}").toURL().toString());
+            return URI.create("{{remoteAddress}}").toURL();
+            // return Paths.get("{{remoteAddress}}"); // .toUri().toURL();
+            // return new URL("{{remoteAddress}}"); // "http://localhost:4723"
         } catch (MalformedURLException e) {
             // e.printStackTrace();
-            System.out.println("Error creating URL1 " + e.toString());
+            // System.out.println("Error creating URL1 " + e.toString());
             log.error("Error creating URL", e);
         }
         return null;
@@ -113,49 +116,57 @@ public class IOSUnitTest {
         Arrays.stream(thisLogger.getHandlers()).forEach(handler -> {
             handler.setLevel(Level.FINE);
         });
-        thisLogger.addHandler(new FileHandler("this_logs.xml"));
-        Logger localLogger = Logger.getLogger(this.getClass().getName());
+        thisLogger.addHandler(new FileHandler("global_logs.xml"));
+        /*Logger selfLogger = Logger.getLogger(AndroidUnitTest.class.getName()); // this.getClass().getName());
+        selfLogger.setLevel(Level.ALL);
+        // Handler handler = new FileHandler("appium_logs.xml");
+        // driverLogger.addHandler(handler);
+        selfLogger.addHandler(new FileHandler("client_logs.xml"));*/
+        /*Logger localLogger = Logger.getLogger(this.getClass().getName());
         localLogger.setLevel(Level.ALL);
-        localLogger.addHandler(new FileHandler("local_logs.xml"));
+        localLogger.addHandler(new FileHandler("local_logs.xml"));*/
         Logger driverLogger = Logger.getLogger(RemoteWebDriver.class.getName()); // this.getClass().getName());
         driverLogger.setLevel(Level.ALL);
         // Handler handler = new FileHandler("appium_logs.xml");
         // driverLogger.addHandler(handler);
-        driverLogger.addHandler(new FileHandler("appium_logs.xml"));
-        Logger seleniumLogger = Logger.getLogger(SeleniumManager.class.getName()); // this.getClass().getName());
+        driverLogger.addHandler(new FileHandler("server_logs.xml"));
+        /*Logger seleniumLogger = Logger.getLogger(SeleniumManager.class.getName()); // this.getClass().getName());
         seleniumLogger.setLevel(Level.ALL);
         // Handler handler = new FileHandler("selenium_logs.xml");
         // seleniumLogger.addHandler(handler);
-        seleniumLogger.addHandler(new FileHandler("selenium_logs.xml"));
+        seleniumLogger.addHandler(new FileHandler("selenium_logs.xml"));*/
     }
 
     @BeforeEach
     public void beforeEach() throws MalformedURLException {
-        log.info("Setting up Appium App Validator!");
+        log.info("Starting Appium App Validator for iOS...");
 
-        System.out.println("Setting up Appium capabilities...");
+        System.out.println("Setting up capabilities...");
         try {
             // Capabilities
-            options.setCapability("reportDirectory", reportDirectory);
-            options.setCapability("reportFormat", reportFormat);
-            options.setCapability("testName", testName);
             // NOTE: already includes in XCUITestOptions
             // options.setPlatformName("iOS"); // optional
             // options.setAutomationName(AutomationName.IOS_XCUI_TEST); // optional
             options.setDeviceName("{{capabilities.deviceName}}"); // "iPhone 15 Pro Max");
+            /// options.setUdid("{{capabilities.uuid}}");
             options.setPlatformVersion("{{capabilities.platformVersion}}"); // "17.5");
+            // options.setApp(System.getProperty("user.dir") + "/apps/iOS-Simulator-MyRNDemoApp.1.3.0-162.zip");
+            // options.setApp("/Users/keiches/Projects/SPTek/ppium-app-validator\\apps\\iOS-Simulator-MyRNDemoApp.1.3.0-162.zip");
+            options.setApp("{{capabilities.app}}");
+            // Additions
+            options.setCapability("reportDirectory", reportDirectory);
+            options.setCapability("reportFormat", reportFormat);
+            options.setCapability("testName", testName);
             options.setCapability("includeSafariInWebviews", true); // TODO:
             options.setCapability("newCommandTimeout", 3600); // TODO:
             options.setCapability("connectHardwareKeyboard", true); // TODO:
-            // options.setApp(System.getProperty("user.dir") + "/apps/iOS-Simulator-MyRNDemoApp.1.3.0-162.zip");
-            // options.setApp("C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apps\\iOS-Simulator-MyRNDemoApp.1.3.0-162.zip");
-            options.setApp("{{capabilities.app}}");
+            // options.setCapability("noReset", false);
 
             driver = new IOSDriver(Objects.requireNonNull(getURL()), options);
             driver.setLogLevel(Level.INFO);
             driver.addSyslogConnectionListener(new Runnable() {
                 public void run() {
-                    System.out.println("------");
+                    System.out.println("[iOS]------");
                 }
             });
             // @site: https://github.com/SeleniumHQ/seleniumhq.github.io/blob/trunk//examples/java/src/test/java/dev/selenium/troubleshooting/LoggingTest.java#L40-L41

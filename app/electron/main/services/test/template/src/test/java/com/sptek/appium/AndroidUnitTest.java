@@ -35,7 +35,6 @@ public class AndroidUnitTest {
     private String testName = "Appium App Validator - JUnit 5 Unit Test";
 
     protected AndroidDriver driver = null;
-
     UiAutomator2Options options = new UiAutomator2Options();
 
     /*
@@ -51,7 +50,7 @@ public class AndroidUnitTest {
             log.debug("URL #2: {}", URI.create("{{remoteAddress}}").toURL().toString());
             return URI.create("{{remoteAddress}}").toURL();
             // return Paths.get("{{remoteAddress}}"); // .toUri().toURL();
-            // return new URL("{{remoteAddress}}");
+            // return new URL("{{remoteAddress}}"); // "http://localhost:4723"
         } catch (MalformedURLException e) {
             // e.printStackTrace();
             // System.out.println("Error creating URL1 " + e.toString());
@@ -150,9 +149,9 @@ public class AndroidUnitTest {
 
     @BeforeEach
     public void beforeEach() throws MalformedURLException {
-        log.info("Setting up Appium App Validator!");
+        log.info("Starting Appium App Validator for Android...");
 
-        System.out.println("Setting up Appium capabilities...");
+        System.out.println("Setting up capabilities...");
         try {
             /* FormatStrategy formatStrategy = PrettyFormatStrategy.newBuilder()
                     .showThreadInfo(false)  // (Optional) Whether to show thread info or not. Default true
@@ -184,9 +183,6 @@ public class AndroidUnitTest {
             logManager.addLogger(logger);*/
 
             // Capabilities
-            options.setCapability("reportDirectory", reportDirectory);
-            options.setCapability("reportFormat", reportFormat);
-            options.setCapability("testName", testName);
             // NOTE: already includes in UiAutomator2Options
             // options.setPlatformName("Android"); // optional
             // options.setAutomationName(AutomationName.ANDROID_UIAUTOMATOR2); // optional
@@ -196,20 +192,24 @@ public class AndroidUnitTest {
             options.setApp("{{capabilities.app}}"); // "C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk");
             options.setAppPackage("{{capabilities.appPackage}}"); // "com.saucelabs.mydemoapp.rn");
             options.setAppActivity("{{capabilities.appActivity}}"); // ".MainActivity");
+            // options.setUdid("{{capabilities.uuid}}");
+            // Additionals
+            options.setCapability("reportDirectory", reportDirectory);
+            options.setCapability("reportFormat", reportFormat);
+            options.setCapability("testName", testName);
 
             driver = new AndroidDriver(Objects.requireNonNull(getURL()), options); // "{{remoteAddress}}"), options);
             driver.setLogLevel(Level.INFO);
             driver.addLogcatConnectionListener(new Runnable() {
                public void run() {
-                   System.out.println("------");
+                   System.out.println("[Android]------");
                }
            });
             // @site: https://github.com/SeleniumHQ/seleniumhq.github.io/blob/trunk//examples/java/src/test/java/dev/selenium/troubleshooting/LoggingTest.java#L40-L41
             System.out.println("--- session(" + driver.getSessionId() + ") ready!");
             initLoggers();
-        } catch (MalformedURLException e) {
-            System.out.println("ERROR: failed to set up Appium capabilities: " + e.getMessage());
-        } catch (IOException e) {
+        } catch (Exception e) {
+            System.out.println("ERROR: failed to set up capabilities: " + e.getMessage());
             throw new RuntimeException(e);
         }
     }

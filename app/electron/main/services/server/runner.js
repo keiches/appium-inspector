@@ -132,6 +132,7 @@ async function runner() {
     // shell: true,
     encoding: 'utf8',
     // cwd: 'C:\\Test\\Path',
+    cwd: ROOT_PATH,
     // NOTE: 아래 값을 넣으면, 더 이상 shell 로 부터 환경설정값을 읽지 않게 됨
     env: {
       ...process.env,
@@ -141,7 +142,7 @@ async function runner() {
   };
 
   // TODO: set actual appium server path
-  const execPath = join(PACKAGES_PATH, 'server', 'packages', 'appium', 'build', 'lib', 'main.js');
+  const execPath = join(PACKAGES_PATH, 'server', 'packages', 'appium', 'index.js'); // 'build', 'lib', 'main.js');
   // isDev && (spawnOptions.stdio = ['ignore', openSync(`stdout_server_${fileIndex}.txt`, 'w'), openSync(`stderr_server_${fileIndex}.txt`, 'w')]);
   if (!(await exists(execPath))) {
     log.error(`[appium-server] server ("${execPath}") not found`);
@@ -149,7 +150,7 @@ async function runner() {
     log.info(`[appium-server] server ("${execPath}") found`);
   }
   const child = spawn(nodePath, [
-    isDev ? `--inspect=${getPort({port: 9090})}` : '',
+    isDev ? `--inspect=${await getPort({port: 9090})}` : '',
     execPath,
     'server',
     '--log-no-colors',
@@ -206,8 +207,7 @@ async function runner() {
     });
   } else {
     child.on('exit', (code, signal) => {
-      // if we get here, all we know is that the proc exited
-      // exited with code 127 from signal SIGHUP
+      // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
       log.log(`[appium-server] exited with code ${code} from signal ${signal}`);
     });
 

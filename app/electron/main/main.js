@@ -61,7 +61,7 @@ app.on('ready', async () => {
   appiumServer = await startAppiumServer();
 
   // DEBUG:
-  getDevices()
+  /*getDevices()
     // eslint-disable-next-line promise/prefer-await-to-then
     .then(() => {
       //
@@ -69,12 +69,12 @@ app.on('ready', async () => {
     // eslint-disable-next-line promise/prefer-await-to-then
     .catch((_) => {
       //
-    });
+    });*/
 
   setupIPCListeners();
   const mainWindow = setupMainWindow();
 
-  setTimeout(() => {
+  /*setTimeout(() => {
     // 이 경우는 대기를 하지 않아도 되므로, synchronization 하지 않음
      // testerRunner = startTestServer(mainWindow);
     log.debug('[start-test]......');
@@ -91,5 +91,5 @@ app.on('ready', async () => {
       remoteAddress: 'http://localhost:4723', // 'host:port'
       reportAddress: 'http://localhost:9090',
     });
-  }, 1);
+  }, 1);*/
 });

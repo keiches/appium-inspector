@@ -11,6 +11,9 @@ import {resolveJavaExecutePaths} from '../index';
 import {ProcessAbortController} from '../abort-controller.js';
 import {isDev} from '../../helpers.js';
 
+// const CLASS_PATH = 'libs/apiguardian-api-1.1.2.jar:libs/aspectjrt-1.9.22.1.jar:libs/aspectjtools-1.9.22.1.jar:libs/auto-service-annotations-1.1.1.jar:libs/byte-buddy-1.15.0.jar:libs/checker-qual-3.43.0.jar:libs/commons-codec-1.15.jar:libs/commons-exec-1.4.0.jar:libs/commons-logging-1.2.jar:libs/error_prone_annotations-2.28.0.jar:libs/failsafe-3.3.2.jar:libs/failureaccess-1.0.2.jar:libs/gson-2.11.0.jar:libs/guava-33.3.0-jre.jar:libs/httpasyncclient-4.1.5.jar:libs/httpclient-4.5.13.jar:libs/httpcore-4.4.13.jar:libs/httpcore-nio-4.4.13.jar:libs/httpmime-4.5.13.jar:libs/j2objc-annotations-3.0.0.jar:libs/java-client-9.3.0.jar:libs/jspecify-1.0.0.jar:libs/jsr305-3.0.2.jar:libs/jul-to-slf4j-2.0.16.jar:libs/junit-jupiter-5.11.0.jar:libs/junit-jupiter-api-5.11.0.jar:libs/junit-jupiter-engine-5.11.0.jar:libs/junit-jupiter-params-5.11.0.jar:libs/junit-platform-commons-1.11.0.jar:libs/junit-platform-engine-1.11.0.jar:libs/junit-platform-launcher-1.11.0.jar:libs/junit-platform-runner-1.11.0.jar:libs/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar:libs/log4j-over-slf4j-2.0.16.jar:libs/logback-classic-1.5.8.jar:libs/logback-core-1.5.8.jar:libs/opentelemetry-api-1.41.0.jar:libs/opentelemetry-api-incubator-1.41.0-alpha.jar:libs/opentelemetry-context-1.41.0.jar:libs/opentelemetry-exporter-logging-1.41.0.jar:libs/opentelemetry-sdk-1.41.0.jar:libs/opentelemetry-sdk-common-1.41.0.jar:libs/opentelemetry-sdk-extension-autoconfigure-1.41.0.jar:libs/opentelemetry-sdk-extension-autoconfigure-spi-1.41.0.jar:libs/opentelemetry-sdk-logs-1.41.0.jar:libs/opentelemetry-sdk-metrics-1.41.0.jar:libs/opentelemetry-sdk-trace-1.41.0.jar:libs/opentelemetry-semconv-1.25.0-alpha.jar:libs/opentest4j-1.3.0.jar:libs/selenium-api-4.24.0.jar:libs/selenium-chrome-driver-4.24.0.jar:libs/selenium-chromium-driver-4.24.0.jar:libs/selenium-devtools-v126-4.24.0.jar:libs/selenium-devtools-v127-4.24.0.jar:libs/selenium-devtools-v128-4.24.0.jar:libs/selenium-devtools-v85-4.24.0.jar:libs/selenium-edge-driver-4.24.0.jar:libs/selenium-firefox-driver-4.24.0.jar:libs/selenium-http-4.24.0.jar:libs/selenium-ie-driver-4.24.0.jar:libs/selenium-java-4.24.0.jar:libs/selenium-json-4.24.0.jar:libs/selenium-manager-4.24.0.jar:libs/selenium-os-4.24.0.jar:libs/selenium-remote-driver-4.24.0.jar:libs/selenium-safari-driver-4.24.0.jar:libs/selenium-support-4.24.0.jar:libs/slf4j-api-2.0.16.jar:libs/slf4j-simple-2.0.16.jar:libs/unirest-java-3.14.5-standalone.jar:libs/unirest-java-3.14.5.jar:libs/unirest-java-core-4.4.4.jar:libs/unirest-modules-jackson-4.4.4.jar:libs/unirest-objectmapper-jackson-4.2.9.jar'.replace(/:/g, ';');
+const CLASS_PATH = 'libs/apiguardian-api-1.1.2.jar:libs/aspectjrt-1.9.22.1.jar:libs/aspectjtools-1.9.22.1.jar:libs/auto-service-annotations-1.1.1.jar:libs/byte-buddy-1.15.0.jar:libs/checker-qual-3.43.0.jar:libs/commons-codec-1.15.jar:libs/commons-exec-1.4.0.jar:libs/commons-logging-1.2.jar:libs/error_prone_annotations-2.28.0.jar:libs/failsafe-3.3.2.jar:libs/failureaccess-1.0.2.jar:libs/gson-2.11.0.jar:libs/guava-33.3.0-jre.jar:libs/httpasyncclient-4.1.5.jar:libs/httpclient-4.5.13.jar:libs/httpcore-4.4.13.jar:libs/httpcore-nio-4.4.13.jar:libs/httpmime-4.5.13.jar:libs/j2objc-annotations-3.0.0.jar:libs/java-client-9.3.0.jar:libs/jspecify-1.0.0.jar:libs/jsr305-3.0.2.jar:libs/jul-to-slf4j-2.0.16.jar:libs/junit-jupiter-5.11.0.jar:libs/junit-jupiter-api-5.11.0.jar:libs/junit-jupiter-engine-5.11.0.jar:libs/junit-jupiter-params-5.11.0.jar:libs/junit-platform-commons-1.11.0.jar:libs/junit-platform-engine-1.11.0.jar:libs/junit-platform-launcher-1.11.0.jar:libs/junit-platform-runner-1.11.0.jar:libs/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar:libs/log4j-over-slf4j-2.0.16.jar:libs/logback-classic-1.5.8.jar:libs/opentelemetry-api-1.41.0.jar:libs/opentelemetry-api-incubator-1.41.0-alpha.jar:libs/opentelemetry-context-1.41.0.jar:libs/opentelemetry-exporter-logging-1.41.0.jar:libs/opentelemetry-sdk-1.41.0.jar:libs/opentelemetry-sdk-common-1.41.0.jar:libs/opentelemetry-sdk-extension-autoconfigure-1.41.0.jar:libs/opentelemetry-sdk-extension-autoconfigure-spi-1.41.0.jar:libs/opentelemetry-sdk-logs-1.41.0.jar:libs/opentelemetry-sdk-metrics-1.41.0.jar:libs/opentelemetry-sdk-trace-1.41.0.jar:libs/opentelemetry-semconv-1.25.0-alpha.jar:libs/opentest4j-1.3.0.jar:libs/selenium-api-4.24.0.jar:libs/selenium-chrome-driver-4.24.0.jar:libs/selenium-chromium-driver-4.24.0.jar:libs/selenium-devtools-v126-4.24.0.jar:libs/selenium-devtools-v127-4.24.0.jar:libs/selenium-devtools-v128-4.24.0.jar:libs/selenium-devtools-v85-4.24.0.jar:libs/selenium-edge-driver-4.24.0.jar:libs/selenium-firefox-driver-4.24.0.jar:libs/selenium-http-4.24.0.jar:libs/selenium-ie-driver-4.24.0.jar:libs/selenium-java-4.24.0.jar:libs/selenium-json-4.24.0.jar:libs/selenium-manager-4.24.0.jar:libs/selenium-os-4.24.0.jar:libs/selenium-remote-driver-4.24.0.jar:libs/selenium-safari-driver-4.24.0.jar:libs/selenium-support-4.24.0.jar:libs/slf4j-api-2.0.16.jar:libs/unirest-java-3.14.5-standalone.jar:libs/unirest-java-3.14.5.jar:libs/unirest-java-core-4.4.4.jar:libs/unirest-modules-jackson-4.4.4.jar:libs/unirest-objectmapper-jackson-4.2.9.jar'.replace(/:/g, ';');
+
 /**
  * Execute action tester in background
  * @returns {Promise<void>}
@@ -104,9 +107,8 @@ driver.findElement(AppiumBy.xpath("//!*[@text='Login' and ./parent::*[@contentDe
 
   testerProcess.stdout?.setEncoding?.('utf-8');
   options.stdio[1] === 'pipe' && testerProcess.stdout.on('data', (/!** @type {Buffer} *!/ chunk) => {
-    // if we get here, all we know is that the proc exited
+    // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
     log.log(`[tester-compile] compiler stdout: ${chunk?.toString()}`);
-    // exited with code 127 from signal SIGHUP
   });
 
   testerProcess.stderr?.setEncoding?.('utf-8');
@@ -171,9 +173,8 @@ driver.findElement(AppiumBy.xpath("//!*[@text='Login' and ./parent::*[@contentDe
 
         testerProcess.stdout?.setEncoding?.('utf-8');
         options.stdio[1] === 'pipe' && testerProcess.stdout.on('data', (/!** @type {Buffer} *!/ chunk) => {
-          // if we get here, all we know is that the proc exited
+          // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
           log.log(`[tester-compile] runner stdout: ${chunk.toString('utf-8')}`);
-          // exited with code 127 from signal SIGHUP
         });
 
         testerProcess.stderr?.setEncoding?.('utf-8');
@@ -295,7 +296,7 @@ async function runner(options) {
   const sourcePath = normalize(`./${join('src', 'test', 'java', 'com', 'sptek', 'appium', 'AndroidUnitTest.java')}`);
   // TODO: set actual class path
   // const classPath = normalizeTarget(`libs/android-${targetVersion}-api-${ANDROID_VERSIONS[targetVersion]}.jar;libs/junit-platform-launcher-1.10.3.jar;libs/aspectjrt-1.9.22.1.jar;libs/aspectjtools-1.9.22.1.jar;libs/java-client-9.3.0.jar;libs/selenium-api-4.21.0.jar;libs/selenium-remote-driver-4.21.0.jar;libs/auto-service-annotations-1.1.1.jar;libs/guava-33.2.0-jre.jar;libs/failureaccess-1.0.2.jar;libs/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;libs/jsr305-3.0.2.jar;libs/checker-qual-3.42.0.jar;libs/j2objc-annotations-3.0.0.jar;libs/opentelemetry-semconv-1.25.0-alpha.jar;libs/opentelemetry-api-1.38.0.jar;libs/opentelemetry-context-1.38.0.jar;libs/opentelemetry-exporter-logging-1.38.0.jar;libs/opentelemetry-sdk-common-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-spi-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-1.38.0.jar;libs/opentelemetry-api-incubator-1.38.0-alpha.jar;libs/opentelemetry-sdk-trace-1.38.0.jar;libs/opentelemetry-sdk-1.38.0.jar;libs/opentelemetry-sdk-metrics-1.38.0.jar;libs/opentelemetry-sdk-logs-1.38.0.jar;libs/byte-buddy-1.14.15.jar;libs/selenium-http-4.21.0.jar;libs/failsafe-3.3.2.jar;libs/selenium-json-4.21.0.jar;libs/selenium-manager-4.21.0.jar;libs/selenium-os-4.21.0.jar;libs/commons-exec-1.4.0.jar;libs/selenium-support-4.21.0.jar;libs/gson-2.11.0.jar;libs/error_prone_annotations-2.27.0.jar;libs/slf4j-api-2.0.16.jar;libs/slf4j-simple-2.0.16.jar;libs/junit-jupiter-5.10.3.jar;libs/junit-jupiter-api-5.10.3.jar;libs/opentest4j-1.3.0.jar;libs/junit-platform-commons-1.10.3.jar;libs/apiguardian-api-1.1.2.jar;libs/junit-jupiter-params-5.10.3.jar;libs/junit-jupiter-engine-5.10.3.jar;libs/junit-platform-engine-1.10.3.jar;libs/unirest-java-3.14.5-standalone.jar;libs/httpclient-4.5.13.jar;libs/httpcore-4.4.13.jar;libs/commons-logging-1.2.jar;libs/httpmime-4.5.13.jar;libs/httpcore-nio-4.4.13.jar;libs/httpasyncclient-4.1.5.jar;libs/commons-codec-1.15.jar;`);
-  const classPath = `${process.env.ANDROID_HOME}/platforms/android-${targetVersion}/android.jar:${normalizeClassPath('libs/*')}`;
+  const classPath = `${process.env.ANDROID_HOME}/platforms/android-${ANDROID_VERSIONS[targetVersion]}/android.jar:${normalizeClassPath('libs/*')}`.replace(/:/g, ';');
   // #1 compile java to class
   // isDev && (spawnOptions.stdio = ['ignore', openSync(`stdout_compile_${fileIndex}.txt`, 'w'), openSync(`stderr_compile_${fileIndex}.txt`, 'w')]);
   /*if (!(await exists(sourcePath))) {
@@ -317,9 +318,8 @@ async function runner(options) {
     child.stdout?.setEncoding?.('utf-8');
     /*spawnOptions.stdio?.[1] === 'pipe' &&*/
     child.stdout.on('data', (chunk) => {
-      // if we get here, all we know is that the proc exited
+      // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
       log.log('[tester-compile] compiler stdout:', chunk?.toString());
-      // exited with code 127 from signal SIGHUP
     });
 
     child.stderr?.setEncoding?.('utf-8');
@@ -367,12 +367,12 @@ async function runner(options) {
             // '-XX:+PrintCommandLineFlags -XX:+PrintCompilation',
             // isDev ? '-verbose:class' : '',
             '-jar',
-            normalizeClassPath('libs/junit-platform-console-standalone-1.10.3.jar'),
+            normalizeClassPath('libs/junit-platform-console-standalone-1.11.0.jar'),
             'execute',
             // '--class-path=%CLASSPATH%out',
             // libs/android-12-api-31.jar:libs/apiguardian-api-1.1.2.jar:libs/aspectjrt-1.9.22.1.jar:libs/aspectjtools-1.9.22.1.jar:libs/auto-service-annotations-1.1.1.jar:libs/byte-buddy-1.15.0.jar:libs/checker-qual-3.43.0.jar:libs/commons-codec-1.15.jar:libs/commons-exec-1.4.0.jar:libs/commons-logging-1.2.jar:libs/error_prone_annotations-2.28.0.jar:libs/failsafe-3.3.2.jar:libs/failureaccess-1.0.2.jar:libs/gson-2.11.0.jar:libs/guava-33.3.0-jre.jar:libs/httpasyncclient-4.1.5.jar:libs/httpclient-4.5.13.jar:libs/httpcore-4.4.13.jar:libs/httpcore-nio-4.4.13.jar:libs/httpmime-4.5.13.jar:libs/j2objc-annotations-3.0.0.jar:libs/java-client-9.3.0.jar:libs/jspecify-1.0.0.jar:libs/jsr305-3.0.2.jar:libs/jul-to-slf4j-2.0.16.jar:libs/junit-jupiter-5.10.3.jar:libs/junit-jupiter-api-5.10.3.jar:libs/junit-jupiter-engine-5.10.3.jar:libs/junit-jupiter-params-5.10.3.jar:libs/junit-platform-commons-1.10.3.jar:libs/junit-platform-console-standalone-1.10.3.jar:libs/junit-platform-engine-1.10.3.jar:libs/junit-platform-launcher-1.10.3.jar:libs/junit-platform-runner-1.10.3.jar:libs/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar:libs/log4j-over-slf4j-2.0.16.jar:libs/logback-classic-1.5.8.jar:libs/logback-core-1.5.8.jar:libs/opentelemetry-api-1.41.0.jar:libs/opentelemetry-api-incubator-1.41.0-alpha.jar:libs/opentelemetry-context-1.41.0.jar:libs/opentelemetry-exporter-logging-1.41.0.jar:libs/opentelemetry-sdk-1.41.0.jar:libs/opentelemetry-sdk-common-1.41.0.jar:libs/opentelemetry-sdk-extension-autoconfigure-1.41.0.jar:libs/opentelemetry-sdk-extension-autoconfigure-spi-1.41.0.jar:libs/opentelemetry-sdk-logs-1.41.0.jar:libs/opentelemetry-sdk-metrics-1.41.0.jar:libs/opentelemetry-sdk-trace-1.41.0.jar:libs/opentelemetry-semconv-1.25.0-alpha.jar:libs/opentest4j-1.3.0.jar:libs/selenium-api-4.24.0.jar:libs/selenium-chrome-driver-4.24.0.jar:libs/selenium-chromium-driver-4.24.0.jar:libs/selenium-devtools-v126-4.24.0.jar:libs/selenium-devtools-v127-4.24.0.jar:libs/selenium-devtools-v128-4.24.0.jar:libs/selenium-devtools-v85-4.24.0.jar:libs/selenium-edge-driver-4.24.0.jar:libs/selenium-firefox-driver-4.24.0.jar:libs/selenium-http-4.24.0.jar:libs/selenium-ie-driver-4.24.0.jar:libs/selenium-java-4.24.0.jar:libs/selenium-json-4.24.0.jar:libs/selenium-manager-4.24.0.jar:libs/selenium-os-4.24.0.jar:libs/selenium-remote-driver-4.24.0.jar:libs/selenium-safari-driver-4.24.0.jar:libs/selenium-support-4.24.0.jar:libs/slf4j-android-1.7.36.jar:libs/slf4j-api-2.0.16.jar:libs/slf4j-simple-2.0.16.jar:libs/unirest-java-3.14.5-standalone.jar:libs/unirest-java-3.14.5.jar:
             // `--class-path=${classPath}:target/test-classes:target/classes:out`,
-            `--class-path=${normalizeClassPath('libs/android-12-api-31.jar:libs/apiguardian-api-1.1.2.jar:libs/aspectjrt-1.9.22.1.jar:libs/aspectjtools-1.9.22.1.jar:libs/auto-service-annotations-1.1.1.jar:libs/byte-buddy-1.15.0.jar:libs/checker-qual-3.43.0.jar:libs/commons-codec-1.15.jar:libs/commons-exec-1.4.0.jar:libs/commons-logging-1.2.jar:libs/error_prone_annotations-2.28.0.jar:libs/failsafe-3.3.2.jar:libs/failureaccess-1.0.2.jar:libs/gson-2.11.0.jar:libs/guava-33.3.0-jre.jar:libs/httpasyncclient-4.1.5.jar:libs/httpclient-4.5.13.jar:libs/httpcore-4.4.13.jar:libs/httpcore-nio-4.4.13.jar:libs/httpmime-4.5.13.jar:libs/j2objc-annotations-3.0.0.jar:libs/java-client-9.3.0.jar:libs/jspecify-1.0.0.jar:libs/jsr305-3.0.2.jar:libs/jul-to-slf4j-2.0.16.jar:libs/junit-jupiter-5.10.3.jar:libs/junit-jupiter-api-5.10.3.jar:libs/junit-jupiter-engine-5.10.3.jar:libs/junit-jupiter-params-5.10.3.jar:libs/junit-platform-commons-1.10.3.jar:libs/junit-platform-console-standalone-1.10.3.jar:libs/junit-platform-engine-1.10.3.jar:libs/junit-platform-launcher-1.10.3.jar:libs/junit-platform-runner-1.10.3.jar:libs/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar:libs/log4j-over-slf4j-2.0.16.jar:libs/logback-classic-1.5.8.jar:libs/logback-core-1.5.8.jar:libs/opentelemetry-api-1.41.0.jar:libs/opentelemetry-api-incubator-1.41.0-alpha.jar:libs/opentelemetry-context-1.41.0.jar:libs/opentelemetry-exporter-logging-1.41.0.jar:libs/opentelemetry-sdk-1.41.0.jar:libs/opentelemetry-sdk-common-1.41.0.jar:libs/opentelemetry-sdk-extension-autoconfigure-1.41.0.jar:libs/opentelemetry-sdk-extension-autoconfigure-spi-1.41.0.jar:libs/opentelemetry-sdk-logs-1.41.0.jar:libs/opentelemetry-sdk-metrics-1.41.0.jar:libs/opentelemetry-sdk-trace-1.41.0.jar:libs/opentelemetry-semconv-1.25.0-alpha.jar:libs/opentest4j-1.3.0.jar:libs/selenium-api-4.24.0.jar:libs/selenium-chrome-driver-4.24.0.jar:libs/selenium-chromium-driver-4.24.0.jar:libs/selenium-devtools-v126-4.24.0.jar:libs/selenium-devtools-v127-4.24.0.jar:libs/selenium-devtools-v128-4.24.0.jar:libs/selenium-devtools-v85-4.24.0.jar:libs/selenium-edge-driver-4.24.0.jar:libs/selenium-firefox-driver-4.24.0.jar:libs/selenium-http-4.24.0.jar:libs/selenium-ie-driver-4.24.0.jar:libs/selenium-java-4.24.0.jar:libs/selenium-json-4.24.0.jar:libs/selenium-manager-4.24.0.jar:libs/selenium-os-4.24.0.jar:libs/selenium-remote-driver-4.24.0.jar:libs/selenium-safari-driver-4.24.0.jar:libs/selenium-support-4.24.0.jar:libs/slf4j-android-1.7.36.jar:libs/slf4j-api-2.0.16.jar:libs/slf4j-simple-2.0.16.jar:libs/unirest-java-3.14.5-standalone.jar:libs/unirest-java-3.14.5.jar')}:target/test-classes:target/classes:out`,
+            `--class-path=${process.env.ANDROID_HOME}/platforms/android-${ANDROID_VERSIONS[targetVersion]}/android.jar:${normalizeClassPath(CLASS_PATH)}:${normalize('target/test-classes:target/classes')}:out`.replace(/:/g, ';'),
             '--select-class=com.sptek.appium.AndroidUnitTest',
             // '--details=verbose',
             '--disable-banner',
@@ -382,9 +382,8 @@ async function runner(options) {
           child.stdout?.setEncoding?.('utf-8');
           /*spawnOptions.stdio?.[1] === 'pipe' &&*/
           child.stdout.on('data', (data) => {
-            // if we get here, all we know is that the proc exited
+            // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
             log.log(`[tester-compile] runner stdout: ${data}`);
-            // exited with code 127 from signal SIGHUP
           });
 
           child.stderr?.setEncoding?.('utf-8');
@@ -442,8 +441,7 @@ async function runner(options) {
     });
   } else {
     child.on('exit', (code, signal) => {
-      // if we get here, all we know is that the proc exited
-      // exited with code 127 from signal SIGHUP
+      // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
       log.log(`[tester-compile] compiler exited with code ${code} from signal ${signal}`);
       // app.quit();
       if (code === 0 && signal === null) {
@@ -462,12 +460,12 @@ async function runner(options) {
             // '-XX:+PrintCommandLineFlags -XX:+PrintCompilation',
             // isDev ? '-verbose:class' : '',
             '-jar',
-            normalizeClassPath('libs/junit-platform-console-standalone-1.10.3.jar'),
+            normalizeClassPath('libs/junit-platform-console-standalone-1.11.0.jar'),
             'execute',
             // '--class-path=%CLASSPATH%:out',
             // `--class-path=${classPath}:out`,
             // `--class-path=${classPath}:out`,
-            `--class-path=${normalizeClassPath('libs/android-12-api-31.jar:libs/apiguardian-api-1.1.2.jar:libs/aspectjrt-1.9.22.1.jar:libs/aspectjtools-1.9.22.1.jar:libs/auto-service-annotations-1.1.1.jar:libs/byte-buddy-1.15.0.jar:libs/checker-qual-3.43.0.jar:libs/commons-codec-1.15.jar:libs/commons-exec-1.4.0.jar:libs/commons-logging-1.2.jar:libs/error_prone_annotations-2.28.0.jar:libs/failsafe-3.3.2.jar:libs/failureaccess-1.0.2.jar:libs/gson-2.11.0.jar:libs/guava-33.3.0-jre.jar:libs/httpasyncclient-4.1.5.jar:libs/httpclient-4.5.13.jar:libs/httpcore-4.4.13.jar:libs/httpcore-nio-4.4.13.jar:libs/httpmime-4.5.13.jar:libs/j2objc-annotations-3.0.0.jar:libs/java-client-9.3.0.jar:libs/jspecify-1.0.0.jar:libs/jsr305-3.0.2.jar:libs/jul-to-slf4j-2.0.16.jar:libs/junit-jupiter-5.10.3.jar:libs/junit-jupiter-api-5.10.3.jar:libs/junit-jupiter-engine-5.10.3.jar:libs/junit-jupiter-params-5.10.3.jar:libs/junit-platform-commons-1.10.3.jar:libs/junit-platform-console-standalone-1.10.3.jar:libs/junit-platform-engine-1.10.3.jar:libs/junit-platform-launcher-1.10.3.jar:libs/junit-platform-runner-1.10.3.jar:libs/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar:libs/log4j-over-slf4j-2.0.16.jar:libs/logback-classic-1.5.8.jar:libs/logback-core-1.5.8.jar:libs/opentelemetry-api-1.41.0.jar:libs/opentelemetry-api-incubator-1.41.0-alpha.jar:libs/opentelemetry-context-1.41.0.jar:libs/opentelemetry-exporter-logging-1.41.0.jar:libs/opentelemetry-sdk-1.41.0.jar:libs/opentelemetry-sdk-common-1.41.0.jar:libs/opentelemetry-sdk-extension-autoconfigure-1.41.0.jar:libs/opentelemetry-sdk-extension-autoconfigure-spi-1.41.0.jar:libs/opentelemetry-sdk-logs-1.41.0.jar:libs/opentelemetry-sdk-metrics-1.41.0.jar:libs/opentelemetry-sdk-trace-1.41.0.jar:libs/opentelemetry-semconv-1.25.0-alpha.jar:libs/opentest4j-1.3.0.jar:libs/selenium-api-4.24.0.jar:libs/selenium-chrome-driver-4.24.0.jar:libs/selenium-chromium-driver-4.24.0.jar:libs/selenium-devtools-v126-4.24.0.jar:libs/selenium-devtools-v127-4.24.0.jar:libs/selenium-devtools-v128-4.24.0.jar:libs/selenium-devtools-v85-4.24.0.jar:libs/selenium-edge-driver-4.24.0.jar:libs/selenium-firefox-driver-4.24.0.jar:libs/selenium-http-4.24.0.jar:libs/selenium-ie-driver-4.24.0.jar:libs/selenium-java-4.24.0.jar:libs/selenium-json-4.24.0.jar:libs/selenium-manager-4.24.0.jar:libs/selenium-os-4.24.0.jar:libs/selenium-remote-driver-4.24.0.jar:libs/selenium-safari-driver-4.24.0.jar:libs/selenium-support-4.24.0.jar:libs/slf4j-android-1.7.36.jar:libs/slf4j-api-2.0.16.jar:libs/slf4j-simple-2.0.16.jar:libs/unirest-java-3.14.5-standalone.jar:libs/unirest-java-3.14.5.jar')}:target/test-classes:target/classes:out`,
+            `--class-path=${process.env.ANDROID_HOME}/platforms/android-${ANDROID_VERSIONS[targetVersion]}/android.jar:${normalizeClassPath(CLASS_PATH)}:${normalize('target/test-classes:target/classes')}:out`.replace(/:/g, ';'),
             '--select-class=com.sptek.appium.AndroidUnitTest',
             // '--details=verbose',
             '--disable-banner',
@@ -478,9 +476,8 @@ async function runner(options) {
             child.stdout?.setEncoding?.('utf-8');
             /*spawnOptions.stdio?.[1] === 'pipe' &&*/
             child.stdout.on('data', (data) => {
-              // if we get here, all we know is that the proc exited
+              // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
               log.log(`[test-runner] runner stdout: ${data}`);
-              // exited with code 127 from signal SIGHUP
             });
 
             child.stderr?.setEncoding?.('utf-8');
@@ -526,8 +523,7 @@ async function runner(options) {
             });
           } else {
             child.on('exit', (code, signal) => {
-              // if we get here, all we know is that the proc exited
-              // exited with code 127 from signal SIGHUP
+              // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
               log.log(`[test-runner] exited with code ${code} from signal ${signal}`);
             });
 
