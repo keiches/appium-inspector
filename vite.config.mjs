@@ -5,6 +5,7 @@ import {defineConfig} from 'vite';
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
+    sourcemap: process.env.NODE_ENV === 'development' ? 'inline' : false,
     outDir: join(__dirname, 'dist-browser'),
     emptyOutDir: true,
     minify: false, // needed to avoid issues with web2driver

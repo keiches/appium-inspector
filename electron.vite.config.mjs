@@ -6,7 +6,7 @@ import renderer from 'vite-plugin-electron-renderer';
 export default defineConfig({
   main: {
     build: {
-      sourcemap: 'inline',
+      sourcemap: process.env.NODE_ENV === 'development' ? 'inline' : false,
       outDir: join(__dirname, 'dist', 'main'),
       lib: {
         entry: join(__dirname, 'app', 'electron', 'main', 'main.js'),
@@ -22,7 +22,7 @@ export default defineConfig({
   },
   preload: {
     build: {
-      sourcemap: 'inline',
+      sourcemap: process.env.NODE_ENV === 'development' ? 'inline' : false,
       outDir: join(__dirname, 'dist', 'preload'),
       lib: {
         entry: join(__dirname, 'app', 'electron', 'preload', 'preload.mjs'),
@@ -32,7 +32,7 @@ export default defineConfig({
   },
   renderer: {
     build: {
-      sourcemap: 'inline',
+      sourcemap: process.env.NODE_ENV === 'development' ? 'inline' : false,
       outDir: join(__dirname, 'dist', 'renderer'),
       rollupOptions: {
         input: {
