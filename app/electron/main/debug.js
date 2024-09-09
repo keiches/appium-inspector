@@ -15,6 +15,6 @@ export async function installExtensions() {
   try {
     await installExtension([REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS], opts);
   } catch (e) {
-    log.warn(`Error installing extension: ${e}`); // eslint-disable-line no-console
+    log.warn(`Error installing extension: ${e}`);
   }
 }

@@ -1,6 +1,6 @@
 import {notification} from 'antd';
 import axios from 'axios';
-import _, {includes, isPlainObject, isUndefined, toPairs, union, values, without} from 'lodash';
+import {includes, isPlainObject, isUndefined, toPairs, truncate, union, values, without} from 'lodash';
 import moment from 'moment';
 import {v4 as UUID} from 'uuid';
 import {Web2Driver} from 'web2driver';
@@ -19,7 +19,7 @@ import {ipcRenderer, getSetting, setSetting} from '../polyfills';
 import {downloadFile, parseSessionFileContents} from '../utils/file-handling';
 import {log} from '../utils/logger';
 import {addVendorPrefixes} from '../utils/other';
-import {applyClientMethod, quitSession, SET_DEVICE_LIST, setSessionDetails, setVisibleCommandResult} from './Inspector';
+import {quitSession, setSessionDetails, applyClientMethod, setVisibleCommandResult, SET_DEVICE_LIST} from './Inspector';
 
 export const NEW_SESSION_REQUESTED = 'NEW_SESSION_REQUESTED';
 export const NEW_SESSION_LOADING = 'NEW_SESSION_LOADING';
@@ -1199,7 +1199,7 @@ export function getDeviceList(platform, deviceType) {
     // TODO: for develop, must be removed
     setTimeout(() => {
       const result = JSON.stringify(devices, null, '  ');
-      const truncatedResult = _.truncate(result, {length: 2000});
+      const truncatedResult = truncate(result, {length: 2000});
       log.info(truncatedResult);
       setVisibleCommandResult(result, 'device-manager:list')(dispatch);
     }, 1);

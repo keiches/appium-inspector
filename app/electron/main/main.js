@@ -11,7 +11,6 @@ import {checkEnvironments, ROOT_PATH} from './utils.js';
 import {startAppiumServer, startTestServer} from './services';
 import testRunner from './services/test/runner';
 
-// const log = console || _logger;
 // Used when opening Inspector through an .appiumsession file (Windows/Linux).
 // This value is not set in dev mode, since accessing argv[1] there throws an error,
 // and this flow only makes sense for the installed Inspector app anyway

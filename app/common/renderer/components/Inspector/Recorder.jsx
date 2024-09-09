@@ -3,7 +3,7 @@ import {
   CodeOutlined,
   CopyOutlined,
   PicRightOutlined,
-  FormOutlined,
+  // FormOutlined,
   EditOutlined,
   DeleteOutlined, PlayCircleOutlined, StopOutlined, TagOutlined
 } from '@ant-design/icons';
@@ -52,7 +52,7 @@ Flex.propTypes = {children: PropTypes.node};
 // const MODULO = 1e9 + 7;
 
 const Recorder = (props) => {
-  const {showBoilerplate, showActionSource, recordedActions, actionFramework, t} = props;
+  const {showBoilerplate, recordedActions, actionFramework, t, showActionSource} = props;
   // actions panel
   const [actionSelect, setActionSelect] = useState({
     selectedRowKeys: [],
@@ -536,7 +536,7 @@ const Recorder = (props) => {
   }, []);
 
   const actionBar = () => {
-    const {setActionFramework, toggleShowBoilerplate, toggleShowActionSource, clearRecording} = props;
+    const {setActionFramework, toggleShowBoilerplate, clearRecording, toggleShowActionSource} = props;
 
     return (
       <Space size="middle">
@@ -546,9 +546,9 @@ const Recorder = (props) => {
               <Button.Group>
                 <Tooltip title={t('Show/Hide Boilerplate Code')}>
                   <Button
+                    onClick={toggleShowBoilerplate}
                     icon={<PicRightOutlined />}
                     type={showBoilerplate ? BUTTON.PRIMARY : BUTTON.DEFAULT}
-                    onClick={toggleShowBoilerplate}
                   />
                 </Tooltip>
                 <Tooltip title={t('Copy code to clipboard')}>
@@ -561,8 +561,8 @@ const Recorder = (props) => {
             )}
             <Select
               defaultValue={actionFramework}
-              className={InspectorStyles['framework-dropdown']}
               onChange={setActionFramework}
+              className={InspectorStyles['framework-dropdown']}
             >
               {Object.keys(frameworks).map((f) => (
                 <Select.Option value={f} key={f}>
@@ -579,18 +579,18 @@ const Recorder = (props) => {
                 <Button.Group>
                   <Tooltip title={t('startTesting')}>
                     <Button
-                      disabled={(recordedActions.length === 0) || isActionsPlayed}
+                      onClick={onStartTesting}
                       icon={<PlayCircleOutlined />}
                       type={BUTTON.DEFAULT}
-                      onClick={onStartTesting}
+                      disabled={(recordedActions.length === 0) || isActionsPlayed}
                     />
                   </Tooltip>
                   <Tooltip title={t('stopTesting')}>
                     <Button
-                      disabled={(recordedActions.length === 0) || (!isActionsPlayed)}
+                      onClick={onStopTesting}
                       icon={<StopOutlined />}
                       type={BUTTON.DEFAULT}
-                      onClick={onStopTesting}
+                      disabled={(recordedActions.length === 0) || (!isActionsPlayed)}
                     />
                   </Tooltip>
                 </Button.Group>
@@ -601,9 +601,9 @@ const Recorder = (props) => {
         )}
         <Tooltip title={t('showActionSource')}>
           <Button
+            onClick={toggleShowActionSource}
             icon={<PicRightOutlined />}
             type={showActionSource ? BUTTON.PRIMARY : BUTTON.DEFAULT}
-            onClick={toggleShowActionSource}
           />
         </Tooltip>
       </Space>

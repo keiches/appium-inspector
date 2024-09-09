@@ -7,7 +7,7 @@ two connected parts: the Application Source panel, and the Selected Element pane
 
 ![Source Tab](./assets/images/source/source-tab.png)
 
-## Application Source
+## Application Source
 
 The Application Source is the central panel of the Source Tab. It shows the application source XML
 in a tree-like structure, and provides a few additional buttons in the top right corner.

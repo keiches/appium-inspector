@@ -25,6 +25,7 @@ import InspectorStyles from './Inspector.module.css';
 
 const HeaderButtons = (props) => {
   const {
+    getDeviceList,
     selectAppMode,
     appMode,
     mjpegScreenshotUrl,
@@ -36,7 +37,6 @@ const HeaderButtons = (props) => {
     showLocatorTestModal,
     showSiriCommandModal,
     applyClientMethod,
-    getDeviceList,
     quitCurrentSession,
     driver,
     contexts,
@@ -235,10 +235,10 @@ const HeaderButtons = (props) => {
   return (
     <div className={InspectorStyles['inspector-toolbar']}>
       <Space size="middle">
+        {getDevicesButton}
         {deviceControls}
         {appModeControls}
         {generalControls}
-        {getDevicesButton}
         {quitSessionButton}
       </Space>
     </div>
