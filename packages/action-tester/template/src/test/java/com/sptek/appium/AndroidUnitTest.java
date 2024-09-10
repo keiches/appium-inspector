@@ -2,9 +2,9 @@ package com.sptek.appium;
 
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
-import kong.unirest.HttpResponse;
-import kong.unirest.JsonNode;
-import kong.unirest.Unirest;
+import kong.unirest.core.HttpResponse;
+import kong.unirest.core.JsonNode;
+import kong.unirest.core.Unirest;
 import org.junit.jupiter.api.*;
 import org.openqa.selenium.manager.SeleniumManager;
 import org.openqa.selenium.remote.RemoteWebDriver;

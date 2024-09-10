@@ -17,7 +17,11 @@ import testRunner from './services/test/runner';
 export let openFilePath = process.platform === 'darwin' || isDev ? null : process.argv[1];
 
 let appiumServer;
-let testerRunner;
+/** @type {import('http').Server<import('http').IncomingMessage, import('http').ServerResponse>} */
+let testServer;
+/** @type {import('child_process').ChildProcess} */
+/** @type {import('teen_process').SubProcess} */
+let testRunner1;
 
 // Used when opening Inspector through an .appiumsession file (macOS)
 app.on('open-file', (event, filePath) => {
@@ -36,11 +40,24 @@ const onAppQuit = () => {
     // process.kill(appiumServer.pid, 'SIGINT');
     appiumServer = null;
   }
-  if (testerRunner && !testerRunner.killed) {
-    log.log('Terminate Tester runner...');
-    testerRunner.kill?.('SIGTERM'); // NodeJS.Signals
-    // process.kill(testerRunner.pid, 'SIGINT');
-    testerRunner = null;
+  if (testServer && !testServer.listening) {
+    log.log('Terminate Test server...');
+    testServer.closeAllConnections();
+    testServer = null;
+  }
+  if (process.env.NODE_NATIVE) {
+    if (testRunner1 && !testRunner1.killed) {
+      log.log('Terminate Test runner...');
+      testRunner1.kill?.('SIGTERM'); // NodeJS.Signals
+      // process.kill(testerRunner.pid, 'SIGINT');
+      testRunner1 = null;
+    }
+  } else {
+    if (testRunner1 && testRunner1.isRunning) {
+      log.log('Terminate Test runner...');
+      testRunner1.stop?.('SIGTERM'); // NodeJS.Signals
+      testRunner1 = null;
+    }
   }
 };
 
@@ -74,22 +91,24 @@ app.on('ready', async () => {
   setupIPCListeners();
   const mainWindow = setupMainWindow();
 
-  /*setTimeout(() => {
+  setTimeout(async () => {
     // 이 경우는 대기를 하지 않아도 되므로, synchronization 하지 않음
-     // testerRunner = startTestServer(mainWindow);
+    testServer = await startTestServer(mainWindow);
     log.debug('[start-test]......');
-    // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
-    testerRunner = testRunner({
-      targetVersion: '12',
-      codes: 'var a = 2;',
-      capabilities: {
-        deviceName: 'emulator-5554',
-        app: resolve(ROOT_PATH, '..', 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk').replaceAll(/\\/g, '\\\\'),
-        appPackage: 'com.saucelabs.mydemoapp.rn',
-        appActivity: '.MainActivity',
-      },
-      remoteAddress: 'http://localhost:4723', // 'host:port'
-      reportAddress: 'http://localhost:9090',
-    });
-  }, 1);*/
+    setTimeout(async () => {
+      // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
+      testRunner1 = await testRunner({
+        targetVersion: '12',
+        codes: 'var a = 2;',
+        capabilities: {
+          deviceName: 'emulator-5554',
+          app: resolve(ROOT_PATH, '..', 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk').replaceAll(/\\/g, '\\\\'),
+          appPackage: 'com.saucelabs.mydemoapp.rn',
+          appActivity: '.MainActivity',
+        },
+        remoteAddress: 'http://localhost:4723', // 'host:port'
+        reportAddress: 'http://localhost:9090',
+      });
+    }, 10000);
+  }, 1);
 });

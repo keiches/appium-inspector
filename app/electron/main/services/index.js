@@ -155,116 +155,131 @@ export async function startAppiumServer() {
 /**
  * Start Tester process and message server
  * @param {Electron.BrowserWindow} window
- * @returns {import('http').Server<import('http').IncomingMessage, import('http').ServerResponse>}
+ * @returns {Promise<import('http').Server<import('http').IncomingMessage, import('http').ServerResponse>>}
  */
-export function startTestServer(window) {
-  let testerRunner;
-  /** @type {import('http').Server<import('http').IncomingMessage, import('http').ServerResponse>} */
-  let messageServer;
+export async function startTestServer(window) {
+  return new Promise((resolve, reject) => {
+    let testerRunner;
+    /** @type {import('http').Server<import('http').IncomingMessage, import('http').ServerResponse>} */
+    let messageServer;
 
-  const onAppQuit = () => {
-    if (messageServer) {
-      log.log('Terminate Message Server...');
-      messageServer.close(() => {
-        log.log('Message Server closed.');
-        // process.exit(0);
-      });
-      messageServer = null;
-    }
-
-    if (testerRunner && !testerRunner.killed) {
-      log.log('Terminate Tester process...');
-      testerRunner.kill('SIGTERM');
-      testerRunner = null;
-    }
-  };
-
-  app.on('before-quit', onAppQuit).on('will-quit', onAppQuit);
-
-  process.on('SIGINT', onAppQuit);
-  process.on('SIGTERM', onAppQuit);
-
-  messageServer = createServer((/** @type {import('http').IncomingMessage} */ req, /** @type {import('http').ServerResponse} */ res) => {
-    log.log('Requesting...:', req.url);
-    /* NOTE: 별도의 uuid로 session 별로 구분하는 것이 안전할 듯...
-    const port = uuid();
-    ipcMain.once(port, (ev, status, head, body) => {
-      res.writeHead(status, head);
-      res.end(body);
-    });
-    window.webContents.send('uuid-for-this-time', req, port);
-     */
-    /*
-    const remoteAddress = res.socket.remoteAddress;
-    const remotePort = res.socket.remotePort;
-    */
-    if (req.method === 'POST') {
-      if (req.url === '/message') {
-        const body = [];
-        req.on('data', (chunk) => {
-          body.push(chunk.toString());
+    const onAppQuit = () => {
+      if (messageServer) {
+        log.log('Terminate Message Server...');
+        messageServer.close(() => {
+          log.log('Message Server closed.');
+          // process.exit(0);
         });
-        req.on('end', () => {
-          // console.log('Received message from Java:', body);
-          const message = Buffer.concat(body).toString();
-          log.log('Received message from Java: ', message);
-          // window.webContents.send('message-from-java', body);
-          // Java 프로세스에 응답 보내기
-          res.writeHead(200, {'Content-Type': 'text/plain'});
-          res.end('Message received');
-        });
-      } else {
-        res.writeHead(404);
-        res.end('Not found');
+        messageServer = null;
       }
-    } else {
-      res.end('Hello from Electron!');
-    }
-  });
+      if (testerRunner && !testerRunner.killed) {
+        log.log('Terminate Tester process...');
+        testerRunner.kill('SIGTERM');
+        testerRunner = null;
+      }
+    };
 
-  /*const server2 = express();
-  server2.get('/', (req, res) => {
-    return res.send('메인 페이지');
-  });
+    app.on('before-quit', onAppQuit).on('will-quit', onAppQuit);
 
-  server2.get('/', (req, res) => {
-    return res.send('로그인 페이지');
-  });
+    process.on('SIGINT', onAppQuit);
+    process.on('SIGTERM', onAppQuit);
 
-  server2.listen(8080, () => {
-    log.log('express server running on port 8080');
-  });*/
-
-  getPort({port: 8000})
-    // eslint-disable-next-line promise/prefer-await-to-then
-    .then((port) => {
-      messageServer.listen(port, () => {
-        log.log(`message server running on port #${port}`);
+    messageServer = createServer((/** @type {import('http').IncomingMessage} */ req, /** @type {import('http').ServerResponse} */ res) => {
+      log.log('[test-server] requesting...:', req.url);
+      /* NOTE: 별도의 uuid로 session 별로 구분하는 것이 안전할 듯...
+      const port = uuid();
+      ipcMain.once(port, (ev, status, head, body) => {
+        res.writeHead(status, head);
+        res.end(body);
       });
-
-      log.log(`message server on http://localhost:${port}/`);
-
-      // Message Server가 실행되지 못했다면, Test Server도 실행할 수 없음
-      ipcMain.on('start-test', async (event, ...args) => {
-        // NOTE: args.length === 1이어야 함
-        const {targetVersion, codes, capabilities, remoteAddress} = args[0];
-        log.debug('[start-test]', '__', codes.substring(0, 10), '__', ...args);
-        // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
-        testerRunner = testRunner({
-          targetVersion,
-          codes,
-          capabilities: {
-            ...capabilities,
-            app: capabilities.app ? resolve(ROOT_PATH, '..', normalize(capabilities.app)) : undefined,
-          },
-          remoteAddress: remoteAddress ?? 'http://localhost:8000', // 'host:port'
-        });
-      });
-    })
-    // eslint-disable-next-line promise/prefer-await-to-then,promise/prefer-await-to-callbacks
-    .catch((err) => {
-      log.error('Failed to get available port:', err);
+      window.webContents.send('uuid-for-this-time', req, port);
+       */
+      /*
+      const remoteAddress = res.socket.remoteAddress;
+      const remotePort = res.socket.remotePort;
+      */
+      if (req.method === 'POST') {
+        if (req.url === '/message') {
+          const body = [];
+          req.on('data', (chunk) => {
+            body.push(chunk.toString());
+          });
+          req.on('end', () => {
+            // console.log('Received message from Java:', body);
+            const message = Buffer.concat(body).toString();
+            log.log('Received message from Java: ', message);
+            // window.webContents.send('message-from-java', body);
+            // Java 프로세스에 응답 보내기
+            res.writeHead(200, {'Content-Type': 'text/plain'});
+            res.end('Message received');
+          });
+        } else {
+          res.writeHead(404);
+          res.end('Not found');
+        }
+      } else {
+        res.end('Hello from Electron!');
+      }
     });
 
-  return messageServer;
+    /*const server2 = express();
+    server2.get('/', (req, res) => {
+      return res.send('메인 페이지');
+    });
+
+    server2.get('/', (req, res) => {
+      return res.send('로그인 페이지');
+    });
+
+    server2.listen(8080, () => {
+      log.log('express server running on port 8080');
+    });*/
+
+    // server 객체에 이벤트를 연결합니다.
+    messageServer.on('request', () => {
+      log.log('[test-server] request on');
+    });
+
+    messageServer.on('connection', () => {
+      log.log('[test-server] connection on');
+    });
+
+    messageServer.on('close', () => {
+      log.log('[test-server] close on');
+    });
+
+    getPort({port: 8000})
+      // eslint-disable-next-line promise/prefer-await-to-then
+      .then((port) => {
+        messageServer.listen(port, () => {
+          log.log(`[test-server] message server running on port #${port}`);
+        });
+
+        log.log(`[test-server] message server on http://localhost:${port}/`);
+
+        // Message Server가 실행되지 못했다면, Test Server도 실행할 수 없음
+        ipcMain.on('start-test', async (event, ...args) => {
+          // NOTE: args.length === 1이어야 함
+          const {targetVersion, codes, capabilities, remoteAddress} = args[0];
+          log.debug('[start-test]', '__', codes.substring(0, 10), '__', ...args);
+          // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
+          testerRunner = testRunner({
+            targetVersion,
+            codes,
+            capabilities: {
+              ...capabilities,
+              app: capabilities.app ? resolve(ROOT_PATH, '..', normalize(capabilities.app)) : undefined,
+            },
+            remoteAddress: remoteAddress ?? 'http://localhost:8000', // 'host:port'
+          });
+        });
+
+        resolve(messageServer);
+      })
+      // eslint-disable-next-line promise/prefer-await-to-then,promise/prefer-await-to-callbacks
+      .catch((err) => {
+        log.error('[test-server] failed to get available port:', err);
+        reject(err);
+      });
+  });
 }

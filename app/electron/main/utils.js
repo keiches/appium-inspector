@@ -75,7 +75,7 @@ export async function exists(path) {
  * @returns {ChildProcess|import('teen_process').SubProcess}
  */
 export function spawn(file, args, options) {
-  log.debug('[SPAWN]', args, options);
+  log.debug('[SPAWN]', args, {cwd: options.cwd});
   /*return new SubProcess(file, args, {
     cwd: __dirname,
     env,
@@ -109,27 +109,19 @@ export const checkEnvironments = (process.env.NODE_ENV === 'development') ? asyn
   // const javaPath = await resolveJavaPath();
   // const javaPath = process.env.JDK_HOME || process.env.JAVA_HOME || await resolveJavaPath();
   const javaPaths = await resolveJavaExecutePaths();
-  log.log(`----app path: ${app.getAppPath()}`);
-  log.log(`----__dirname: ${__dirname}`);
-  log.log(`----root path: ${ROOT_PATH}`);
-  log.log(`----Home: ${homedir()}`);
-  log.log(`----Temp: ${tmpdir()}`);
-  log.log(`----Temp path: ${await promises.realpath(tmpdir())}`);
-  log.log(`----TEMP_PATH: ${TEMP_PATH}`);
-  log.log(`----WORKING_HOME: ${join(homedir(), '.aav')}`);
-  log.log(`----WORKING_HOME exists: ${existsSync(join(homedir(), '.aav'))}`);
-  log.log(`----APPIUM_HOME: ${process.env.APPIUM_HOME}`);
-  log.log(`----APPIUM_HOME exists: ${existsSync(process.env.APPIUM_HOME)}`);
-  log.log(`----JAVA_HOME: ${process.env.JAVA_HOME}`);
-  log.log(`----JAVA_HOME exists: ${existsSync(process.env.JAVA_HOME)}`);
-  log.log(`----JDK_HOME: ${process.env.JDK_HOME}`);
-  log.log(`----JDK_HOME exists: ${existsSync(process.env.JDK_HOME)}`);
-  log.log(`----java: ${javaPaths.java}`);
-  log.log(`----javac exists: ${existsSync(javaPaths.java)}`);
-  log.log(`----javac: ${javaPaths.javac}`);
-  log.log(`----javac exists: ${existsSync(javaPaths.javac)}`);
-  log.log(`----Node.js: ${nodePath}`);
-  log.log(`----Node.js exists: ${existsSync(nodePath)}`);
-  log.log(`----ANDROID_HOME: ${process.env.ANDROID_HOME}`);
-  log.log(`----ANDROID_HOME exists: ${existsSync(process.env.ANDROID_HOME)}`);
+  log.log(`• app path: ${app.getAppPath()}`);
+  log.log(`• __dirname: ${__dirname}`);
+  log.log(`• root path: ${ROOT_PATH}`);
+  log.log(`• Home: ${homedir()}`);
+  log.log(`• Temp: ${tmpdir()}`);
+  log.log(`• Temp path: ${await promises.realpath(tmpdir())}`);
+  log.log(`• TEMP_PATH: ${TEMP_PATH}`);
+  log.log(`• WORKING_HOME: ${join(homedir(), '.aav')}, exists: ${existsSync(join(homedir(), '.aav'))}`);
+  log.log(`• APPIUM_HOME: ${process.env.APPIUM_HOME}, exists: ${existsSync(process.env.APPIUM_HOME)}`);
+  log.log(`• JAVA_HOME: ${process.env.JAVA_HOME}, exists: ${existsSync(process.env.JAVA_HOME)}`);
+  log.log(`• JDK_HOME: ${process.env.JDK_HOME}, exists: ${existsSync(process.env.JDK_HOME)}`);
+  log.log(`• java: ${javaPaths.java}, exists: ${existsSync(javaPaths.java)}`);
+  log.log(`• javac: ${javaPaths.javac}, exists: ${existsSync(javaPaths.javac)}`);
+  log.log(`• Node.js: ${nodePath}, exists: ${existsSync(nodePath)}`);
+  log.log(`• ANDROID_HOME: ${process.env.ANDROID_HOME}, exists: ${existsSync(process.env.ANDROID_HOME)}`);
 } : async () => {};

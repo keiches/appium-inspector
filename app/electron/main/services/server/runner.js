@@ -159,7 +159,8 @@ async function runner() {
     '--allow-cors',
     // '--show-config'
     '--config',
-    join(ROOT_PATH, 'configs', 'server.conf.js'),
+    // TODO:
+    join(ROOT_PATH, 'configs', 'server.conf.json'),
     // '--use-plugins',
     // 'device-manager,element-wait,gestures,images,session,session-override,webhook',
   ], spawnOptions);
@@ -230,18 +231,18 @@ async function runner() {
     });
 
     child.on('output', (stdout, stderr) => {
-      (!stdout?.includes('getTimeouts')) && log.log(`[appium-server] output::stdout: ${stdout}`);
-      (!stderr?.includes('getTimeouts')) && log.log(`[appium-server] output::stderr: ${stderr}`);
+      stdout && (!stdout?.includes('getTimeouts')) && log.log(`[appium-server] output::stdout: ${stdout}`);
+      stderr && (!stderr?.includes('getTimeouts')) && log.log(`[appium-server] output::stderr: ${stderr}`);
     });
 
-    child.on('lines-stdout', (lines) => {
+    /*child.on('lines-stdout', (lines) => {
       log.log('[appium-server] lines-stdout:', lines);
       // ['foo', 'bar', 'baz']
       // automatically handles rejoining lines across stream chunks
     });
 
     child.on('lines-stderr', (lines) => {
-      log.log('[appium-server] lines-stderr:', lines);
+      lines.length && log.log('[appium-server] lines-stderr:', lines);
       // ['foo', 'bar', 'baz']
       // automatically handles rejoining lines across stream chunks
     });
@@ -255,7 +256,7 @@ async function runner() {
         log.log('[appium-server] stream-line:', line);
       }
       // [STDOUT] foo
-    });
+    });*/
 
     await child.start((stdout, stderr) => {
       if (/fail/.test(stderr)) {
