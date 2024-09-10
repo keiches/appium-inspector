@@ -1,0 +1,34 @@
+{
+  "server": {
+    "address": "127.0.0.1",
+    "allow-cors": false,
+    "callback-address": "127.0.0.1",
+    "callback-port": 4723,
+    "debug-log-spacing": true,
+    "keep-alive-timeout": 600,
+    "local-timezone": true,
+    "log": "./aav-server.log",
+    "log-level": "info",
+    "log-format": "text",
+    "log-no-colors": true,
+    "log-timestamp": false,
+    "long-stacktrace": false,
+    "no-perms-check": false,
+    "plugin": {
+      "device-manager": {
+        "platform": "android",
+        "deviceType": "all"
+      },
+      "element-wait": {
+        "timeout": 10000,
+        "intervalBetweenAttempts": 500
+      }
+    },
+    "port": 4723,
+    "relaxed-security": false,
+    "session-override": false,
+    "strict-caps": false,
+    "use-drivers": ["uiautomator2"],
+    "use-plugins": ["images", "gestures", "device-manager", "element-wait"]
+  }
+}
