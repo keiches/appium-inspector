@@ -9,7 +9,7 @@ import {i18NextBackend, i18NextBackendOptions, getSetting} from './polyfills';
 const i18nextOptions = {
   ...commonI18NextOptions,
   backend: i18NextBackendOptions,
-  lng: getSetting(PREFERRED_LANGUAGE),
+  lng: await getSetting(PREFERRED_LANGUAGE),
 };
 
 const namespace = 'translation';
