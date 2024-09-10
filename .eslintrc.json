@@ -8,16 +8,6 @@
   "settings": {
     "react": {
       "version": "detect"
-    },
-    "_import/resolver": {
-      "node": {
-        // "paths": ["app/src"],
-        // "moduleDirectory": ["node_modules", "app/"],
-        "extensions": [".js", ".jsx", ".ts", ".tsx"]
-      }
-    },
-    "_import/parsers": {
-      "@typescript-eslint/parser": [".ts", ".tsx"]
     }
   },
   "rules": {

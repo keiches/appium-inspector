@@ -59,10 +59,7 @@
   },
   "//dependencies": {
     "antd": "V5: significant rewrite required",
-    "bluebird": "Deprecated: recommended to replace with native promises",
-    "cheerio": "V1: requires Node 18",
-    "electron-debug": "V4: requires Electron 30",
-    "uuid": "V10: requires Node 16. Can also be replaced with crypto.randomUUID in Electron 14+"
+    "cheerio": "V1: requires Node 18"
   },
   "dependencies": {
     "@ant-design/icons": "4.8.3",
@@ -73,16 +70,14 @@
     "antd": "4.24.16",
     "appium-adb": "9.11.7",
     "axios": "1.7.7",
-    "bluebird": "3.7.2",
     "change-case": "5.4.4",
     "cheerio": "1.0.0-rc.12",
-    "electron-debug": "3.2.0",
+    "electron-debug": "4.0.1",
     "electron-extension-installer": "1.2.0",
     "electron-log": "5.1.6",
     "electron-settings": "4.0.4",
     "electron-updater": "6.3.4",
-    "generate-template-files": "3.2.1",
-    "highlight.js": "11.9.0",
+    "highlight.js": "11.10.0",
     "i18next": "23.14.0",
     "i18next-chained-backend": "4.6.2",
     "i18next-fs-backend": "2.3.2",
@@ -97,7 +92,7 @@
     "react-icons": "5.3.0",
     "react-redux": "9.1.2",
     "react-resizable-panels": "2.0.23",
-    "react-router-dom": "6.26.1",
+    "react-router-dom": "6.26.2",
     "recursive-copy": "2.0.14",
     "teen_process": "2.1.4",
     "template-file": "6.0.1",
@@ -108,14 +103,16 @@
     "xpath": "0.0.34"
   },
   "//devDependencies": {
-    "eslint": "V9: need to move to flat config",
-    "rimraf": "V6: requires Node 20"
+    "eslint": "V9: need to wait for plugins to support it"
   },
   "devDependencies": {
     "@appium/docutils": "1.0.19",
     "@appium/eslint-config-appium-ts": "0.3.3",
     "@appium/fake-driver": "5.5.2",
     "@appium/support": "5.1.3",
+    "@eslint/compat": "1.1.1",
+    "@eslint/eslintrc": "3.1.0",
+    "@eslint/js": "9.10.0",
     "@types/prop-types": "15.7.12",
     "@types/react": "18.3.5",
     "@types/react-dom": "18.3.0",
@@ -130,22 +127,17 @@
     "electron-builder": "25.0.5",
     "electron-vite": "2.3.0",
     "eslint": "8.57.0",
-    "eslint-plugin-import": "2.30.0",
     "eslint-plugin-react": "7.35.2",
-    "eslint-plugin-react-native": "4.1.0",
+    "globals": "15.9.0",
     "less": "4.2.0",
     "prettier": "3.3.3",
-    "rimraf": "5.0.10",
+    "rimraf": "6.0.1",
     "vite": "5.4.3",
     "vite-plugin-electron-renderer": "0.14.5",
     "vitest": "2.0.5"
   },
-  "devEngines": {
-    "node": ">=18.x",
-    "npm": ">=8.x"
-  },
   "engines": {
-    "node": ">=18.x",
-    "npm": ">=8.x"
+    "node": ">=20.x",
+    "npm": ">=10.x"
   }
 }
