@@ -1,5 +1,5 @@
 import {log} from '../../logger';
-import {resolveExecutablePath} from '../index.js';
+import {resolveExecutablePath} from '../utils';
 
 // Look for node
 export class NodeDetector {

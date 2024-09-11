@@ -31,6 +31,8 @@ export const TESTER_TEMPLATE_PATH = join(TESTER_PATH, 'template');
 export const TESTER_LIBS_PATH = join(TESTER_PATH, 'libs');
 export const TESTER_TEMP_PATH = join(TEMP_PATH, 'aav');
 
+export const isWindows = platform() === 'win32';
+
 export const uuid = (typeof randomUUID === 'function') ? randomUUID : () => randomBytes(16).toString('hex');
 /*
 export const uuid = () => {
@@ -45,7 +47,7 @@ export const uuid = () => {
  * @return {string}
  */
 export const getExecutableName = (name) => {
-  if (platform() === 'win32') {
+  if (isWindows) {
     return `${name}.exe`;
   }
   return name;
