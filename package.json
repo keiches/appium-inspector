@@ -30,7 +30,7 @@
     "test:integration": "vitest run integration",
     "test:e2e": "echo 'Currently not functional - TODO: fixme'",
     "dev:browser": "vite",
-    "dev:electron": "electron-vite -w --inspect-brk=9089 --sourcemap",
+    "dev:electron": "electron-vite -w --inspect --sourcemap",
     "build": "npm run build:browser && npm run build:electron",
     "build:browser": "vite build",
     "build:electron": "electron-vite build",
@@ -135,6 +135,10 @@
     "vite": "5.4.3",
     "vite-plugin-electron-renderer": "0.14.5",
     "vitest": "2.0.5"
+  },
+  "optionalDependencies": {
+    "dmg-license": "1.0.11",
+    "@rollup/rollup-win32-x64-msvc": "4.21.2"
   },
   "engines": {
     "node": ">=20.x",

@@ -35,9 +35,9 @@ function buildSessionWindow() {
   return new BrowserWindow({
     show: false,
     width: 1100,
-    height: 710,
+    height: 720,
     minWidth: 890,
-    minHeight: 710,
+    minHeight: 720,
     titleBarStyle: 'hiddenInset',
     webPreferences: {
       preload: join(__dirname, '..', 'preload', 'preload.mjs'), // from 'main' in package.json

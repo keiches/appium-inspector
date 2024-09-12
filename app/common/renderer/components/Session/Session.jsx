@@ -20,7 +20,7 @@ import CloudProviderSelector from './CloudProviderSelector.jsx';
 import CloudProviders from './CloudProviders.jsx';
 import SavedSessions from './SavedSessions.jsx';
 import ServerTabCustom from './ServerTabCustom.jsx';
-import SessionHelper from './SessionHelper';
+import ConnectionSettings from './ConnectionSettings.jsx';
 import SessionStyles from './Session.module.css';
 
 const Session = (props) => {
@@ -45,6 +45,16 @@ const Session = (props) => {
   } = props;
 
   const navigate = useNavigate();
+
+  ipcRenderer.on('set-devices', (event, message) => {
+    // setDevices(message.devices);
+    // TODO: for develop, must be removed
+    setTimeout(() => {
+      const result = JSON.stringify(message.devices, null, '  ');
+      const truncatedResult = _.truncate(result, {length: 2000});
+      log.info(truncatedResult);
+    }, 1);
+  });
 
   const isAttaching = tabKey === 'attach';
 
@@ -105,7 +115,7 @@ const Session = (props) => {
             className={SessionStyles.serverTabs}
             items={[
               {
-                label: t('setConnection'),
+                label: t('connectionSettings'),
                 key: SERVER_TYPES.LOCAL,
                 children: <ServerTabCustom {...props} />,
               },
@@ -134,7 +144,7 @@ const Session = (props) => {
           <AdvancedServerParams {...props} />
         </div>
 
-        {serverType === SERVER_TYPES.LOCAL ? (<SessionHelper {...props} />) : (
+        {serverType === SERVER_TYPES.LOCAL ? (<ConnectionSettings {...props} />) : (
         <Tabs
           activeKey={tabKey}
           onChange={switchTabs}

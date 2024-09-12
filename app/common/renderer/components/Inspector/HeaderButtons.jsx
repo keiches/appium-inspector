@@ -12,7 +12,7 @@ import {
   // PhoneOutlined,
 } from '@ant-design/icons';
 import {Button, Select, Space, Tooltip} from 'antd';
-import React from 'react';
+import React, {useState} from 'react';
 import {BiCircle, BiSquare} from 'react-icons/bi';
 import {HiOutlineHome, HiOutlineMicrophone} from 'react-icons/hi';
 import {IoChevronBackOutline, IoPhonePortraitOutline} from 'react-icons/io5';
@@ -44,6 +44,9 @@ const HeaderButtons = (props) => {
     setContext,
     t,
   } = props;
+
+  // DEBUG:
+  const [visibleCurrentDevices, setVisibleCurrentDevices] = useState(false);
 
   const getCurrentDevices = async () => {
     await getDeviceList('android', 'all');
@@ -241,6 +244,21 @@ const HeaderButtons = (props) => {
         {generalControls}
         {quitSessionButton}
       </Space>
+      {/* DEBUG: */}
+      <Modal
+        title="Current devices (DEBUG)"
+        open={visibleCurrentDevices}
+        onOk={() => {
+          setVisibleCurrentDevices(false);
+        }}
+        onCancel={() => {
+          setVisibleCurrentDevices(false);
+        }}
+      >
+        <pre>
+          <code>{JSON.stringify(currentDevices, null, 2)}</code>
+        </pre>
+      </Modal>
     </div>
   );
 };

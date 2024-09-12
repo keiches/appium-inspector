@@ -45,20 +45,6 @@ const onAppQuit = () => {
     testServer.closeAllConnections();
     testServer = null;
   }
-  if (process.env.NODE_NATIVE) {
-    if (testRunner1 && !testRunner1.killed) {
-      log.log('Terminate Test runner...');
-      testRunner1.kill?.('SIGTERM'); // NodeJS.Signals
-      // process.kill(testerRunner.pid, 'SIGINT');
-      testRunner1 = null;
-    }
-  } else {
-    if (testRunner1 && testRunner1.isRunning) {
-      log.log('Terminate Test runner...');
-      testRunner1.stop?.('SIGTERM'); // NodeJS.Signals
-      testRunner1 = null;
-    }
-  }
 };
 
 app.on('before-quit', onAppQuit).on('will-quit', onAppQuit);
@@ -94,7 +80,7 @@ app.on('ready', async () => {
   setTimeout(async () => {
     // 이 경우는 대기를 하지 않아도 되므로, synchronization 하지 않음
     testServer = await startTestServer(mainWindow);
-    log.debug('[start-test]......');
+    /*log.debug('[start-test]......');
     setTimeout(async () => {
       // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
       testRunner1 = await testRunner({
@@ -109,6 +95,6 @@ app.on('ready', async () => {
         remoteAddress: 'http://localhost:4723', // 'host:port'
         reportAddress: 'http://localhost:9090',
       });
-    }, 10000);
+    }, 10000);*/
   }, 1);
 });

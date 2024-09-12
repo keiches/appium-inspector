@@ -8,4 +8,11 @@ function mapStateToProps(state) {
   return state.session;
 }
 
+
+function mapDispatchToProps(dispatch) {
+  return {
+    ...SessionActions,
+  };
+}
+
 export default withTranslation(Session, connect(mapStateToProps, SessionActions));

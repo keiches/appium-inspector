@@ -131,24 +131,49 @@ export async function startAppiumServer() {
  * @returns {Promise<import('http').Server<import('http').IncomingMessage, import('http').ServerResponse>>}
  */
 export async function startTestServer(window) {
+  log.log('[test-server] starting...');
   return new Promise((resolve, reject) => {
-    let testerRunner;
+    let testRunner;
     /** @type {import('http').Server<import('http').IncomingMessage, import('http').ServerResponse>} */
     let messageServer;
 
+    const onKillTestProcess = () => {
+      if (process.env.NODE_NATIVE) {
+        if (testRunner && !testRunner.killed) {
+          log.log('Terminate Test runner...');
+          testRunner.kill?.('SIGTERM'); // NodeJS.Signals
+          // process.kill(testerRunner.pid, 'SIGINT');
+          testRunner = null;
+        }
+      } else {
+        if (testRunner && testRunner.isRunning) {
+          log.log('Terminate Test runner...');
+          testRunner.stop?.('SIGTERM'); // NodeJS.Signals
+          testRunner = null;
+        }
+      }
+    };
+    /*
+    // NOTE: main.js에서 처리함
     const onAppQuit = () => {
       if (messageServer) {
         log.log('Terminate Message Server...');
-        messageServer.close(() => {
-          log.log('Message Server closed.');
-          // process.exit(0);
-        });
+        messageServer.closeAllConnections();
         messageServer = null;
       }
-      if (testerRunner && !testerRunner.killed) {
-        log.log('Terminate Tester process...');
-        testerRunner.kill('SIGTERM');
-        testerRunner = null;
+      if (process.env.NODE_NATIVE) {
+        if (testRunner && !testRunner.killed) {
+          log.log('Terminate Test runner...');
+          testRunner.kill?.('SIGTERM'); // NodeJS.Signals
+          // process.kill(testerRunner.pid, 'SIGINT');
+          testRunner = null;
+        }
+      } else {
+        if (testRunner && testRunner.isRunning) {
+          log.log('Terminate Test runner...');
+          testRunner.stop?.('SIGTERM'); // NodeJS.Signals
+          testRunner = null;
+        }
       }
     };
 
@@ -156,6 +181,7 @@ export async function startTestServer(window) {
 
     process.on('SIGINT', onAppQuit);
     process.on('SIGTERM', onAppQuit);
+    */
 
     messageServer = createServer((/** @type {import('http').IncomingMessage} */ req, /** @type {import('http').ServerResponse} */ res) => {
       log.log('[test-server] requesting...:', req.url);
@@ -218,6 +244,7 @@ export async function startTestServer(window) {
     });
 
     messageServer.on('close', () => {
+      onKillTestProcess();
       log.log('[test-server] close on');
     });
 
@@ -236,7 +263,7 @@ export async function startTestServer(window) {
           const {targetVersion, codes, capabilities, remoteAddress} = args[0];
           log.debug('[start-test]', '__', codes.substring(0, 10), '__', ...args);
           // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
-          testerRunner = testRunner({
+          testRunner = testRunner({
             targetVersion,
             codes,
             capabilities: {
@@ -244,6 +271,10 @@ export async function startTestServer(window) {
               app: capabilities.app ? resolve(ROOT_PATH, '..', normalize(capabilities.app)) : undefined,
             },
             remoteAddress: remoteAddress ?? 'http://localhost:8000', // 'host:port'
+          });
+          ipcMain.on('stop-test', () => {
+            log.debug('[stop-test]......');
+            onKillTestProcess();
           });
         });
 

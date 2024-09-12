@@ -74,7 +74,7 @@ const defaultCapabilities = {
   'appium:printPageSourceOnFindFailure': true,
 };
 
-const SessionHelper = (props) => {
+const ConnectionSettings = (props) => {
   const {
     serverType,
     attachSessId,
@@ -625,4 +625,4 @@ const SessionHelper = (props) => {
   );
 };
 
-export default SessionHelper;
+export default ConnectionSettings;

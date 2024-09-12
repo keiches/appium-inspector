@@ -518,6 +518,7 @@ const Recorder = (props) => {
 
   const onStartTesting = useCallback(() => {
     setIsActionsPlayed(true);
+    log.debug('[renderer] starting test....');
     ipcRenderer.send('start-test', {
       targetVersion: 12,
       codes: actionCode() || 'var a = 3;',
@@ -533,6 +534,8 @@ const Recorder = (props) => {
 
   const onStopTesting = useCallback(() => {
     setIsActionsPlayed(false);
+    log.debug('[renderer] stopping test....');
+    ipcRenderer.send('stop-test');
   }, []);
 
   const actionBar = () => {

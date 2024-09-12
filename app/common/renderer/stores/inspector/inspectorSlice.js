@@ -1,12 +1,15 @@
 import {createSlice} from '@reduxjs/toolkit';
 import {omit} from 'lodash';
 
-import {SCREENSHOT_INTERACTION_MODE} from '../../constants/screenshot';
-import {APP_MODE, INSPECTOR_TABS, NATIVE_APP} from '../../constants/session-inspector';
+import {SET_GESTURE_UPLOAD_ERROR, STORE_SESSION_SETTINGS} from '../../actions/Inspector.js';
+
+import {SCREENSHOT_INTERACTION_MODE} from '../../constants/screenshot.js';
+import {APP_MODE, INSPECTOR_TABS, NATIVE_APP} from '../../constants/session-inspector.js';
+import {log} from '../utils/logger';
 
 const DEFAULT_FRAMEWORK = 'java';
 
-const INITIAL_STATE = {
+const initialState = {
   savedGestures: [],
   driver: null,
   automationName: null,
@@ -21,6 +24,7 @@ const INITIAL_STATE = {
   recordedActions: [],
   actionFramework: DEFAULT_FRAMEWORK,
   sessionDetails: {},
+  sessionSettings: {},
   isGestureEditorVisible: false,
   isLocatorTestModalVisible: false,
   isSiriCommandModalVisible: false,
@@ -43,15 +47,15 @@ const INITIAL_STATE = {
   visibleCommandMethod: null,
   isAwaitingMjpegStream: true,
   showSourceAttrs: false,
+  gestureUploadErrors: null,
   showActionSource: false,
-  devices: null,
 };
 
 let nextState;
 
-const inspectorSlice = createSlice({
+export const inspectorSlice = createSlice({
   name: 'inspector',
-  initialState: INITIAL_STATE,
+  initialState,
   reducers: {
     setSourceAndScreenshot(state, action) {
       state.inspector = {
@@ -70,19 +74,19 @@ const inspectorSlice = createSlice({
         findElementsExecutionTimes: [],
       };
     },
-    quitSessionRequested(state, _action) {
+    quitSessionRequested(state) {
       state.inspector = {
         ...state.inspector,
         methodCallInProgress: true,
         isQuittingSession: true,
       };
     },
-    quitSessionDone(state, _action) {
+    quitSessionDone(state) {
       state.inspector = {
-        ...INITIAL_STATE,
+        ...initialState,
       };
     },
-    sessionDone(state, _action) {
+    sessionDone(state) {
       state.inspector = {
         ...state.inspector,
         isSessionDone: true,
@@ -246,12 +250,6 @@ const inspectorSlice = createSlice({
       };
     },
 
-    SET_SHOW_ACTION_SOURCE(state, action) {
-      state.inspector = {
-        ...state.inspector, showActionSource: action.show
-      };
-    },
-
     SET_SESSION_DETAILS(state, action) {
       const automationName = action.driver.client.capabilities.automationName;
       state.inspector = {
@@ -261,6 +259,13 @@ const inspectorSlice = createSlice({
         automationName: automationName && automationName.toLowerCase(),
         appMode: action.mode,
         mjpegScreenshotUrl: action.mjpegScreenshotUrl,
+      };
+    },
+
+    STORE_SESSION_SETTINGS(state, action) {
+      state.inspector = {
+        ...state,
+        sessionSettings: {...state.sessionSettings, ...action.sessionSettings},
       };
     },
 
@@ -643,20 +648,19 @@ const inspectorSlice = createSlice({
     },
 
     TOGGLE_SHOW_ATTRIBUTES(state, action) {
-      state.inspector = {
-        ...state.inspector, showSourceAttrs: !state.showSourceAttrs
-      };
+      state.inspector = {...state.inspector, showSourceAttrs: !state.showSourceAttrs};
     },
 
     TOGGLE_REFRESHING_STATE(state, action) {
-      state.inspector = {
-        ...state.inspector, isSourceRefreshOn: !state.isSourceRefreshOn
-      };
+      state.inspector = {...state.inspector, isSourceRefreshOn: !state.isSourceRefreshOn};
     },
-    setDeviceList(state, action) {
-      state.inspector = {
-        ...state.inspector, devices: action.devices
-      };
+
+    SET_GESTURE_UPLOAD_ERROR(state, action) {
+      state.inspector = {...state, gestureUploadErrors: action.errors};
+    },
+
+    SET_SHOW_ACTION_SOURCE(state, action) {
+      state.inspector = {...state.inspector, showActionSource: action.show};
     },
   },
 });
@@ -664,7 +668,39 @@ const inspectorSlice = createSlice({
 
 // `createSlice` automatically generated action creators with these names.
 // export them as named exports from this "slice" file
-export const {setSourceAndScreenshot, quitSessionRequested} = inspectorSlice.actions;
+export const inspectorActions = inspectorSlice.actions;
+
+/*
+export type InspectorSlice = {
+  [inspectorSlice.name]: ReturnType<(typeof inspectorSlice)['reducer']>
+}
+
+export const inspectorSelectors = inspectorEntity.getSelectors<InspectorSlice>(
+  (state) => state[inspectorSlice.name].counters,
+);
+*/
 
 // Export the slice reducer as the default export
 export default inspectorSlice.reducer;
+
+/* Usages
+import {inspectorActions} from "./features/inspectorSlice";
+import {useDispatch} from "react-redux";
+
+const dispatch = useDispatch();
+...
+
+dispatch(setSourceAndScreenshot({
+  contexts,
+  currentContext,
+  sourceJSON: xmlToJSON(source),
+  sourceXML: source,
+  screenshot,
+  windowSize,
+  contextsError,
+  currentContextError,
+  sourceError,
+  screenshotError,
+  windowSizeError,
+}));
+ */

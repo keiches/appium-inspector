@@ -297,7 +297,7 @@
   "gestureImportedFrom": "Gesto importado de '{{fileName}}'",
   "invalidSessionFile": "Arquivo de sessão inválido",
   "getCurrentDevices": "Get Current Devices",
-  "setConnection": "Connection Settings",
+  "connectionSettings": "Connection Settings",
   "deviceList": "Device List",
   "applicationList": "Application List",
   "showActionSource": "Show/Hide Action Source",

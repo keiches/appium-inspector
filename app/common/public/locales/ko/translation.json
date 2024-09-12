@@ -297,7 +297,7 @@
   "gestureImportedFrom": "Gesture imported from '{{fileName}}'",
   "invalidSessionFile": "Invalid session file",
   "getCurrentDevices": "장치 읽기",
-  "setConnection": "연결 설정",
+  "connectionSettings": "연결 설정",
   "deviceList": "장치 목록",
   "applicationList": "애플리케이션 목록",
   "showActionSource": "Actions Source 보기",
