@@ -4,10 +4,11 @@ export const CLEAR_DEVICES = 'CLEAR_DEVICES';
 
 /**
  * Set whether the appium server is running
+ * @param {{platform, deviceType}} payload
  */
-export function readDevices() {
+export function readDevices(payload) {
   return (dispatch) => {
-    dispatch({type: READ_DEVICES});
+    dispatch({type: READ_DEVICES, payload});
   };
 }
 
@@ -17,7 +18,7 @@ export function readDevices() {
  */
 export function setDevices(devices) {
   return (dispatch) => {
-    dispatch({type: SET_DEVICES, devices});
+    dispatch({type: SET_DEVICES, payload: devices});
   };
 }
 

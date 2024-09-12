@@ -79,7 +79,7 @@ const ConnectionSettings = (props) => {
     serverType,
     attachSessId,
     devices: currentDevices,
-    getDeviceList,
+    readDevices,
     t,
   } = props;
 
@@ -178,7 +178,7 @@ const ConnectionSettings = (props) => {
     log.log('menu clicked:', info);
     switch (info.key) {
       case '5':
-        await getDeviceList('android', 'all');
+        await readDevices('android', 'all');
         break;
     }
   }

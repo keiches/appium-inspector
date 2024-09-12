@@ -1,6 +1,8 @@
+import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
 import * as SessionActions from '../actions/Session';
+import * as DevicesActions from '../actions/Devices';
 import Session from '../components/Session/Session.jsx';
 import {withTranslation} from '../i18next';
 
@@ -11,8 +13,9 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    ...SessionActions,
+    ...bindActionCreators(SessionActions, dispatch),
+    ...bindActionCreators(DevicesActions, dispatch),
   };
 }
 
-export default withTranslation(Session, connect(mapStateToProps, SessionActions));
+export default withTranslation(Session, connect(mapStateToProps, mapDispatchToProps));
