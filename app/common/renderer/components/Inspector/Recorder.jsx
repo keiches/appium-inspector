@@ -468,12 +468,6 @@ const Recorder = (props) => {
   ];
   const [isActionsPlayed, setIsActionsPlayed] = useState(false);
 
-  const runActions = () => {
-    // NOTE: 지금은 무조건 실행으로 구성해본다.
-    // ipcRenderer.send('run-action-tester');
-    // ipcRenderer.on('run-action-tester');
-  };
-
   const code = (raw = true) => {
     const {host, port, path, https, desiredCapabilities} = props.sessionDetails;
 
@@ -520,6 +514,7 @@ const Recorder = (props) => {
     setIsActionsPlayed(true);
     log.debug('[renderer] starting test....');
     ipcRenderer.send('start-test', {
+      // NOTE: read from device info
       targetVersion: 12,
       codes: actionCode() || 'var a = 3;',
       capabilities: {

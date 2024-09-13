@@ -41,20 +41,12 @@ const Session = (props) => {
     savedSessions,
     newSessionLoading,
     attachSessId,
+    isDevicesReading,
+    isApplicationsReading,
     t,
   } = props;
 
   const navigate = useNavigate();
-
-  ipcRenderer.on('set-devices', (event, message) => {
-    // setDevices(message.devices);
-    // TODO: for develop, must be removed
-    setTimeout(() => {
-      const result = JSON.stringify(message.devices, null, '  ');
-      const truncatedResult = _.truncate(result, {length: 2000});
-      log.info(truncatedResult);
-    }, 1);
-  });
 
   const isAttaching = tabKey === 'attach';
 
@@ -106,7 +98,7 @@ const Session = (props) => {
   }, []);
 
   return [
-    <Spin spinning={!!newSessionLoading} key="main">
+    <Spin spinning={!!newSessionLoading || isDevicesReading || isApplicationsReading} key="main">
       <div className={SessionStyles.sessionContainer}>
         <div id="serverTypeTabs" className={SessionStyles.serverTab}>
           <Tabs

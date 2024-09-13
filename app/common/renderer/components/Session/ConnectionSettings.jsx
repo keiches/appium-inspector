@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
   MobileOutlined, ReloadOutlined, AndroidOutlined, AppleOutlined,
   PlusOutlined,
@@ -7,10 +7,9 @@ import {
 import {Button, Card, Checkbox, Col, Form, List, Menu, Row, Select, Table, Tooltip} from 'antd';
 
 import SessionStyles from './Session.module.css';
-import InspectorStyles from '../Inspector/Inspector.module.css';
 import {SERVER_TYPES} from '../../constants/session-builder';
-import {Header} from 'antd/es/layout/layout';
 import {log} from '../../utils/logger';
+import {ipcRenderer} from '../../polyfills';
 
 /**
  * @param {import('@wdio/utils/node_modules/@wdio/types/build').Capabilities.AppiumCapabilities} caps
@@ -80,6 +79,18 @@ const ConnectionSettings = (props) => {
     attachSessId,
     devices: currentDevices,
     readDevices,
+    resetDevices,
+    clearDevices,
+    selectDevice,
+    addDevice,
+    deleteDevice,
+    applications: currentApplications,
+    readApplications,
+    resetApplications,
+    clearApplications,
+    selectApplication,
+    addApplication,
+    deleteApplication,
     t,
   } = props;
 
@@ -99,6 +110,16 @@ const ConnectionSettings = (props) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   log.log('selectedRowKeys', deviceSelect, applicationSelect);
+
+  ipcRenderer.on('devices:set', (event, message) => {
+    log.debug('[ConnectionSettings] on "devices:set" received', event, message);
+    resetDevices(message.items);
+  });
+
+  ipcRenderer.on('applications:set', (event, message) => {
+    log.debug('[ConnectionSettings] on "applications:set" received', event, message);
+    resetApplications(message.items);
+  });
 
   const {selectedRowKeys: selectedDeviceRowKeys, loading: loadingDevice} = deviceSelect;
   const {selectedRowKeys: selectedApplicationRowKeys, loading: applicationLoading} = applicationSelect;
@@ -156,13 +177,13 @@ const ConnectionSettings = (props) => {
       title: 'Delete the device',
       icon: MinusOutlined,
     }, {
-      title: 'Start the Device',
+      title: 'Start the device',
       icon: CaretRightOutlined,
     }, {
       title: 'Delete all devices',
       icon: DeleteOutlined,
     }, {
-      title: 'Read connected devices',
+      title: 'Refresh device list',
       icon: ReloadOutlined,
       onClick: (e) => {
         log.log('Devices: menu clicked:', e.item);
@@ -174,14 +195,6 @@ const ConnectionSettings = (props) => {
     icon: React.createElement(icon),
     onClick,
   }));
-  async function onDevicesMenuClick(info) {
-    log.log('menu clicked:', info);
-    switch (info.key) {
-      case '5':
-        await readDevices('android', 'all');
-        break;
-    }
-  }
   /** @type {any[]} */
   const columnsDevices = [
     {
@@ -207,30 +220,62 @@ const ConnectionSettings = (props) => {
       key: 'status',
     },
   ];
-  const dataSourceDevices = [
-    {
-      key: '1',
-      name: 'Pixel_7_API_31',
-      platform: {
-        name: 'Android', // TODO: read using adb
-        version: '12.0',
-        icon: AndroidOutlined, // TODO: assign according to platform.name
-      },
-      udid: 'emulator-5554', // TODO: read using adb
-      status: 'Ready',
-    },
-    {
-      key: '2',
-      name: 'Pixel_5_API_33',
-      platform: {
-        name: 'iOS', // TODO: read using libs
-        version: '17.5.1', // TODO: read using libs
-        icon: AppleOutlined, // TODO: assign according to platform.name
-      },
-      udid: 'emulator-5554', // TODO: read using adb
-      status: 'Ready',
-    },
-  ];
+  // eslint-disable-next-line no-undef
+  /**
+   * @typedef {Object} DataSource
+   * @property {string} key
+   * @property {string} name
+   * @property {string} uuid
+   * @property {string} status
+   * @property {Object} platform
+   * @property {string} platform.name
+   * @property {string} platform.version
+   * @property {React.ReactNode} platform.icon
+   */
+  const dataSourceDevices = useMemo(() => {
+    log.debug('Devices:', currentDevices);
+    // const devices1 = currentDevices?.length > 0 ? currentDevices : [{name: 'No devices found'}];
+    // emulator-5554          device product:sdk_gphone64_x86_64 model:sdk_gphone64_x86_64 device:emulator64_x86_64_arm64 transport_id:1
+    try {
+      if (currentDevices?.length > 0) {
+        return currentDevices.map((device, index) => {
+          return {
+            key: device.key ?? `DEVICE#${index}`,
+            name: device.name,
+            platform: {
+              name: device.platform,
+              version: device.version,
+              icon: device.platform === 'iOS' ? AppleOutlined : AndroidOutlined,
+            },
+            uuid: device.device,
+            status: 'Ready',
+          };
+        });
+      }
+      return [];
+    } catch (error) {
+      log.error('Failed to assign devices', error);
+    }
+  }, [currentDevices.map((device) => device.name)]);
+  async function onDevicesMenuClick(info) {
+    log.log('menu clicked:', info);
+    // TODO: key를 명확하게 바꾸자
+    switch (info.key) {
+      case '1':
+        await addDevice({id: '123132-1321321-1323132a'});
+        break;
+      case '2':
+        await deleteDevice({id: '123132-1321321-1323132a'});
+        break;
+      case '4':
+        await clearDevices();
+        break;
+      case '5':
+        await readDevices('android', 'all');
+        break;
+    }
+  }
+
   /** @type {import('antd/lib/menu').ItemType[]} */
   const menuItemsApplications = [
     {
@@ -247,8 +292,8 @@ const ConnectionSettings = (props) => {
       title: '*',
       icon: DeleteOutlined,
     }, {
-      title: '*',
-      icon: DeleteOutlined,
+      title: 'Refresh device list',
+      icon: ReloadOutlined,
     },
   ].map(({title, icon, onClick}, index) => ({
     key: String(index + 1),
@@ -275,44 +320,48 @@ const ConnectionSettings = (props) => {
       key: 'version',
     },
   ];
-  const dataSourceApplications = [
-    {
-      key: '1',
-      platform: {
-        name: 'Android',
-        icon: AndroidOutlined,
-      },
-      app: 'apps/Android-MyDemoAppRN.1.3.0.build-244.apk',
-      package: 'com.saucelabs.mydemoapp.rn',
-      activity: '.MainActivity',
-      version: '384.0.150',
-      status: 'Ready',
-    },
-    {
-      key: '2',
-      platform: {
-        name: 'iOS',
-        icon: AppleOutlined,
-      },
-      app: 'apps/Android-MyDemoAppRN.1.3.0.build-244.zip',
-      package: 'com.saucelabs.mydemoapp.rn',
-      activity: '.MainActivity',
-      version: '23.6.7',
-      status: 'Ready',
-    },
-    {
-      key: '3',
-      platform: {
-        name: 'Android',
-        icon: AndroidOutlined,
-      },
-      app: 'apps/Android-MyDemoAppRN.1.3.0.build-244.apk',
-      appPackage: 'com.saucelabs.mydemoapp.rn',
-      activity: '.MainActivity',
-      version: '12.3.2',
-      status: 'Ready',
-    },
-  ];
+  const dataSourceApplications = useMemo(() => {
+    log.debug('Applications:', currentApplications);
+    try {
+      if (currentApplications?.length > 0) {
+        return currentApplications.map((application, index) => {
+          return {
+            key: application.key ?? `APP#${index}`,
+            app: application.app,
+            package: application.package,
+            platform: {
+              name: application.platform.name,
+              icon: application.platform.name === 'iOS' ? AppleOutlined : AndroidOutlined,
+            },
+            version: application.version ?? '*',
+            activity: application.activity,
+            status: 'Ready',
+          };
+        });
+      }
+      return [];
+    } catch (error) {
+      log.error('Failed to assign applications', error);
+    }
+  }, [currentApplications.map((application) => application.name)]);
+  async function onApplicationsMenuClick(info) {
+    log.log('menu clicked:', info);
+    // TODO: key를 명확하게 바꾸자
+    switch (info.key) {
+      case '1':
+        await addApplication({id: '123132-1321321-1323132a'});
+        break;
+      case '2':
+        await deleteApplication({id: '123132-1321321-1323132a'});
+        break;
+      case '4':
+        await clearApplications();
+        break;
+      case '5':
+        await readApplications('android');
+        break;
+    }
+  }
 
   const [capabilitiesNoReset, setCapabilitiesNoReset] = React.useState(false);
   const [capabilitiesFullReset, setCapabilitiesFullReset] = React.useState(false);
@@ -475,6 +524,11 @@ const ConnectionSettings = (props) => {
     };
   });*/
 
+  useEffect(() => {
+    readDevices();
+    readApplications();
+  }, []);
+
   return (
     <>
       <Row className={SessionStyles.sessionHelper}>
@@ -567,6 +621,7 @@ const ConnectionSettings = (props) => {
               selectable={false}
               items={menuItemsApplications}
               style={{flex: 1, minWidth: 0}}
+              onClick={onApplicationsMenuClick}
             />
           </Row>
           <Row>

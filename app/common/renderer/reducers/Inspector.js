@@ -133,7 +133,6 @@ const INITIAL_STATE = {
   showSourceAttrs: false,
   gestureUploadErrors: null,
   showActionSource: false,
-  devices: null,
 };
 
 let nextState;
@@ -667,9 +666,6 @@ export default function inspector(state = INITIAL_STATE, action) {
 
     case SET_SHOW_ACTION_SOURCE:
       return {...state, showActionSource: action.show};
-
-    case SET_DEVICE_LIST:
-      return {...state, devices: action.devices};
 
     default:
       return {...state};
