@@ -125,7 +125,7 @@ export const readDevices = (platform, deviceType) => async (dispatch) => {
         },
         {
           key: 'DEVICE#2',
-          name: 'emulator-5555', // 'Pixel_7_API_33',824803,782953 1607756-628048
+          name: 'emulator-5555', // 'Pixel_7_API_33',
           platform: {
             name: 'Android', // TODO: read using adb
             version: '13.0',
