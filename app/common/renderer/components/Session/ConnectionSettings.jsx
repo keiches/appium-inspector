@@ -233,9 +233,10 @@ const ConnectionSettings = (props) => {
             key: device.key ?? `DEVICE#${index}`,
             name: device.name,
             platform: {
-              name: device.platform,
-              version: device.version,
-              icon: device.platform === 'iOS' ? AppleOutlined : AndroidOutlined,
+              name: device.platform.name,
+              version: device.platform.version,
+              // icon: device.platform === 'iOS' ? AppleOutlined : AndroidOutlined,
+              icon: device.platform.icon,
             },
             uuid: device.device,
             status: 'Ready',
@@ -422,14 +423,14 @@ const ConnectionSettings = (props) => {
         const dataSourceDevice = dataSourceDevices.find(({key}) => key === deviceSelect.selectedRowKeys[0]);
         newCapabilities = {
           ...newCapabilities,
-          platformName: dataSourceDevice.platform.name,
+          'appium:platformName': dataSourceDevice.platform.name,
           'appium:platformVersion': dataSourceDevice.platform.version,
           'appium:automationName': dataSourceDevice.platform.name === 'Android' ? 'UIAutomator2' : 'XCUITest',
           'appium:deviceName': dataSourceDevice.name,
           // 'appium:udid': dataSourceDevice.udid,
         };
       } else {
-        delete newCapabilities.platformName;
+        delete newCapabilities['appium:platformName'];
         delete newCapabilities['appium:platformVersion'];
         delete newCapabilities['appium:automationName'];
         delete newCapabilities['appium:deviceName'];
