@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   AppstoreOutlined,
   CloseOutlined,
@@ -12,7 +12,7 @@ import {
   VideoCameraOutlined,
   // PhoneOutlined,
 } from '@ant-design/icons';
-import {Button, Select, Space, Tooltip} from 'antd';
+import {Button, Modal, Select, Space, Tooltip} from 'antd';
 import {BiCircle, BiSquare} from 'react-icons/bi';
 import {HiOutlineHome, HiOutlineMicrophone} from 'react-icons/hi';
 import {IoChevronBackOutline, IoPhonePortraitOutline} from 'react-icons/io5';
@@ -25,6 +25,7 @@ import InspectorStyles from './Inspector.module.css';
 
 const HeaderButtons = (props) => {
   const {
+    devices: currentDevices,
     getDeviceList,
     selectAppMode,
     appMode,
@@ -51,6 +52,10 @@ const HeaderButtons = (props) => {
   const getCurrentDevices = async () => {
     await getDeviceList('android', 'all');
   };
+
+  useEffect(() => {
+    setVisibleCurrentDevices(currentDevices?.length > 0);
+  }, [currentDevices?.map((device) => device.name)]);
 
   const deviceControls = (
     <Button.Group>
