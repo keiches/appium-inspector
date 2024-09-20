@@ -260,7 +260,8 @@ async function runner() {
 
     await child.start((stdout, stderr) => {
       if (/fail/.test(stderr)) {
-        throw new Error('Encountered failure condition');
+        // throw new Error('Encountered failure condition');
+        log.error('Encountered failure condition', stderr);
       }
       return stdout || stderr;
     });

@@ -2,10 +2,12 @@ import react from '@vitejs/plugin-react';
 import {defineConfig, externalizeDepsPlugin} from 'electron-vite';
 import {join} from 'path';
 import renderer from 'vite-plugin-electron-renderer';
+import topLevelAwait from 'vite-plugin-top-level-await';
 
 export default defineConfig({
   main: {
     build: {
+      target: 'node20',
       sourcemap: process.env.NODE_ENV === 'development' ? 'inline' : false,
       outDir: join(__dirname, 'dist', 'main'),
       lib: {
@@ -22,6 +24,7 @@ export default defineConfig({
   },
   preload: {
     build: {
+      target: 'node20',
       sourcemap: process.env.NODE_ENV === 'development' ? 'inline' : false,
       outDir: join(__dirname, 'dist', 'preload'),
       lib: {
@@ -32,6 +35,7 @@ export default defineConfig({
   },
   renderer: {
     build: {
+      target: 'esnext',
       sourcemap: process.env.NODE_ENV === 'development' ? 'inline' : false,
       outDir: join(__dirname, 'dist', 'renderer'),
       rollupOptions: {
@@ -49,7 +53,7 @@ export default defineConfig({
         },
       },
     },
-    plugins: [react(), renderer()],
+    plugins: [react(), topLevelAwait(), renderer()],
     resolve: {
       alias: {
         '#local-polyfills': join(__dirname, 'app', 'electron', 'renderer', 'polyfills'),
