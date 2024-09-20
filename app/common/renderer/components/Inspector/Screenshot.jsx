@@ -1,5 +1,5 @@
 import {Spin} from 'antd';
-import React, {useRef, useState} from 'react';
+import {Fragment, useRef, useState} from 'react';
 
 import {GESTURE_ITEM_STYLES, POINTER_TYPES} from '../../constants/gestures';
 import {DEFAULT_SWIPE, DEFAULT_TAP, SCREENSHOT_INTERACTION_MODE} from '../../constants/screenshot';
@@ -21,6 +21,7 @@ const Screenshot = (props) => {
     screenshotInteractionMode,
     coordStart,
     coordEnd,
+    clearCoordAction,
     scaleRatio,
     selectedTick,
     selectedInspectorTab,
@@ -47,7 +48,7 @@ const Screenshot = (props) => {
   };
 
   const handleScreenshotUp = async () => {
-    const {setCoordEnd, clearCoordAction} = props;
+    const {setCoordEnd} = props;
     if (screenshotInteractionMode === TAP_SWIPE) {
       await setCoordEnd(x, y);
       if (Math.abs(coordStart.x - x) < 5 && Math.abs(coordStart.y - y) < 5) {
@@ -55,7 +56,7 @@ const Screenshot = (props) => {
       } else {
         await handleDoSwipe({x, y}); // Pass coordEnd because otherwise it is not retrieved
       }
-      clearCoordAction();
+      await clearCoordAction();
     }
   };
 
@@ -97,7 +98,7 @@ const Screenshot = (props) => {
     });
   };
 
-  const handleMouseMove = (e) => {
+  const handleScreenshotCoordsUpdate = (e) => {
     if (screenshotInteractionMode !== SELECT) {
       const offsetX = e.nativeEvent.offsetX;
       const offsetY = e.nativeEvent.offsetY;
@@ -106,6 +107,12 @@ const Screenshot = (props) => {
       setX(Math.round(newX));
       setY(Math.round(newY));
     }
+  };
+
+  const handleScreenshotLeave = async () => {
+    setX(null);
+    setY(null);
+    await clearCoordAction();
   };
 
   // retrieve and format gesture for svg drawings
@@ -167,7 +174,9 @@ const Screenshot = (props) => {
           style={screenshotStyle}
           onMouseDown={handleScreenshotDown}
           onMouseUp={handleScreenshotUp}
-          onMouseMove={handleMouseMove}
+          onMouseMove={handleScreenshotCoordsUpdate}
+          onMouseOver={handleScreenshotCoordsUpdate}
+          onMouseLeave={handleScreenshotLeave}
           onClick={handleScreenshotClick}
           className={styles.screenshotBox}
         >
@@ -208,7 +217,7 @@ const Screenshot = (props) => {
             <svg key="gestureSVG" className={styles.gestureSvg}>
               {points.map((pointer) =>
                 pointer.map((tick, index) => (
-                  <React.Fragment key={tick.id}>
+                  <Fragment key={tick.id}>
                     {index > 0 && (
                       <line
                         className={styles[tick.type]}
@@ -231,7 +240,7 @@ const Screenshot = (props) => {
                           : {stroke: tick.color}
                       }
                     />
-                  </React.Fragment>
+                  </Fragment>
                 )),
               )}
             </svg>
