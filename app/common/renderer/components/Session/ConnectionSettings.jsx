@@ -599,7 +599,7 @@ const ConnectionSettings = (props) => {
               <p>The app data will NOT be cleared before this session starts.</p>
             </Col>
           </Row>
-          <Row>
+          {/*<Row>
             <Col span={24}>
               <Card>
                 <p className={SessionStyles.localDesc}>
@@ -607,7 +607,7 @@ const ConnectionSettings = (props) => {
                 </p>
               </Card>
             </Col>
-          </Row>
+          </Row>*/}
         </Col>
         <Col span={16}>
           <Row>
@@ -658,7 +658,7 @@ const ConnectionSettings = (props) => {
               <p>The app will get uninstalled and all data will be cleared.</p>
             </Col>
           </Row>
-          <Row>
+          {/*<Row>
             <Col span={24}>
               <Card>
                 <p className={SessionStyles.localDesc}>
@@ -666,16 +666,16 @@ const ConnectionSettings = (props) => {
                 </p>
               </Card>
             </Col>
-          </Row>
+          </Row>*/}
         </Col>
       </Row>
-      <Row>
+      {/*<Row>
         <Col span={24}>
         <pre>
           <code>{JSON.stringify(capabilities, null, 2)}</code>
         </pre>
         </Col>
-      </Row>
+      </Row>*/}
     </>
   );
 };
