@@ -111,16 +111,6 @@ const ConnectionSettings = (props) => {
 
   log.log('selectedRowKeys', deviceSelect, applicationSelect);
 
-  ipcRenderer.on('devices:set', (event, message) => {
-    log.debug('[ConnectionSettings] on "devices:set" received', event, message);
-    resetDevices(message.items);
-  });
-
-  ipcRenderer.on('applications:set', (event, message) => {
-    log.debug('[ConnectionSettings] on "applications:set" received', event, message);
-    resetApplications(message.items);
-  });
-
   const {selectedRowKeys: selectedDeviceRowKeys, loading: loadingDevice} = deviceSelect;
   const {selectedRowKeys: selectedApplicationRowKeys, loading: applicationLoading} = applicationSelect;
   // https://codesandbox.io/s/adoring-cerf-tyioh?file=/index.js
@@ -525,6 +515,16 @@ const ConnectionSettings = (props) => {
   });*/
 
   useEffect(() => {
+    ipcRenderer.on('devices:set', (event, message) => {
+      log.debug('[ConnectionSettings] on "devices:set" received', event, message);
+      resetDevices(message.items);
+    });
+
+    ipcRenderer.on('applications:set', (event, message) => {
+      log.debug('[ConnectionSettings] on "applications:set" received', event, message);
+      resetApplications(message.items);
+    });
+
     readDevices();
     readApplications();
   }, []);
