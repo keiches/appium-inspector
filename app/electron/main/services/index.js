@@ -133,23 +133,23 @@ export async function startAppiumServer() {
 export async function startTestServer(window) {
   log.log('[test-server] starting...');
   return new Promise((resolve, reject) => {
-    let testRunner;
+    let testProcess;
     /** @type {import('http').Server<import('http').IncomingMessage, import('http').ServerResponse>} */
     let messageServer;
 
     const onKillTestProcess = () => {
       if (process.env.NODE_NATIVE) {
-        if (testRunner && !testRunner.killed) {
+        if (testProcess && !testProcess.killed) {
           log.log('Terminate Test runner...');
-          testRunner.kill?.('SIGTERM'); // NodeJS.Signals
+          testProcess.kill?.('SIGTERM'); // NodeJS.Signals
           // process.kill(testerRunner.pid, 'SIGINT');
-          testRunner = null;
+          testProcess = null;
         }
       } else {
-        if (testRunner && testRunner.isRunning) {
+        if (testProcess && testProcess.isRunning) {
           log.log('Terminate Test runner...');
-          testRunner.stop?.('SIGTERM'); // NodeJS.Signals
-          testRunner = null;
+          testProcess.stop?.('SIGTERM'); // NodeJS.Signals
+          testProcess = null;
         }
       }
     };
@@ -263,7 +263,7 @@ export async function startTestServer(window) {
           const {targetVersion, codes, capabilities, remoteAddress} = args[0];
           log.debug('[start-test]', '__', codes.substring(0, 10), '__', ...args);
           // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
-          testRunner = testRunner({
+          testProcess = testRunner({
             targetVersion,
             codes,
             capabilities: {
