@@ -161,20 +161,20 @@
         </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/com.konghq/unirest-java -->
-        <dependency>
+        <!--<dependency>
             <groupId>com.konghq</groupId>
             <artifactId>unirest-java</artifactId>
             <version>3.14.5</version>
             <classifier>standalone</classifier>
-        </dependency>
+        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/com.konghq/unirest-java-core -->
-        <!--<dependency>
+        <dependency>
             <groupId>com.konghq</groupId>
             <artifactId>unirest-java-core</artifactId>
-            <version>4.4.0</version>
+            <version>4.4.4</version>
             <scope>provided</scope>
-        </dependency>-->
+        </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.android.support/support-annotations -->
         <!--<dependency>
@@ -220,5 +220,12 @@
         </dependency>
 
     </dependencies>
+    <repositories>
+        <repository>
+            <id>maven_central</id>
+            <name>Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2/</url>
+        </repository>
+    </repositories>
 
 </project>
