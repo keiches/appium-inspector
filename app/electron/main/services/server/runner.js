@@ -7,7 +7,6 @@ import getPort from '../get-port';
 import {isDev} from '../../helpers';
 import {log} from '../../logger';
 import {exists, PACKAGES_PATH, ROOT_PATH, spawn} from '../../utils';
-import { ProcessAbortController } from '../abort-controller';
 import {resolveNodePath} from '../index';
 
 /**
@@ -17,7 +16,7 @@ import {resolveNodePath} from '../index';
 /*
 async function runAppiumServer() {
   log.log('Starting Appium server...');
-  /!*const controller = new ProcessAbortController();
+  /!*const controller = new AbortController();
   const { signal } = controller;
   server = fork('../server/build/lib/main.js', [], {*!/
   /!*server = fork('node', ['../server/build/lib/main'], {
@@ -25,7 +24,7 @@ async function runAppiumServer() {
     stdio: ['pipe', 'inherit', 'inherit'],
   });*!/
   const nodePath = await resolveNodePath();
-  const controller = new ProcessAbortController();
+  const controller = new AbortController();
   const { signal } = controller;
   const fileIndex = toFormattedString(new Date());
   /!** @type {import('teen_process').SubProcessOptions} *!/
@@ -109,7 +108,7 @@ async function runAppiumServer() {
  */
 async function runner() {
   log.log('Starting Appium server...');
-  /*const controller = new ProcessAbortController();
+  /*const controller = new AbortController();
   const { signal } = controller;
   server = fork('../server/build/lib/main.js', [], {*/
   /*server = fork('node', ['../server/build/lib/main'], {
@@ -117,7 +116,7 @@ async function runner() {
     stdio: ['pipe', 'inherit', 'inherit'],
   });*/
   const nodePath = await resolveNodePath();
-  const controller = new ProcessAbortController();
+  const controller = new AbortController();
   const { signal } = controller;
   // const fileIndex = (new Date()).toFormattedString();
   const appiumHome = process.env.APPIUM_HOME || resolve(homedir(), '.aav');

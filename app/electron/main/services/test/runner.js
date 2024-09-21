@@ -8,7 +8,6 @@ import {JRM_PATH, TESTER_LIBS_PATH, TESTER_PATH, spawn, exists} from '../../util
 import ANDROID_VERSIONS from './android-versions';
 import generator from './generator';
 import {resolveJavaExecutePaths} from '../index';
-import {ProcessAbortController} from '../abort-controller.js';
 import {isDev} from '../../helpers.js';
 
 // NOTE: default target Windows (path delimater: ';', path separator: '\')
@@ -280,7 +279,7 @@ async function runner(options) {
 
   const {targetVersion} = options;
   const {java: javaPath, javac: javacPath} = await resolveJavaExecutePaths();
-  const compilerController = new ProcessAbortController();
+  const compilerController = new AbortController();
   const { signal } = compilerController;
   // const fileIndex = (new Date()).toFormattedString();
   /** @type {import('teen_process').SubProcessOptions} */
@@ -376,7 +375,7 @@ async function runner(options) {
           log.log('[test-runner] starting test runner...');
           // #2 run class
           // isDev && (spawnOptions.stdio = ['ignore', openSync(`stdout_test_${fileIndex}.txt`, 'w'), openSync(`stderr_test_${fileIndex}.txt`, 'w')]);
-          const testerController = new ProcessAbortController();
+          const testerController = new AbortController();
           const {signal} = testerController;
           spawnOptions.signal = signal;
           // TODO: "teen_process::SubProcess"로 개선하자!
@@ -469,7 +468,7 @@ async function runner(options) {
           log.log('[test-runner] starting test runner...');
           // #2 run class
           // isDev && (spawnOptions.stdio = ['ignore', openSync(`stdout_test_${fileIndex}.txt`, 'w'), openSync(`stderr_test_${fileIndex}.txt`, 'w')]);
-          const testerController = new ProcessAbortController();
+          const testerController = new AbortController();
           const {signal} = testerController;
           spawnOptions.signal = signal;
           // TODO: "teen_process::SubProcess"로 개선하자!
