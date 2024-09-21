@@ -9,7 +9,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 
-public class Logger {
+public class CustomLogger {
     private static final Logger logger = LoggerFactory.getLogger(""); // 루트 로거 가져오기
 
     public void configureLogger() {
