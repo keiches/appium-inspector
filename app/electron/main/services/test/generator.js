@@ -1,25 +1,24 @@
 // import {app} from 'electron';
 // import fs from 'fs';
-import * as path from 'path';
-const {join, extname} = path;
 // import {tmpdir} from 'os';
 // import {realpathSync} from 'fs';
 import {existsSync} from 'fs';
+import {extname, join} from 'path';
+import copy from 'recursive-copy';
 // import {randomUUID, randomBytes} from 'crypto';
 // import {CaseConverterEnum, generateTemplateFiles} from 'generate-template-files';
 // import replace from '@stdlib/string-replace';
 import templateFile from 'template-file';
-const {render} = templateFile;
-import copy from 'recursive-copy';
 // import copy from 'cpx2';
 import through from 'through2';
-// import temporaryDirectory from 'temp-dir';
 
+// import temporaryDirectory from 'temp-dir';
 import {log} from '../../logger';
 import {TESTER_TEMP_PATH, TESTER_TEMPLATE_PATH, uuid} from '../../utils';
 // import {temporaryDirectory} from '../utils';
 import ANDROID_VERSIONS from './android-versions';
 
+const {render} = templateFile;
 // const log = console;
 
 /*

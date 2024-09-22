@@ -1,113 +1,23 @@
 import {dialog} from 'electron';
+import {EventEmitter} from 'events';
 // import {openSync} from 'fs';
 import {homedir} from 'os';
 import {join, resolve} from 'path';
-import getPort from '../get-port';
 
 import {isDev} from '../../helpers';
 import {log} from '../../logger';
 import {exists, PACKAGES_PATH, ROOT_PATH, spawn} from '../../utils';
+import getPort from '../get-port';
 import {resolveNodePath} from '../index';
 
-/**
- * Execute Appium server in background
- * @returns {Promise<void>}
- */
-/*
-async function runAppiumServer() {
-  log.log('Starting Appium server...');
-  /!*const controller = new AbortController();
-  const { signal } = controller;
-  server = fork('../server/build/lib/main.js', [], {*!/
-  /!*server = fork('node', ['../server/build/lib/main'], {
-    // signal,
-    stdio: ['pipe', 'inherit', 'inherit'],
-  });*!/
-  const nodePath = await resolveNodePath();
-  const controller = new AbortController();
-  const { signal } = controller;
-  const fileIndex = toFormattedString(new Date());
-  /!** @type {import('teen_process').SubProcessOptions} *!/
-  const options = {
-    signal,
-    // stdio: ['ignore', 'pipe', 'pipe'],
-    stdio: ['ignore', openSync(`stdout_client_${fileIndex}.txt`, 'w'), openSync(`stderr_client_${fileIndex}.txt`, 'w')],
-    // stdio: ['pipe', 'inherit', 'inherit']
-    // shell: true,
-    // cwd: 'C:\\Test\\Path',
-    // detached: true, ==> server.unref();
-    // NOTE: 아래 값을 넣으면, 더 이상 shell 로 부터 환경설정값을 읽지 않는 듯함
-    env: {
-      ...process.env,
-      APPIUM_HOME: resolve(homedir(), '.aav'),
-      ANDROID_HOME: 'C:\\opt\\Android\\Sdk', // process.env.ANDROID_HOME,
-    },
-  };
-  // server = spawn(nodePath, [join(__dirname, '../server/build/lib/main.js')]/!*, {
-  // server = spawn(nodePath, ['../node_modules/appium/build/lib/main.js']/!*, {
-  serverProcess = spawn(nodePath, [
-    // isDev ? '-inspect' : '',
-    // TODO: set actual appium server path
-    join(PACKAGES_PATH, 'server', 'packages', 'appium', 'build', 'lib', 'main.js'),
-    // resolve(join('..', 'server', 'packages', 'appium')),
-    // ../server/packages/appium
-    'server',
-    // '--show-config'
-    '--config',
-    join(ROOT_PATH, 'configs', 'server.conf.js'),
-  ], options);
-
-  serverProcess.stdout?.setEncoding?.('utf-8');
-  options.stdio[1] === 'pipe' && serverProcess.stdout.on('data', (/!** @type {Buffer} *!/ chunk) => {
-    // if we get here, all we know is that the proc exited
-    log.log(`[appium-server] stdout: ${chunk.toString('utf-8')}`);
-    // exited with code 127 from signal SIGHUP
-  });
-
-  serverProcess.stderr?.setEncoding?.('utf-8');
-  options.stdio[2] === 'pipe' && serverProcess.stderr.on('data', (/!** @type {Buffer} *!/ chunk) => {
-    log.error(`[appium-server] stderr: ${chunk.toString('utf-8')}`);
-  });
-
-  serverProcess.on('message', (message) => {
-    log.log('[appium-server] message:' + message);
-  });
-
-  serverProcess.on('error', (err) => {
-    // This will be called with err being an AbortError if the controller aborts
-    log.error('[appium-server] error:' + err.toString());
-    dialog.showMessageBox({
-      type: 'error',
-      buttons: ['OK'],
-      message: err.message,
-    });
-  });
-
-  serverProcess.on('disconnect', () => {
-    log.warn('[appium-server] disconnect');
-  });
-
-  serverProcess.on('close', (code, signal) => {
-    // if we get here, we know that the process stopped outside our control
-    // but with a 0 exit code
-    // app.quit();
-    log.log(`[appium-server] closed with code ${code} from signal ${signal}`);
-  });
-
-  serverProcess.on('exit', (code) => {
-    log.log('[appium-server] exit on code: ' + code);
-  });
-
-  log.log(`[appium-server] spawned: ${serverProcess.pid}`);
-}
-*/
+const eventEmitter = new EventEmitter();
 
 /**
  * Execute Appium server in background
- * @returns {Promise<ChildProcess|import('teen_process').SubProcess>}
+ * @returns {Promise<import('child_process').ChildProcess|import('teen_process').SubProcess>}
  */
 async function runner() {
-  log.log('Starting Appium server...');
+  log.log('[appium-server] starting server...');
   /*const controller = new AbortController();
   const { signal } = controller;
   server = fork('../server/build/lib/main.js', [], {*/
@@ -120,7 +30,8 @@ async function runner() {
   const { signal } = controller;
   // const fileIndex = (new Date()).toFormattedString();
   const appiumHome = process.env.APPIUM_HOME || resolve(homedir(), '.aav');
-  log.info(`[appium-server] APPIUM_HOME ("${appiumHome}") found`);
+  log.debug(`[appium-server] APPIUM_HOME="${appiumHome}"`);
+  log.debug(`[appium-server] ANDROID_HOME="${process.env.ANDROID_HOME}"`);
   /** @type {import('teen_process').SubProcessOptions} */
   const spawnOptions = {
     // detached: true, ==> server.unref();
@@ -168,8 +79,13 @@ async function runner() {
     child.stdout?.setEncoding?.('utf-8');
     child.stdout?.on?.('data', (/** @type {Buffer} */ data) => {
       // if we get here, all we know is that the proc exited
-      log.log('[appium-server] stdout:', data.toString());
+      log.log('[appium-server] data:', data.toString());
       // exited with code 127 from signal SIGHUP
+      eventEmitter.emit('appium-server', {
+        type: 'data',
+        name: 'process',
+        message: data.toString(),
+      });
     });
 
     child.stderr?.setEncoding?.('utf-8');
@@ -193,6 +109,11 @@ async function runner() {
 
     child.on('disconnect', () => {
       log.warn('[appium-server] disconnect');
+      eventEmitter.emit('appium-server', {
+        type: 'data',
+        name: 'process',
+        message: 'disconnect',
+      });
     });
 
     child.on('close', (code, signal) => {
@@ -200,38 +121,103 @@ async function runner() {
       // but with a 0 exit code
       // app.quit();
       log.log(`[appium-server] closed with code ${code} from signal ${signal}`);
+      eventEmitter.emit('appium-server', {
+        type: 'data',
+        name: 'process',
+        message: 'close',
+        data: {
+          code,
+          signal,
+        },
+      });
     });
 
     child.on('exit', (code, signal) => {
       log.log(`[appium-server] exit on code: ${code} from signal ${signal}`);
+      eventEmitter.emit('appium-server', {
+        type: 'data',
+        name: 'process',
+        message: 'exit',
+        data: {
+          code,
+          signal,
+        },
+      });
     });
   } else {
     child.on('exit', (code, signal) => {
       // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
       log.log(`[appium-server] exited with code ${code} from signal ${signal}`);
+      eventEmitter.emit('appium-server', {
+        type: 'data',
+        name: 'process',
+        message: 'exit',
+        data: {
+          code,
+          signal,
+        },
+      });
     });
 
     child.on('stop', (code, signal) => {
       // if we get here, we know that we intentionally stopped the proc
       // by calling proc.stop
       log.log(`[appium-server] stop with code ${code} from signal ${signal}`);
+      eventEmitter.emit('appium-server', {
+        type: 'data',
+        name: 'process',
+        message: 'stop',
+        data: {
+          code,
+          signal,
+        },
+      });
     });
 
     child.on('end', (code, signal) => {
       // if we get here, we know that the process stopped outside of our control
       // but with a 0 exit code
       log.log(`[appium-server] ended with code ${code} from signal ${signal}`);
+      eventEmitter.emit('appium-server', {
+        type: 'data',
+        name: 'process',
+        message: 'end',
+        data: {
+          code,
+          signal,
+        },
+      });
     });
 
     child.on('die', (code, signal) => {
       // if we get here, we know that the process stopped outside of our control
       // with a non-zero exit code
       log.log(`[appium-server] died with code ${code} from signal ${signal}`);
+      eventEmitter.emit('appium-server', {
+        type: 'data',
+        name: 'process',
+        message: 'die',
+        data: {
+          code,
+          signal,
+        },
+      });
     });
 
     child.on('output', (stdout, stderr) => {
-      stdout && (!stdout?.includes('getTimeouts')) && log.log(`[appium-server] output::stdout: ${stdout}`);
-      stderr && (!stderr?.includes('getTimeouts')) && log.log(`[appium-server] output::stderr: ${stderr}`);
+      if ((!stdout?.includes('getTimeouts')) || (!stderr?.includes('getTimeouts'))) {
+        return;
+      }
+      stdout && log.log(`[appium-server] output::stdout: ${stdout}`);
+      stderr && log.log(`[appium-server] output::stderr: ${stderr}`);
+      eventEmitter.emit('appium-server', {
+        type: 'data',
+        name: 'process',
+        message: 'output',
+        data: {
+          message: stdout ?? stderr,
+        },
+      });
     });
 
     /*child.on('lines-stdout', (lines) => {
@@ -260,13 +246,27 @@ async function runner() {
     await child.start((stdout, stderr) => {
       if (/fail/.test(stderr)) {
         // throw new Error('Encountered failure condition');
-        log.error('Encountered failure condition', stderr);
+        log.error('[appium-server] encountered failure condition:', stderr);
+        // window.webContents.send('appium-server', 'error', stderr);
+        eventEmitter.emit('appium-server', {
+          name: 'error',
+          type: 'process',
+          message: stderr,
+        });
+      } else {
+        // window.webContents.send('appium-server', 'message', stdout);
+        eventEmitter.emit('appium-server', {
+          type: 'data',
+          name: 'process',
+          message: 'appium server started',
+        });
       }
+      // throw new Error(`Encountered failure condition: ${stderr}`);
       return stdout || stderr;
     });
   }
 
-  log.log(`[appium-server] spawned: ${child.pid}`);
+  log.log(`[appium-server] server spawned: ${child.pid}`);
 
   return child;
 }

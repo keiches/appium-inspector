@@ -1,15 +1,15 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
-  MobileOutlined, ReloadOutlined, AndroidOutlined, AppleOutlined,
-  PlusOutlined,
-  DownloadOutlined, ShakeOutlined, StopOutlined, DeleteOutlined, MinusOutlined, CaretRightOutlined // ResetOutlined,
-} from '@ant-design/icons';
+AndroidOutlined, AppleOutlined,
+CaretRightOutlined, // ResetOutlined,
+DeleteOutlined, DownloadOutlined, MinusOutlined, MobileOutlined, PlusOutlined,
+ReloadOutlined, ShakeOutlined, StopOutlined} from '@ant-design/icons';
 import {Button, Card, Checkbox, Col, Form, List, Menu, Row, Select, Table, Tooltip} from 'antd';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 
-import SessionStyles from './Session.module.css';
 import {SERVER_TYPES} from '../../constants/session-builder';
-import {log} from '../../utils/logger';
 import {ipcRenderer} from '../../polyfills';
+import {log} from '../../utils/logger';
+import SessionStyles from './Session.module.css';
 
 /**
  * @param {import('@wdio/utils/node_modules/@wdio/types/build').Capabilities.AppiumCapabilities} caps
@@ -91,6 +91,10 @@ const ConnectionSettings = (props) => {
     selectApplication,
     addApplication,
     deleteApplication,
+    isValidCapsJson,
+    rawDesiredCaps,
+    setRawDesiredCaps,
+    saveRawDesiredCaps,
     t,
   } = props;
 
@@ -98,6 +102,7 @@ const ConnectionSettings = (props) => {
   const devicesTblRef = useRef(null);
   /** @type {Parameters<typeof Table>[0]['ref']} */
   const applicationsTblRef = useRef(null);
+  /** @type {Parameters<typeof Table>[0]['ref']} */
   const [capabilities, setCapabilities] = useState({...defaultCapabilities});
   const [deviceSelect, setDeviceSelect] = useState({
     selectedRowKeys: [],
@@ -160,6 +165,26 @@ const ConnectionSettings = (props) => {
   };
   /** @type {import('antd/lib/menu').ItemType[]} */
   const menuItemsDevices = [
+    {
+      title: 'Run test',
+      icon: ShakeOutlined,
+      onClick: () => {
+        log.debug('starting test......');
+        // TODO:
+        ipcRenderer.send('start-test', {
+          // NOTE: read from device info
+          targetVersion: 12,
+          codes: 'var a = 3;',
+          capabilities: {
+            deviceName: 'emulator-5554',
+            app: 'apps/Android-MyDemoAppRN.1.3.0.build-244.apk',
+            appPackage: 'com.saucelabs.mydemoapp.rn',
+            appActivity: '.MainActivity',
+          },
+          remoteAddress: 'http://localhost:8000', // 'host:port'
+        });
+      }
+    },
     {
       title: 'Add a device',
       icon: PlusOutlined,
@@ -362,7 +387,7 @@ const ConnectionSettings = (props) => {
     return {
       onClick: (event) => {
         log.log('onDevicesTableRowClick:', event);
-        if (record.key !== deviceSelect?.key) {
+        if (record.key !== deviceSelect?.selectedRowKeys?.[0]) {
           setDeviceSelect({
             ...deviceSelect,
             selectedRowKeys: [record.key],
@@ -370,7 +395,7 @@ const ConnectionSettings = (props) => {
         } else {
           setDeviceSelect({
             ...deviceSelect,
-            selectedRowKeys: [record.key],
+            selectedRowKeys: [],
           });
         }
       },
@@ -382,7 +407,7 @@ const ConnectionSettings = (props) => {
     return {
       onClick: (event) => {
         log.log('onApplicationsTableRowClick:', event);
-        if (record.key !== applicationSelect?.key) {
+        if (record.key !== applicationSelect?.selectedRowKeys?.[0]) {
           setApplicationSelect({
             ...applicationSelect,
             selectedRowKeys: [record.key]
@@ -390,7 +415,7 @@ const ConnectionSettings = (props) => {
         } else {
           setApplicationSelect({
             ...applicationSelect,
-            selectedRowKeys: [record.key]
+            selectedRowKeys: []
           });
         }
       },
@@ -410,19 +435,20 @@ const ConnectionSettings = (props) => {
   useEffect(() => {
     log.debug('Devices or Applications Table selected:', deviceSelect, applicationSelect);
     try {
-      let newCapabilities = {
+      /*let nextCapabilities = {
         ...capabilities,
       };
       if ((deviceSelect.selectedRowKeys.length === 0) && (applicationSelect.selectedRowKeys.length === 0)) {
-        setCapabilities(newCapabilities);
+        setCapabilities(nextCapabilities);
+        setRawDesiredCaps(JSON.stringify(nextCapabilities));
         return;
       }
       if (deviceSelect.selectedRowKeys.length > 0) {
         log.log('- Device selected:', deviceSelect.selectedRowKeys);
         // const dataSourceDevice = dataSourceDevices[deviceSelect.selectedRowKeys[0]];
         const dataSourceDevice = dataSourceDevices.find(({key}) => key === deviceSelect.selectedRowKeys[0]);
-        newCapabilities = {
-          ...newCapabilities,
+        nextCapabilities = {
+          ...nextCapabilities,
           'appium:platformName': dataSourceDevice.platform.name,
           'appium:platformVersion': dataSourceDevice.platform.version,
           'appium:automationName': dataSourceDevice.platform.name === 'Android' ? 'UIAutomator2' : 'XCUITest',
@@ -430,28 +456,65 @@ const ConnectionSettings = (props) => {
           // 'appium:udid': dataSourceDevice.udid,
         };
       } else {
-        delete newCapabilities['appium:platformName'];
-        delete newCapabilities['appium:platformVersion'];
-        delete newCapabilities['appium:automationName'];
-        delete newCapabilities['appium:deviceName'];
+        delete nextCapabilities['appium:platformName'];
+        delete nextCapabilities['appium:platformVersion'];
+        delete nextCapabilities['appium:automationName'];
+        delete nextCapabilities['appium:deviceName'];
       }
       if (applicationSelect.selectedRowKeys.length > 0) {
         log.log('- Application selected:', applicationSelect.selectedRowKeys);
         // const dataSourceApplication = dataSourceApplications[applicationSelect.selectedRowKeys[0]];
         const dataSourceApplication = dataSourceApplications.find(({key}) => key === applicationSelect.selectedRowKeys[0]);
-        newCapabilities = {
-          ...newCapabilities,
+        nextCapabilities = {
+          ...nextCapabilities,
           'appium:appPackage': dataSourceApplication.package,
           'appium:app': dataSourceApplication.app,
           'appium:appActivity': dataSourceApplication.activity,
         };
       } else {
-        delete newCapabilities['appium:appPackage'];
-        delete newCapabilities['appium:app'];
-        delete newCapabilities['appium:appActivity'];
+        delete nextCapabilities['appium:appPackage'];
+        delete nextCapabilities['appium:app'];
+        delete nextCapabilities['appium:appActivity'];
       }
-      setCapabilities({
-        ...newCapabilities,
+      setCapabilities(nextCapabilities);
+      setRawDesiredCaps(JSON.stringify(nextCapabilities));
+      */
+      setCapabilities((prevState) => {
+        if ((deviceSelect.selectedRowKeys.length === 0) && (applicationSelect.selectedRowKeys.length === 0)) {
+          setRawDesiredCaps(JSON.stringify(defaultCapabilities));
+          return {...defaultCapabilities};
+        }
+        let nextDeviceState;
+        if (deviceSelect.selectedRowKeys.length > 0) {
+          log.log('- Device selected:', deviceSelect.selectedRowKeys);
+          // const dataSourceDevice = dataSourceDevices[deviceSelect.selectedRowKeys[0]];
+          const dataSourceDevice = dataSourceDevices.find(({key}) => key === deviceSelect.selectedRowKeys[0]);
+          nextDeviceState = {
+            'appium:platformName': dataSourceDevice.platform.name,
+            'appium:platformVersion': dataSourceDevice.platform.version,
+            'appium:automationName': dataSourceDevice.platform.name === 'Android' ? 'UIAutomator2' : 'XCUITest',
+            'appium:deviceName': dataSourceDevice.name,
+            // 'appium:udid': dataSourceDevice.udid,
+          };
+        }
+        let nextApplicationState;
+        if (applicationSelect.selectedRowKeys.length > 0) {
+          log.log('- Application selected:', applicationSelect.selectedRowKeys);
+          // const dataSourceApplication = dataSourceApplications[applicationSelect.selectedRowKeys[0]];
+          const dataSourceApplication = dataSourceApplications.find(({key}) => key === applicationSelect.selectedRowKeys[0]);
+          nextApplicationState = {
+            'appium:appPackage': dataSourceApplication.package,
+            'appium:app': dataSourceApplication.app,
+            'appium:appActivity': dataSourceApplication.activity,
+          };
+        }
+        const nextState = {
+          ...defaultCapabilities,
+          ...nextDeviceState,
+          ...nextApplicationState,
+        };
+        setRawDesiredCaps(JSON.stringify(nextState));
+        return nextState;
       });
     } catch (error) {
       log.error('Failed to set Devices or Applications capabilities', error);
@@ -462,9 +525,14 @@ const ConnectionSettings = (props) => {
     log.debug('Appium:noReset:', capabilitiesNoReset);
     try {
       log.log('- Capabilities::', 'appium:noReset =', capabilitiesNoReset);
-      setCapabilities({
-        ...capabilities,
-        'appium:noReset': capabilitiesNoReset,
+      setCapabilities((prevState) => {
+        /** @type {any} */
+        const nextState = {
+          ...prevState,
+          'appium:noReset': capabilitiesNoReset,
+        };
+        setRawDesiredCaps(JSON.stringify(nextState));
+        return nextState;
       });
     } catch (error) {
       log.error('Failed to set capabilities::appium:noRest', error);
@@ -475,9 +543,14 @@ const ConnectionSettings = (props) => {
     log.debug('Appium:fullReset:', capabilitiesFullReset);
     try {
       log.log('- Capabilities::', 'appium:fullReset =', capabilitiesFullReset);
-      setCapabilities({
-        ...capabilities,
-        'appium:fullReset': capabilitiesFullReset,
+      setCapabilities((prevState) => {
+        /** @type {any} */
+        const nextState = {
+          ...prevState,
+          'appium:fullReset': capabilitiesFullReset,
+        };
+        setRawDesiredCaps(JSON.stringify(nextState));
+        return nextState;
       });
     } catch (error) {
       log.error('Failed to set capabilities::appium:fullRest', error);
@@ -514,6 +587,12 @@ const ConnectionSettings = (props) => {
       document.removeEventListener('click', handleApplicationsTblOutsideClick, false);
     };
   });*/
+
+  useEffect(() => {
+    if (isValidCapsJson) {
+      saveRawDesiredCaps();
+    }
+  }, [isValidCapsJson]);
 
   useEffect(() => {
     ipcRenderer.on('devices:set', (event, message) => {

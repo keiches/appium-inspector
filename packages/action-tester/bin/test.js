@@ -1,9 +1,9 @@
-import {join} from 'path';
 import {spawn} from 'child_process';
-// import commandLineArgs from 'command-line-args';
+import {join} from 'path';
 
-import {getExecutableName} from '../../../utils.js';
-import ANDROID_VERSIONS from '../android-versions.js';
+import ANDROID_VERSIONS from '../../../app/electron/main/services/test/android-versions.js';
+// import commandLineArgs from 'command-line-args';
+import {getExecutableName} from '../../../app/electron/main/utils.js';
 
 const log = console;
 

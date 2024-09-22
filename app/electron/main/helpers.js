@@ -6,6 +6,8 @@ import i18n from './i18next';
 
 export const isDev = process.env.NODE_ENV === 'development';
 
+export const isMac = process.platform === 'darwin';
+
 export function setupIPCListeners() {
   ipcMain.handle('settings:has', async (_evt, key) => await settings.has(key));
   ipcMain.handle('settings:set', async (_evt, key, value) => await settings.set(key, value));

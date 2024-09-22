@@ -3,7 +3,7 @@ import settings from 'electron-settings';
 import {join} from 'path';
 
 import {PREFERRED_LANGUAGE} from '../../common/shared/setting-defs';
-import {isDev} from './helpers';
+import {isDev, isMac} from './helpers';
 import i18n from './i18next';
 import {openFilePath} from './main';
 import {rebuildMenus} from './menus';
@@ -38,7 +38,7 @@ function buildSessionWindow() {
     height: 710,
     minWidth: 890,
     minHeight: 710,
-    titleBarStyle: 'hiddenInset',
+    titleBarStyle: isMac ? 'default' : 'hiddenInset',
     webPreferences: {
       preload: join(__dirname, '..', 'preload', 'preload.mjs'), // from 'main' in package.json
       sandbox: false,
@@ -49,6 +49,9 @@ function buildSessionWindow() {
   });
 }
 
+/**
+ * @returns {Electron.CrossProcessExports.BrowserWindow}
+ */
 export function setupMainWindow() {
   const splashWindow = buildSplashWindow();
   splashWindow[pathLoadMethod](splashPath);

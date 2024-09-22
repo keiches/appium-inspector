@@ -1,6 +1,8 @@
+@echo off
+
 copy /b /y /v %USERPROFILE%\.m2\repository\org\junit\platform\junit-platform-launcher\1.10.2\junit-platform-launcher-1.10.2.jar libs
-copy /b /y /v %ANDROID_HOME%\platforms\android-31\android.jar libs
-rem copy /b /y /v %ANDROID_HOME%\platforms\android-31\data\res libs
+copy /b /y /v %ANDROID_HOME%\platforms\android-%%2\android.jar libs
+rem copy /b /y /v %ANDROID_HOME%\platforms\android-%%2\data\res libs
 rem copy /b /y /v %USERPROFILE%\Projects\appium2_sample_01\target\test-classes libs
 copy /b /y /v %USERPROFILE%\.m2\repository\org\aspectj\aspectjrt\1.9.22.1\aspectjrt-1.9.22.1.jar libs
 copy /b /y /v %USERPROFILE%\.m2\repository\org\aspectj\aspectjtools\1.9.22.1\aspectjtools-1.9.22.1.jar libs

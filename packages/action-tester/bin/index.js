@@ -1,8 +1,10 @@
-import fs from 'fs';
-import {join, resolve} from 'path';
-import generator from '../generator.js';
-import {ROOT_PATH} from '../../../utils.js';
+// import fs from 'fs';
+// import {join, resolve} from 'path';
 // import commandLineArgs from 'command-line-args';
+import {resolve} from 'path';
+
+import generator from '../../../app/electron/main/services/test/generator.js';
+import {ROOT_PATH} from '../../../app/electron/main/utils.js';
 
 /*
 console.log('@@1-1@', process.argv);

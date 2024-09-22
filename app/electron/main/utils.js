@@ -1,18 +1,17 @@
-import {app} from 'electron';
-
-import {SubProcess} from 'teen_process';
-import {constants, existsSync, promises, realpathSync} from 'fs';
-import {homedir, platform, tmpdir} from 'os';
-// import {isFunction} from 'lodash';
-import {log} from './logger';
-import {randomBytes, randomUUID} from 'crypto';
-import {join} from 'path';
-import {spawn as spawnNode} from 'child_process';
-import {resolveJavaExecutePaths, resolveNodePath} from './services';
-// import {v4} from 'uuid';
-
 import './prototype-date';
 import './prototype-string';
+
+import {spawn as spawnNode} from 'child_process';
+import {randomBytes, randomUUID} from 'crypto';
+import {app} from 'electron';
+import {constants, existsSync, promises, realpathSync} from 'fs';
+import {homedir, platform, tmpdir} from 'os';
+import {join} from 'path';
+import {SubProcess} from 'teen_process';
+
+// import {isFunction} from 'lodash';
+import {log} from './logger';
+import {resolveJavaExecutePaths, resolveNodePath} from './services';
 
 // NOTE: in renderer/preload, use "remote.app.getAppPath()".
 export const ROOT_PATH = process.env.NODE_ENV === 'development' ? app.getAppPath() : __dirname;

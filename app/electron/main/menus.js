@@ -1,7 +1,7 @@
 import {app, dialog, Menu, shell} from 'electron';
 
 import {languageList} from '../../common/shared/i18next.config';
-import {APPIUM_SESSION_EXTENSION, isDev, openSessionFile, t} from './helpers';
+import {APPIUM_SESSION_EXTENSION, isDev, isMac, openSessionFile, t} from './helpers';
 import i18n from './i18next';
 import {checkForUpdates} from './updater';
 import {launchNewSessionWindow} from './windows';
@@ -179,7 +179,7 @@ function menuTemplate(mainWindow, isMac) {
 }
 
 export function rebuildMenus(mainWindow) {
-  const isMac = process.platform === 'darwin';
+  // const isMac = process.platform === 'darwin';
 
   const menu = Menu.buildFromTemplate(menuTemplate(mainWindow, isMac));
 

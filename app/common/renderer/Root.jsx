@@ -8,11 +8,20 @@ import SessionPage from './containers/SessionPage';
 import i18n from './i18next';
 import {ipcRenderer} from './polyfills';
 import StatusBar from './StatusBar.jsx';
+import {log} from './utils/logger.js';
 
 ipcRenderer.on('appium-language-changed', (event, message) => {
   if (i18n.language !== message.language) {
     i18n.changeLanguage(message.language);
   }
+});
+
+ipcRenderer.on('appium-server', (event, ...args) => {
+  log.log('<appium-server>~~~~~~~~~~~~~~~~~~~~', ...args);
+});
+
+ipcRenderer.on('test-server', (event, ...args) => {
+  log.log('<test-server>~~~~~~~~~~~~~~~~~~~~', ...args);
 });
 
 const Root = ({store}) => (

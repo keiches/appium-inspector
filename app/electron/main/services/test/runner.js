@@ -1,237 +1,21 @@
-import {dialog} from 'electron';
+import {dialog, ipcMain} from 'electron';
+import {EventEmitter} from 'events';
+import {createServer} from 'http';
 // import {openSync} from 'fs';
-import {join, normalize, delimiter as pathDel, sep as pathSep} from 'path';
+import {delimiter as pathDel, join, normalize, resolve, sep as pathSep} from 'path';
 
-// import {isDev} from '../../helpers';
+import {isDev} from '../../helpers.js';
 import {log} from '../../logger';
-import {JRM_PATH, TESTER_LIBS_PATH, TESTER_PATH, spawn, exists} from '../../utils';
+import {JRM_PATH, ROOT_PATH, spawn, TESTER_LIBS_PATH} from '../../utils';
+import getPort from '../get-port.js';
+import {resolveJavaExecutePaths} from '../index';
 import ANDROID_VERSIONS from './android-versions';
 import generator from './generator';
-import {resolveJavaExecutePaths} from '../index';
-import {isDev} from '../../helpers.js';
+
+const eventEmitter = new EventEmitter();
 
 // NOTE: default target Windows (path delimater: ';', path separator: '\')
 const CLASS_PATH = '@@java-client-9.3.0.jar;@@aspectjrt-1.9.22.1.jar;@@aspectjtools-1.9.22.1.jar;@@java-client-9.3.0.jar;@@selenium-support-4.24.0.jar;@@gson-2.11.0.jar;@@error_prone_annotations-2.27.0.jar;@@junit-jupiter-5.11.0.jar;@@junit-jupiter-api-5.11.0.jar;@@opentest4j-1.3.0.jar;@@junit-platform-commons-1.11.0.jar;@@apiguardian-api-1.1.2.jar;@@junit-jupiter-engine-5.11.0.jar;@@junit-platform-engine-1.11.0.jar;@@junit-jupiter-params-5.11.0.jar;@@selenium-api-4.24.0.jar;@@jspecify-1.0.0.jar;@@selenium-java-4.24.0.jar;@@selenium-chrome-driver-4.24.0.jar;@@selenium-chromium-driver-4.24.0.jar;@@selenium-devtools-v126-4.24.0.jar;@@selenium-devtools-v127-4.24.0.jar;@@selenium-devtools-v128-4.24.0.jar;@@selenium-devtools-v85-4.24.0.jar;@@selenium-edge-driver-4.24.0.jar;@@selenium-firefox-driver-4.24.0.jar;@@selenium-ie-driver-4.24.0.jar;@@selenium-safari-driver-4.24.0.jar;@@selenium-json-4.24.0.jar;@@selenium-remote-driver-4.24.0.jar;@@auto-service-annotations-1.1.1.jar;@@guava-33.3.0-jre.jar;@@failureaccess-1.0.2.jar;@@listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;@@jsr305-3.0.2.jar;@@checker-qual-3.43.0.jar;@@j2objc-annotations-3.0.0.jar;@@opentelemetry-semconv-1.25.0-alpha.jar;@@opentelemetry-api-1.41.0.jar;@@opentelemetry-context-1.41.0.jar;@@opentelemetry-exporter-logging-1.41.0.jar;@@opentelemetry-sdk-common-1.41.0.jar;@@opentelemetry-sdk-extension-autoconfigure-spi-1.41.0.jar;@@opentelemetry-sdk-extension-autoconfigure-1.41.0.jar;@@opentelemetry-api-incubator-1.41.0-alpha.jar;@@opentelemetry-sdk-trace-1.41.0.jar;@@opentelemetry-sdk-1.41.0.jar;@@opentelemetry-sdk-metrics-1.41.0.jar;@@opentelemetry-sdk-logs-1.41.0.jar;@@byte-buddy-1.15.0.jar;@@selenium-http-4.24.0.jar;@@failsafe-3.3.2.jar;@@selenium-manager-4.24.0.jar;@@selenium-os-4.24.0.jar;@@commons-exec-1.4.0.jar;@@unirest-java-3.14.5.jar;@@unirest-java-3.14.5-standalone.jar;@@unirest-java-core-4.4.4.jar;@@unirest-modules-jackson-4.4.4.jar;@@junit-platform-suite-1.11.0.jar;@@junit-platform-suite-api-1.11.0.jar;@@junit-platform-suite-engine-1.11.0.jar;@@junit-platform-suite-commons-1.11.0.jar;@@junit-platform-launcher-1.11.0.jar;@@slf4j-api-2.0.16.jar;@@logback-classic-1.5.8.jar;@@logback-core-1.5.8.jar;@@jul-to-slf4j-2.0.16.jar';
-
-/**
- * Execute action tester in background
- * @returns {Promise<void>}
- */
-/*
-async function runActionTester() {
-  log.log('Running action tester...', await resolveJavaPath());
-  log.log(`----0>>> ${ROOT_PATH}`);
-  log.log(`----1>>> ${await promises.realpath(ROOT_PATH)}`);
-  // log.log(`----2>>> ${join(PACKAGES_PATH, 'tester-compile', `compile.${platform() === 'win32' ? 'cmd' : 'sh'}`)}`);
-
-  const {dest, copied} = await generator({
-    targetVersion: '12',
-    codes: `// Test Action #1
-driver.findElement(AppiumBy.xpath("//!*[@class='android.widget.ImageView' and ./parent::*[@class='android.view.ViewGroup'] and (./preceding-sibling::* | ./following-sibling::*)[@text='Sauce Labs Backpack']]")).click();
-// new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("//!*[@contentDescription='Add To Cart button']")));
-// Test Action #2
-driver.findElement(AppiumBy.xpath("//!*[@contentDescription='Add To Cart button']")).click();
-// new WebDriverWait(driver, 30).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("//!*[@id='back']")));
-// Test Action #3
-driver.findElement(AppiumBy.xpath("//!*[@id='back']")).click();
-// Test Action #4
-driver.findElement(AppiumBy.xpath("//!*[@class='android.widget.ImageView' and ./parent::*[@class='android.view.ViewGroup'] and (./preceding-sibling::* | ./following-sibling::*)[@text='Sauce Labs Bike Light']]")).click();
-driver.findElement(AppiumBy.xpath("//!*[@class='android.widget.ImageView' and ./parent::*[@contentDescription='counter plus button']]")).click();
-driver.findElement(AppiumBy.xpath("//!*[@contentDescription='Add To Cart button']")).click();
-driver.findElement(AppiumBy.xpath("//!*[@class='android.widget.ImageView' and ./parent::*[@contentDescription='cart badge']]")).click();
-// new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("//!*[@text='Proceed To Checkout']")));
-driver.findElement(AppiumBy.xpath("//!*[@text='Proceed To Checkout']")).click();
-driver.findElement(AppiumBy.xpath("//!*[@contentDescription='Username input field']")).click();
-// new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("(//!*[@id='key_pos_0_5']/!*[@class='android.widget.TextView'])[1]")));
-driver.findElement(AppiumBy.xpath("(//!*[@id='key_pos_0_5']/!*[@class='android.widget.TextView'])[1]")).click();
-driver.findElement(AppiumBy.xpath("(//!*[@id='key_pos_0_8']/!*[@class='android.widget.TextView'])[1]")).click();
-driver.findElement(AppiumBy.xpath("(//!*[@id='key_pos_0_6']/!*[@class='android.widget.TextView'])[1]")).click();
-// new WebDriverWait(driver, 10).until(ExpectedConditions.presenceOfElementLocated(AppiumBy.xpath("//!*[@contentDescription='Password input field']")));
-driver.findElement(AppiumBy.xpath("//!*[@contentDescription='Password input field']")).click();
-driver.findElement(AppiumBy.xpath("//!*[@class='android.widget.TextView' and ./parent::*[@id='key_pos_2_7']]")).click();
-driver.findElement(AppiumBy.xpath("//!*[@class='android.widget.TextView' and ./parent::*[@id='key_pos_0_2']]")).click();
-driver.findElement(AppiumBy.xpath("//!*[@text='Login' and ./parent::*[@contentDescription='Login button']]")).click();`,
-    capabilities: {
-      app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
-      appPackage: 'com.saucelabs.mydemoapp.rn',
-      appActivity: '.MainActivity',
-      deviceName: 'emulator-5554',
-    },
-    remoteAddress: 'http://localhost:4723', // 'host:port'
-  });
-  // eslint-disable-next-line
-  console.log('----0', dest, copied?.length ?? 0);
-
-  if (!dest) {
-    return;
-  }
-
-  const fileIndex = (new Date()).toFormattedString(); // toFormattedString(new Date());
-  /!** @type {Record<string, any>} *!/
-  const options = {
-    // detached: true, ==> actionsTester.unref();
-    detached: true,
-    // stdio: ['pipe', 'pipe', 'pipe'],
-    stdio: ['ignore', openSync(`stdout_compile_${fileIndex}.txt`, 'w'), openSync(`stderr_compile_${fileIndex}.txt`, 'w')],
-    // stdio: ['ignore', openSync('stdout_tester.txt', 'w'), openSync('stderr_tester.txt', 'w')],
-    // stdio: ['pipe', 'ignore', 'inherit']
-    // stdio: [Stdin, Stdout, Stderr];
-    // shell: true,
-    // cwd: 'C:\\Test\\Path',
-    // cwd: dest,
-    cwd: TESTER_PATH,
-    env: {
-      ...process.env,
-      // CLASSPATH: 'libs/android{{android.version}}.jar;libs/junit-platform-launcher-1.10.3.jar;libs/aspectjrt-1.9.22.1.jar;libs/aspectjtools-1.9.22.1.jar;libs/java-client-9.3.0.jar;libs/selenium-api-4.21.0.jar;libs/selenium-remote-driver-4.21.0.jar;libs/auto-service-annotations-1.1.1.jar;libs/guava-33.2.0-jre.jar;libs/failureaccess-1.0.2.jar;libs/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;libs/jsr305-3.0.2.jar;libs/checker-qual-3.42.0.jar;libs/j2objc-annotations-3.0.0.jar;libs/opentelemetry-semconv-1.25.0-alpha.jar;libs/opentelemetry-api-1.38.0.jar;libs/opentelemetry-context-1.38.0.jar;libs/opentelemetry-exporter-logging-1.38.0.jar;libs/opentelemetry-sdk-common-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-spi-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-1.38.0.jar;libs/opentelemetry-api-incubator-1.38.0-alpha.jar;libs/opentelemetry-sdk-trace-1.38.0.jar;libs/opentelemetry-sdk-1.38.0.jar;libs/opentelemetry-sdk-metrics-1.38.0.jar;libs/opentelemetry-sdk-logs-1.38.0.jar;libs/byte-buddy-1.14.15.jar;libs/selenium-http-4.21.0.jar;libs/failsafe-3.3.2.jar;libs/selenium-json-4.21.0.jar;libs/selenium-manager-4.21.0.jar;libs/selenium-os-4.21.0.jar;libs/commons-exec-1.4.0.jar;libs/selenium-support-4.21.0.jar;libs/gson-2.11.0.jar;libs/error_prone_annotations-2.28.0.jar;libs/slf4j-api-2.0.16.jar;libs/slf4j-simple-2.0.16.jar;libs/junit-jupiter-5.10.3.jar;libs/junit-jupiter-api-5.10.3.jar;libs/opentest4j-1.3.0.jar;libs/junit-platform-commons-1.10.3.jar;libs/apiguardian-api-1.1.2.jar;libs/junit-jupiter-params-5.10.3.jar;libs/junit-jupiter-engine-5.10.3.jar;libs/junit-platform-engine-1.10.3.jar;libs/unirest-java-3.14.5-standalone.jar;libs/httpclient-4.5.13.jar;libs/httpcore-4.4.13.jar;libs/commons-logging-1.2.jar;libs/httpmime-4.5.13.jar;libs/httpcore-nio-4.4.13.jar;libs/httpasyncclient-4.1.5.jar;libs/commons-codec-1.15.jar;',
-      // CLASSPATH: 'libs/android-12-api-31.jar;libs/junit-platform-launcher-1.10.3.jar;libs/aspectjrt-1.9.22.1.jar;libs/aspectjtools-1.9.22.1.jar;libs/java-client-9.3.0.jar;libs/selenium-api-4.21.0.jar;libs/selenium-remote-driver-4.21.0.jar;libs/auto-service-annotations-1.1.1.jar;libs/guava-33.2.0-jre.jar;libs/failureaccess-1.0.2.jar;libs/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;libs/jsr305-3.0.2.jar;libs/checker-qual-3.42.0.jar;libs/j2objc-annotations-3.0.0.jar;libs/opentelemetry-semconv-1.25.0-alpha.jar;libs/opentelemetry-api-1.38.0.jar;libs/opentelemetry-context-1.38.0.jar;libs/opentelemetry-exporter-logging-1.38.0.jar;libs/opentelemetry-sdk-common-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-spi-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-1.38.0.jar;libs/opentelemetry-api-incubator-1.38.0-alpha.jar;libs/opentelemetry-sdk-trace-1.38.0.jar;libs/opentelemetry-sdk-1.38.0.jar;libs/opentelemetry-sdk-metrics-1.38.0.jar;libs/opentelemetry-sdk-logs-1.38.0.jar;libs/byte-buddy-1.14.15.jar;libs/selenium-http-4.21.0.jar;libs/failsafe-3.3.2.jar;libs/selenium-json-4.21.0.jar;libs/selenium-manager-4.21.0.jar;libs/selenium-os-4.21.0.jar;libs/commons-exec-1.4.0.jar;libs/selenium-support-4.21.0.jar;libs/gson-2.11.0.jar;libs/error_prone_annotations-2.28.0.jar;libs/slf4j-api-2.0.16.jar;libs/slf4j-simple-2.0.16.jar;libs/junit-jupiter-5.10.3.jar;libs/junit-jupiter-api-5.10.3.jar;libs/opentest4j-1.3.0.jar;libs/junit-platform-commons-1.10.3.jar;libs/apiguardian-api-1.1.2.jar;libs/junit-jupiter-params-5.10.3.jar;libs/junit-jupiter-engine-5.10.3.jar;libs/junit-platform-engine-1.10.3.jar;libs/unirest-java-3.14.5-standalone.jar;libs/httpclient-4.5.13.jar;libs/httpcore-4.4.13.jar;libs/commons-logging-1.2.jar;libs/httpmime-4.5.13.jar;libs/httpcore-nio-4.4.13.jar;libs/httpasyncclient-4.1.5.jar;libs/commons-codec-1.15.jar;',
-      // libs/junit-platform-launcher-1.10.3.jar:libs/aspectjrt-1.9.22.1.jar:libs/aspectjtools-1.9.22.1.jar:libs/java-client-9.3.0.jar:libs/selenium-api-4.21.0.jar:libs/selenium-remote-driver-4.21.0.jar:libs/auto-service-annotations-1.1.1.jar:libs/guava-33.2.0-jre.jar:libs/failureaccess-1.0.2.jar:libs/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar:libs/jsr305-3.0.2.jar:libs/checker-qual-3.42.0.jar:libs/j2objc-annotations-3.0.0.jar:libs/opentelemetry-semconv-1.25.0-alpha.jar:libs/opentelemetry-api-1.38.0.jar:libs/opentelemetry-context-1.38.0.jar:libs/opentelemetry-exporter-logging-1.38.0.jar:libs/opentelemetry-sdk-common-1.38.0.jar:libs/opentelemetry-sdk-extension-autoconfigure-spi-1.38.0.jar:libs/opentelemetry-sdk-extension-autoconfigure-1.38.0.jar:libs/opentelemetry-api-incubator-1.38.0-alpha.jar:libs/opentelemetry-sdk-trace-1.38.0.jar:libs/opentelemetry-sdk-1.38.0.jar:libs/opentelemetry-sdk-metrics-1.38.0.jar:libs/opentelemetry-sdk-logs-1.38.0.jar:libs/byte-buddy-1.14.15.jar:libs/selenium-http-4.21.0.jar:libs/failsafe-3.3.2.jar:libs/selenium-json-4.21.0.jar:libs/selenium-manager-4.21.0.jar:libs/selenium-os-4.21.0.jar:libs/commons-exec-1.4.0.jar:libs/selenium-support-4.21.0.jar:libs/gson-2.11.0.jar:libs/error_prone_annotations-2.28.0.jar:libs/slf4j-api-2.0.16.jar:libs/slf4j-simple-2.0.16.jar:libs/junit-jupiter-5.10.3.jar:libs/junit-jupiter-api-5.10.3.jar:libs/opentest4j-1.3.0.jar:libs/junit-platform-commons-1.10.3.jar:libs/apiguardian-api-1.1.2.jar:libs/junit-jupiter-params-5.10.3.jar:libs/junit-jupiter-engine-5.10.3.jar:libs/junit-platform-engine-1.10.3.jar:libs/unirest-java-3.14.5-standalone.jar:libs/httpclient-4.5.13.jar:libs/httpcore-4.4.13.jar:libs/commons-logging-1.2.jar:libs/httpmime-4.5.13.jar:libs/httpcore-nio-4.4.13.jar:libs/httpasyncclient-4.1.5.jar:libs/commons-codec-1.15.jar:
-      JAVA_HOME: JRM_PATH,
-    }
-  };
-
-  const androidVersion = '12';
-  // #1 compile java to class
-  testerProcess = spawn(join(JRM_PATH, 'bin', getExecutableName('javac')), [
-    // isDev ? '-verbose' : '',
-    '-d',
-    join(dest, 'out'),
-    '--class-path',
-    // TODO: 더 좋은 방법을 강구하자...
-    // 'libs/android-12-api-31.jar;libs/junit-platform-launcher-1.10.3.jar;libs/aspectjrt-1.9.22.1.jar;libs/aspectjtools-1.9.22.1.jar;libs/java-client-9.3.0.jar;libs/selenium-api-4.21.0.jar;libs/selenium-remote-driver-4.21.0.jar;libs/auto-service-annotations-1.1.1.jar;libs/guava-33.2.0-jre.jar;libs/failureaccess-1.0.2.jar;libs/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;libs/jsr305-3.0.2.jar;libs/checker-qual-3.42.0.jar;libs/j2objc-annotations-3.0.0.jar;libs/opentelemetry-semconv-1.25.0-alpha.jar;libs/opentelemetry-api-1.38.0.jar;libs/opentelemetry-context-1.38.0.jar;libs/opentelemetry-exporter-logging-1.38.0.jar;libs/opentelemetry-sdk-common-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-spi-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-1.38.0.jar;libs/opentelemetry-api-incubator-1.38.0-alpha.jar;libs/opentelemetry-sdk-trace-1.38.0.jar;libs/opentelemetry-sdk-1.38.0.jar;libs/opentelemetry-sdk-metrics-1.38.0.jar;libs/opentelemetry-sdk-logs-1.38.0.jar;libs/byte-buddy-1.14.15.jar;libs/selenium-http-4.21.0.jar;libs/failsafe-3.3.2.jar;libs/selenium-json-4.21.0.jar;libs/selenium-manager-4.21.0.jar;libs/selenium-os-4.21.0.jar;libs/commons-exec-1.4.0.jar;libs/selenium-support-4.21.0.jar;libs/gson-2.11.0.jar;libs/error_prone_annotations-2.28.0.jar;libs/slf4j-api-2.0.16.jar;libs/slf4j-simple-2.0.16.jar;libs/junit-jupiter-5.10.3.jar;libs/junit-jupiter-api-5.10.3.jar;libs/opentest4j-1.3.0.jar;libs/junit-platform-commons-1.10.3.jar;libs/apiguardian-api-1.1.2.jar;libs/junit-jupiter-params-5.10.3.jar;libs/junit-jupiter-engine-5.10.3.jar;libs/junit-platform-engine-1.10.3.jar;libs/unirest-java-3.14.5-standalone.jar;libs/httpclient-4.5.13.jar;libs/httpcore-4.4.13.jar;libs/commons-logging-1.2.jar;libs/httpmime-4.5.13.jar;libs/httpcore-nio-4.4.13.jar;libs/httpasyncclient-4.1.5.jar;libs/commons-codec-1.15.jar;'.replace(/libs\//g, join(TESTER_LIBS_PATH, '/')),
-    `${`libs/android-${androidVersion}-api-${ANDROID_VERSIONS[androidVersion]}.jar;`}${'libs/junit-platform-launcher-1.10.3.jar;libs/aspectjrt-1.9.22.1.jar;libs/aspectjtools-1.9.22.1.jar;libs/java-client-9.3.0.jar;libs/selenium-api-4.21.0.jar;libs/selenium-remote-driver-4.21.0.jar;libs/auto-service-annotations-1.1.1.jar;libs/guava-33.2.0-jre.jar;libs/failureaccess-1.0.2.jar;libs/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;libs/jsr305-3.0.2.jar;libs/checker-qual-3.42.0.jar;libs/j2objc-annotations-3.0.0.jar;libs/opentelemetry-semconv-1.25.0-alpha.jar;libs/opentelemetry-api-1.38.0.jar;libs/opentelemetry-context-1.38.0.jar;libs/opentelemetry-exporter-logging-1.38.0.jar;libs/opentelemetry-sdk-common-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-spi-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-1.38.0.jar;libs/opentelemetry-api-incubator-1.38.0-alpha.jar;libs/opentelemetry-sdk-trace-1.38.0.jar;libs/opentelemetry-sdk-1.38.0.jar;libs/opentelemetry-sdk-metrics-1.38.0.jar;libs/opentelemetry-sdk-logs-1.38.0.jar;libs/byte-buddy-1.14.15.jar;libs/selenium-http-4.21.0.jar;libs/failsafe-3.3.2.jar;libs/selenium-json-4.21.0.jar;libs/selenium-manager-4.21.0.jar;libs/selenium-os-4.21.0.jar;libs/commons-exec-1.4.0.jar;libs/selenium-support-4.21.0.jar;libs/gson-2.11.0.jar;libs/error_prone_annotations-2.28.0.jar;libs/slf4j-api-2.0.16.jar;libs/slf4j-simple-2.0.16.jar;libs/junit-jupiter-5.10.3.jar;libs/junit-jupiter-api-5.10.3.jar;libs/opentest4j-1.3.0.jar;libs/junit-platform-commons-1.10.3.jar;libs/apiguardian-api-1.1.2.jar;libs/junit-jupiter-params-5.10.3.jar;libs/junit-jupiter-engine-5.10.3.jar;libs/junit-platform-engine-1.10.3.jar;libs/unirest-java-3.14.5-standalone.jar;libs/httpclient-4.5.13.jar;libs/httpcore-4.4.13.jar;libs/commons-logging-1.2.jar;libs/httpmime-4.5.13.jar;libs/httpcore-nio-4.4.13.jar;libs/httpasyncclient-4.1.5.jar;libs/commons-codec-1.15.jar;'.replace(/libs\//g, join(TESTER_LIBS_PATH, '/'))}`,
-    // `--class-path ${getClassPath()}`,
-    // '%CLASSPATH%',
-    join(dest, 'src/test/java/com/sptek/appium/AndroidUnitTest.java'),
-  ], options);
-
-  testerProcess.stdout?.setEncoding?.('utf-8');
-  options.stdio[1] === 'pipe' && testerProcess.stdout.on('data', (/!** @type {Buffer} *!/ chunk) => {
-    // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
-    log.log(`[tester-compile] compiler stdout: ${chunk?.toString()}`);
-  });
-
-  testerProcess.stderr?.setEncoding?.('utf-8');
-  options.stdio[2] === 'pipe' && testerProcess.stderr.on('data', (/!** @type {Buffer} *!/ chunk) => {
-    /!*const content = Buffer.concat([chunk]).toString();
-    console.log('--------', content);*!/
-    log.error(`[tester-compile] compiler stderr: ${chunk?.toString()}`);
-  });
-
-  testerProcess.on('message', (message) => {
-    log.log('[tester-compile] compiler message:' + message);
-  });
-
-  testerProcess.on('error', (err) => {
-    // This will be called with err being an AbortError if the controller aborts
-    log.error('[tester-compile] compiler error:' + err.toString());
-    dialog.showMessageBox({
-      type: 'error',
-      buttons: ['OK'],
-      message: err.message,
-    });
-  });
-
-  testerProcess.on('disconnect', () => {
-    log.warn('[tester-compile] compiler disconnect');
-  });
-
-  testerProcess.on('close', (code, signal) => {
-    // if we get here, we know that the process stopped outside our control
-    // but with a 0 exit code
-    // app.quit();
-    log.log(`[tester-compile] compiler closed with code ${code} from signal ${signal}`);
-    if (signal === null) {
-      log.log('Test runner compiled');
-      // TODO: when compiling is done successfully, start running
-      setTimeout(() => {
-        testerProcess.unref();
-        log.log('Starting test runner...');
-        // #2 run class
-        options.stdio = ['ignore', openSync(`stdout_test_${fileIndex}.txt`, 'w'), openSync(`stderr_test_${fileIndex}.txt`, 'w')];
-        /!*actionTester = spawn(join(__dirname, '..', 'libs', 'tester-compile', 'run'), [
-          dest,
-        ], {
-          // detached: true, ==> actionsTester.unref();
-          detached: true,
-          stdio: ['pipe', 'inherit', 'inherit'],
-          // shell: true,
-          // cwd: 'C:\\Test\\Path',
-          cwd: dest,
-        });*!/
-        testerProcess = spawn(join(JRM_PATH, 'bin', getExecutableName('java')), [
-          // isDev ? '-verbose' : '',
-          '-jar',
-          'libs/junit-platform-console-standalone-1.10.3.jar'.replace(/libs\//g, join(TESTER_LIBS_PATH, '/')),
-          'execute',
-          // '--class-path=%CLASSPATH%out',
-          // TODO: 더 좋은 방법을 강구하자...
-          // `--class-path=${'libs/android.jar;libs/junit-platform-launcher-1.10.3.jar;libs/aspectjrt-1.9.22.1.jar;libs/aspectjtools-1.9.22.1.jar;libs/java-client-9.3.0.jar;libs/selenium-api-4.21.0.jar;libs/selenium-remote-driver-4.21.0.jar;libs/auto-service-annotations-1.1.1.jar;libs/guava-33.2.0-jre.jar;libs/failureaccess-1.0.2.jar;libs/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;libs/jsr305-3.0.2.jar;libs/checker-qual-3.42.0.jar;libs/j2objc-annotations-3.0.0.jar;libs/opentelemetry-semconv-1.25.0-alpha.jar;libs/opentelemetry-api-1.38.0.jar;libs/opentelemetry-context-1.38.0.jar;libs/opentelemetry-exporter-logging-1.38.0.jar;libs/opentelemetry-sdk-common-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-spi-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-1.38.0.jar;libs/opentelemetry-api-incubator-1.38.0-alpha.jar;libs/opentelemetry-sdk-trace-1.38.0.jar;libs/opentelemetry-sdk-1.38.0.jar;libs/opentelemetry-sdk-metrics-1.38.0.jar;libs/opentelemetry-sdk-logs-1.38.0.jar;libs/byte-buddy-1.14.15.jar;libs/selenium-http-4.21.0.jar;libs/failsafe-3.3.2.jar;libs/selenium-json-4.21.0.jar;libs/selenium-manager-4.21.0.jar;libs/selenium-os-4.21.0.jar;libs/commons-exec-1.4.0.jar;libs/selenium-support-4.21.0.jar;libs/gson-2.11.0.jar;libs/error_prone_annotations-2.28.0.jar;libs/slf4j-api-2.0.16.jar;libs/slf4j-simple-2.0.16.jar;libs/junit-jupiter-5.10.3.jar;libs/junit-jupiter-api-5.10.3.jar;libs/opentest4j-1.3.0.jar;libs/junit-platform-commons-1.10.3.jar;libs/apiguardian-api-1.1.2.jar;libs/junit-jupiter-params-5.10.3.jar;libs/junit-jupiter-engine-5.10.3.jar;libs/junit-platform-engine-1.10.3.jar;libs/unirest-java-3.14.5-standalone.jar;libs/httpclient-4.5.13.jar;libs/httpcore-4.4.13.jar;libs/commons-logging-1.2.jar;libs/httpmime-4.5.13.jar;libs/httpcore-nio-4.4.13.jar;libs/httpasyncclient-4.1.5.jar;libs/commons-codec-1.15.jar;'.replace(/libs\//g, join(TESTER_LIBS_PATH, '/'))}${dest}\\out;`,
-          `--class-path=${`libs/android-${androidVersion}-api-${ANDROID_VERSIONS[androidVersion]}.jar;`}${'libs/junit-platform-launcher-1.10.3.jar;libs/aspectjrt-1.9.22.1.jar;libs/aspectjtools-1.9.22.1.jar;libs/java-client-9.3.0.jar;libs/selenium-api-4.21.0.jar;libs/selenium-remote-driver-4.21.0.jar;libs/auto-service-annotations-1.1.1.jar;libs/guava-33.2.0-jre.jar;libs/failureaccess-1.0.2.jar;libs/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;libs/jsr305-3.0.2.jar;libs/checker-qual-3.42.0.jar;libs/j2objc-annotations-3.0.0.jar;libs/opentelemetry-semconv-1.25.0-alpha.jar;libs/opentelemetry-api-1.38.0.jar;libs/opentelemetry-context-1.38.0.jar;libs/opentelemetry-exporter-logging-1.38.0.jar;libs/opentelemetry-sdk-common-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-spi-1.38.0.jar;libs/opentelemetry-sdk-extension-autoconfigure-1.38.0.jar;libs/opentelemetry-api-incubator-1.38.0-alpha.jar;libs/opentelemetry-sdk-trace-1.38.0.jar;libs/opentelemetry-sdk-1.38.0.jar;libs/opentelemetry-sdk-metrics-1.38.0.jar;libs/opentelemetry-sdk-logs-1.38.0.jar;libs/byte-buddy-1.14.15.jar;libs/selenium-http-4.21.0.jar;libs/failsafe-3.3.2.jar;libs/selenium-json-4.21.0.jar;libs/selenium-manager-4.21.0.jar;libs/selenium-os-4.21.0.jar;libs/commons-exec-1.4.0.jar;libs/selenium-support-4.21.0.jar;libs/gson-2.11.0.jar;libs/error_prone_annotations-2.28.0.jar;libs/slf4j-api-2.0.16.jar;libs/slf4j-simple-2.0.16.jar;libs/junit-jupiter-5.10.3.jar;libs/junit-jupiter-api-5.10.3.jar;libs/opentest4j-1.3.0.jar;libs/junit-platform-commons-1.10.3.jar;libs/apiguardian-api-1.1.2.jar;libs/junit-jupiter-params-5.10.3.jar;libs/junit-jupiter-engine-5.10.3.jar;libs/junit-platform-engine-1.10.3.jar;libs/unirest-java-3.14.5-standalone.jar;libs/httpclient-4.5.13.jar;libs/httpcore-4.4.13.jar;libs/commons-logging-1.2.jar;libs/httpmime-4.5.13.jar;libs/httpcore-nio-4.4.13.jar;libs/httpasyncclient-4.1.5.jar;libs/commons-codec-1.15.jar;'.replace(/libs\//g, join(TESTER_LIBS_PATH, '/'))}${dest}\\out;`,
-          '--select-class=com.sptek.appium.AndroidUnitTest',
-        ], options);
-
-        testerProcess.stdout?.setEncoding?.('utf-8');
-        options.stdio[1] === 'pipe' && testerProcess.stdout.on('data', (/!** @type {Buffer} *!/ chunk) => {
-          // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
-          log.log(`[tester-compile] runner stdout: ${chunk.toString('utf-8')}`);
-        });
-
-        testerProcess.stderr?.setEncoding?.('utf-8');
-        options.stdio[2] === 'pipe' && testerProcess.stderr.on('data', (/!** @type {Buffer} *!/ chunk) => {
-          log.error(`[tester-compile] runner stderr: ${chunk.toString('utf-8')}`);
-        });
-
-        testerProcess.on('message', (message) => {
-          log.log('[tester-compile] message:' + message);
-        });
-
-        testerProcess.on('error', (err) => {
-          // This will be called with err being an AbortError if the controller aborts
-          log.error('[tester-compile] runner error:' + err.toString());
-          dialog.showMessageBox({
-            type: 'error',
-            buttons: ['OK'],
-            message: err.message,
-          });
-        });
-
-        testerProcess.on('disconnect', () => {
-          log.warn('[tester-compile] runner disconnect');
-        });
-
-        testerProcess.on('close', (code, signal) => {
-          // if we get here, we know that the process stopped outside our control
-          // but with a 0 exit code
-          // app.quit();
-          log.log(`[tester-compile] runner closed with code ${code} from signal ${signal}`);
-          if (code === 0 && signal === null) {
-            // TODO: when compiling is done successfully, start running
-            log.log('Test runner stopped');
-          } else {
-            // TODO: send reasons about failed to run
-            log.error(`Failed to run test runner with code ${code} from signal ${signal}`);
-          }
-        });
-
-        testerProcess.on('exit', (code, signal) => {
-          log.log(`[tester-compile] runner existed with code ${code} from signal ${signal}`);
-        });
-
-        log.log(`[tester-compile] runner spawned: ${testerProcess.pid}`);
-      }, 1);
-    } else {
-      // TODO: send reasons about failed to compile
-      log.error(`Failed to compile test runner with error ${signal}`);
-    }
-  });
-
-  testerProcess.on('exit', (code, signal) => {
-    log.log(`[tester-compile] compiler existed with code ${code} from signal ${signal}`);
-  });
-
-  log.log(`[tester-compile] compiler spawned: ${testerProcess.pid}`);
-}
-*/
 
 /**
  * Normalize path to target location
@@ -257,6 +41,8 @@ function getClassPath(targetVersion) {
   return classPath.replace(/;/g, pathDel).replace(/\\/g, '/');
 }
 
+let phase = 0;
+
 /**
  * Generate test template project and execute action tester in background
  * @param {Object} options
@@ -266,21 +52,23 @@ function getClassPath(targetVersion) {
  * @param {string} [options.remoteAddress]
  * @returns {Promise<import('child_process').ChildProcess|import('teen_process').SubProcess|undefined>}
  */
-async function runner(options) {
-  log.log('[tester-compile] starting action tester with', options);
+async function runTest(options) {
+  log.log('[test-server] starting test runner with', options, '...');
+  phase = 1;
   let child;
   const {dest, copied} = await generator(options);
-  // eslint-disable-next-line
-  log.log('[tester-compile] template generated:', copied?.length ?? 0, 'files', 'to', dest);
-
   if (!dest) {
+    log.error('[test-server] failed to generate template');
     return;
   }
+  // eslint-disable-next-line
+  log.debug('[test-server] template generated:', copied?.length ?? 0, 'files', 'to', dest);
 
+  phase = 2;
   const {targetVersion} = options;
   const {java: javaPath, javac: javacPath} = await resolveJavaExecutePaths();
   const compilerController = new AbortController();
-  const { signal } = compilerController;
+  const {signal} = compilerController;
   // const fileIndex = (new Date()).toFormattedString();
   /** @type {import('teen_process').SubProcessOptions} */
   const spawnOptions = {
@@ -316,9 +104,9 @@ async function runner(options) {
   // #1 compile java to class
   // isDev && (spawnOptions.stdio = ['ignore', openSync(`stdout_compile_${fileIndex}.txt`, 'w'), openSync(`stderr_compile_${fileIndex}.txt`, 'w')]);
   /*if (!(await exists(sourcePath))) {
-    log.error(`[tester-compile] source ("${sourcePath}") not found`);
+    log.error(`[test-server:compile] source ("${sourcePath}") not found`);
   } else {
-    log.info(`[tester-compile] source ("${sourcePath}") found`);
+    log.info(`[test-server:compile] source ("${sourcePath}") found`);
   }*/
   child = spawn(javacPath, [
     isDev ? '-verbose' : '',
@@ -334,23 +122,61 @@ async function runner(options) {
     child.stdout?.setEncoding?.('utf-8');
     /*spawnOptions.stdio?.[1] === 'pipe' &&*/
     child.stdout.on('data', (chunk) => {
+      const message = chunk?.toString();
       // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
-      log.log('[tester-compile] compiler stdout:', chunk?.toString());
+      log.log('[test-server] compiler stdout:', message);
+      eventEmitter.emit('test-server', {
+        type: 'data',
+        name: 'process',
+        message: 'stdout data',
+        data: {
+          phase,
+          message,
+        },
+      });
     });
 
     child.stderr?.setEncoding?.('utf-8');
     /*spawnOptions.stdio?.[2] === 'pipe' &&*/
     child.stderr.on('data', (chunk) => {
-      log.error('[tester-compile] compiler stderr:', chunk?.toString());
+      const message = chunk?.toString();
+      log.log('[test-server] compiler stderr:', message);
+      eventEmitter.emit('test-server', {
+        type: 'data',
+        name: 'message',
+        message: 'stderr data',
+        data: {
+          phase,
+          message,
+        },
+      });
     });
 
     child.on('message', (message) => {
-      log.log('[tester-compile] compiler message:', message);
+      log.log('[test-server] compiler message:', message);
+      eventEmitter.emit('test-server', {
+        type: 'data',
+        name: 'message',
+        message,
+        data: {
+          phase,
+          message,
+        },
+      });
     });
 
     child.on('error', (err) => {
       // This will be called with err being an AbortError if the controller aborts
-      log.error('[tester-compile] compiler error:', err.toString());
+      log.error('[test-server] compiler error:', err.toString());
+      eventEmitter.emit('test-server', {
+        type: 'error',
+        name: 'process',
+        message: err.message,
+        data: {
+          phase,
+          error: err,
+        },
+      });
       dialog.showMessageBox({
         type: 'error',
         buttons: ['OK'],
@@ -359,20 +185,28 @@ async function runner(options) {
     });
 
     child.on('disconnect', () => {
-      log.warn('[tester-compile] compiler disconnect');
+      log.warn('[test-server] compiler disconnect');
+      eventEmitter.emit('test-server', {
+        type: 'data',
+        name: 'process',
+        message: 'disconnect',
+        data: {
+          phase,
+        },
+      });
     });
 
     child.on('close', (code, signal) => {
       // if we get here, we know that the process stopped outside our control
       // but with a 0 exit code
       // app.quit();
-      log.log(`[tester-compile] compiler closed with code ${code} from signal ${signal}`);
+      log.log(`[test-server] compiler closed with code ${code} from signal ${signal}`);
       if (code === 0 && signal === null) {
-        log.log('[tester-compile] tester compiled');
         // TODO: when compiling is done successfully, start running
         setTimeout(() => {
-          child?.unref?.();
-          log.log('[test-runner] starting test runner...');
+          // child?.unref?.();
+          phase = 3;
+          log.log('[test-server] starting runner...');
           // #2 run class
           // isDev && (spawnOptions.stdio = ['ignore', openSync(`stdout_test_${fileIndex}.txt`, 'w'), openSync(`stderr_test_${fileIndex}.txt`, 'w')]);
           const testerController = new AbortController();
@@ -397,24 +231,62 @@ async function runner(options) {
 
           child.stdout?.setEncoding?.('utf-8');
           /*spawnOptions.stdio?.[1] === 'pipe' &&*/
-          child.stdout.on('data', (data) => {
+          child.stdout.on('data', (chunk) => {
+            const message = chunk?.toString();
             // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
-            log.log(`[tester-compile] runner stdout: ${data}`);
+            log.log('[test-server] runner stdout:', message);
+            eventEmitter.emit('test-server', {
+              type: 'data',
+              name: 'process',
+              message: 'stdout data',
+              data: {
+                phase,
+                message,
+              },
+            });
           });
 
           child.stderr?.setEncoding?.('utf-8');
           /*spawnOptions.stdio?.[2] === 'pipe' &&*/
-          child.stderr.on('data', (data) => {
-            log.error(`[tester-compile] runner stderr: ${data}`);
+          child.stderr.on('data', (chunk) => {
+            const message = chunk?.toString();
+            log.error('[test-server] runner stderr:', message);
+            eventEmitter.emit('test-server', {
+              type: 'data',
+              name: 'process',
+              message: 'stderr data',
+              data: {
+                phase,
+                message,
+              },
+            });
           });
 
           child.on('message', (message) => {
-            log.log('[tester-compile] message:' + message);
+            log.log('[test-server] runner message:', message);
+            eventEmitter.emit('test-server', {
+              type: 'data',
+              name: 'process',
+              message: 'message',
+              data: {
+                phase,
+                message,
+              },
+            });
           });
 
           child.on('error', (err) => {
             // This will be called with err being an AbortError if the controller aborts
-            log.error('[tester-compile] runner error:' + err.toString());
+            log.error('[test-server] runner error:', err.toString());
+            eventEmitter.emit('test-server', {
+              type: 'error',
+              name: 'process',
+              message: err.message,
+              data: {
+                phase,
+                error: err,
+              },
+            });
             dialog.showMessageBox({
               type: 'error',
               buttons: ['OK'],
@@ -423,49 +295,91 @@ async function runner(options) {
           });
 
           child.on('disconnect', () => {
-            log.warn('[tester-compile] runner disconnect');
+            log.warn('[test-server] runner disconnect');
+            eventEmitter.emit('test-server', {
+              type: 'error',
+              name: 'process',
+              message: 'disconnect',
+              data: {
+                phase,
+              },
+            });
           });
 
           child.on('close', (code, signal) => {
             // if we get here, we know that the process stopped outside our control
             // but with a 0 exit code
             // app.quit();
-            log.log(`[tester-compile] runner closed with code ${code} from signal ${signal}`);
-            if (code === 0 && signal === null) {
-              // TODO: when compiling is done successfully, start running
-              log.log('[tester-compile] test runner stopped');
-            } else {
-              // TODO: send reasons about failed to run
-              log.error(`[tester-compile] failed to run test runner with code ${code} from signal ${signal}`);
-            }
+            log.log(`[test-server] runner closed with code ${code} from signal ${signal}`);
+            eventEmitter.emit('test-server', {
+              type: 'data',
+              name: 'process',
+              message: 'close',
+              data: {
+                phase,
+                code,
+                signal,
+              },
+            });
           });
 
           child.on('exit', (code, signal) => {
-            log.log(`[tester-compile] runner existed with code ${code} from signal ${signal}`);
+            log.log(`[test-server] runner existed with code ${code} from signal ${signal}`);
+            eventEmitter.emit('test-server', {
+              type: 'data',
+              name: 'process',
+              message: 'exit',
+              data: {
+                phase,
+                code,
+                signal,
+              },
+            });
           });
 
-          log.log(`[tester-compile] runner spawned: ${child.pid}`);
+          log.log('[test-server] runner spawned:', child.pid);
         }, 1);
       } else {
         // TODO: send reasons about failed to compile
-        log.error('[tester-compile] failed to compile test runner with error');
+        log.error('[test-server] failed to run test runner');
+        eventEmitter.emit('test-server', {
+          type: 'error',
+          name: 'process',
+          message: 'failed to test',
+          data: {
+            phase,
+          },
+        });
       }
     });
 
     child.on('exit', (code, signal) => {
-      log.log(`[tester-compile] compiler existed with code ${code} from signal ${signal}`);
+      log.log(`[test-server] compiler existed with code ${code} from signal ${signal}`);
+      if (code === 0 && signal === null) {
+        log.error('[test-server] failed to compile test template');
+        eventEmitter.emit('test-server', {
+          type: 'error',
+          name: 'process',
+          message: 'exit',
+          data: {
+            phase,
+            code,
+            signal,
+          },
+        });
+      }
     });
   } else {
     child.on('exit', (code, signal) => {
       // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
-      log.log(`[tester-compile] compiler exited with code ${code} from signal ${signal}`);
+      log.log(`[test-server] compiler exited with code ${code} from signal ${signal}`);
       // app.quit();
       if (code === 0 && signal === null) {
-        log.log('[tester-compile] tester compiled');
+        log.log('[test-server] test template compiled');
         // TODO: when compiling is done successfully, start running
         setTimeout(async () => {
-          child?.unref?.();
-          log.log('[test-runner] starting test runner...');
+          // child?.unref?.();
+          log.log('[test-server] starting runner...');
           // #2 run class
           // isDev && (spawnOptions.stdio = ['ignore', openSync(`stdout_test_${fileIndex}.txt`, 'w'), openSync(`stderr_test_${fileIndex}.txt`, 'w')]);
           const testerController = new AbortController();
@@ -488,24 +402,50 @@ async function runner(options) {
           if (process.env.NODE_NATIVE) {
             child.stdout?.setEncoding?.('utf-8');
             /*spawnOptions.stdio?.[1] === 'pipe' &&*/
-            child.stdout.on('data', (data) => {
+            child.stdout.on('data', (chunk) => {
+              const message = chunk?.toString();
               // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
-              log.log(`[test-runner] runner stdout: ${data}`);
+              log.log('[test-server] runner stdout:', message);
+              eventEmitter.emit('test-server', {
+                type: 'data',
+                name: 'process',
+                message: 'stdout data',
+                data: {
+                  phase,
+                },
+              });
             });
 
             child.stderr?.setEncoding?.('utf-8');
             /*spawnOptions.stdio?.[2] === 'pipe' &&*/
-            child.stderr.on('data', (data) => {
-              log.error(`[test-runner] runner stderr: ${data}`);
+            child.stderr.on('data', (chunk) => {
+            const message = chunk?.toString();
+              log.log('[test-server] runner stderr:', message);
+              eventEmitter.emit('test-server', {
+                type: 'data',
+                name: 'process',
+                message: 'stderr data',
+                data: {
+                  phase,
+                },
+              });
             });
 
             child.on('message', (message) => {
-              log.log('[test-runner] message:' + message);
+              log.log('[test-server] message:', message);
+              eventEmitter.emit('test-server', {
+                type: 'data',
+                name: 'process',
+                message,
+                data: {
+                  phase,
+                },
+              });
             });
 
             child.on('error', (err) => {
               // This will be called with err being an AbortError if the controller aborts
-              log.error('[test-runner] runner error:' + err.toString());
+              log.error('[test-server] runner error:', err.toString());
               dialog.showMessageBox({
                 type: 'error',
                 buttons: ['OK'],
@@ -514,63 +454,139 @@ async function runner(options) {
             });
 
             child.on('disconnect', () => {
-              log.warn('[test-runner] runner disconnect');
+              log.warn('[test-server] runner disconnect');
+              eventEmitter.emit('test-server', {
+                type: 'data',
+                name: 'process',
+                message: 'disconnect',
+                data: {
+                  phase,
+                },
+              });
             });
 
             child.on('close', (code, signal) => {
               // if we get here, we know that the process stopped outside our control
               // but with a 0 exit code
               // app.quit();
-              log.log(`[test-runner] runner closed with code ${code} from signal ${signal}`);
+              log.log(`[test-server] runner closed with code ${code} from signal ${signal}`);
+              eventEmitter.emit('test-server', {
+                type: 'data',
+                name: 'process',
+                message: 'close',
+                data: {
+                  phase,
+                  code,
+                  signal,
+                },
+              });
               if (code === 0 && signal === null) {
                 // TODO: when compiling is done successfully, start running
-                log.log('[test-runner] test runner stopped');
-              } else {
-                // TODO: send reasons about failed to run
-                log.error(`[test-runner] failed to run test runner with code ${code} from signal ${signal}`);
+                log.log('[test-server] runner stopped');
               }
             });
 
             child.on('exit', (code, signal) => {
-              log.log(`[test-runner] runner existed with code ${code} from signal ${signal}`);
+              log.log(`[test-server] runner existed with code ${code} from signal ${signal}`);
+              eventEmitter.emit('test-server', {
+                type: 'data',
+                name: 'process',
+                message: 'exit',
+                data: {
+                  phase,
+                  code,
+                  signal,
+                },
+              });
             });
           } else {
             child.on('exit', (code, signal) => {
               // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
-              log.log(`[test-runner] exited with code ${code} from signal ${signal}`);
+              log.log(`[test-server] runner exited with code ${code} from signal ${signal}`);
+              eventEmitter.emit('test-server', {
+                type: 'data',
+                name: 'process',
+                message: 'exit',
+                data: {
+                  phase,
+                  code,
+                  signal,
+                },
+              });
             });
 
             child.on('stop', (code, signal) => {
               // if we get here, we know that we intentionally stopped the proc
               // by calling proc.stop
-              log.log(`[test-runner] stop with code ${code} from signal ${signal}`);
+              log.log(`[test-server] runner stop with code ${code} from signal ${signal}`);
+              eventEmitter.emit('test-server', {
+                type: 'data',
+                name: 'process',
+                message: 'stop',
+                data: {
+                  phase,
+                  code,
+                  signal,
+                },
+              });
             });
 
             child.on('end', (code, signal) => {
               // if we get here, we know that the process stopped outside of our control
               // but with a 0 exit code
-              log.log(`[test-runner] ended with code ${code} from signal ${signal}`);
+              log.log(`[test-server] runner ended with code ${code} from signal ${signal}`);
+              eventEmitter.emit('test-server', {
+                type: 'data',
+                name: 'process',
+                message: 'end',
+                data: {
+                  phase,
+                  code,
+                  signal,
+                },
+              });
             });
 
             child.on('die', (code, signal) => {
               // if we get here, we know that the process stopped outside of our control
               // with a non-zero exit code
-              log.log(`[test-runner] died with code ${code} from signal ${signal}`);
+              log.log(`[test-server] runner died with code ${code} from signal ${signal}`);
+              eventEmitter.emit('test-server', {
+                type: 'data',
+                name: 'process',
+                message: 'die',
+                data: {
+                  phase,
+                  code,
+                  signal,
+                },
+              });
             });
 
             child.on('output', (stdout, stderr) => {
-              stdout && log.log(`[test-runner] output::stdout: ${stdout}`);
-              stderr && log.log(`[test-runner] output::stderr: ${stderr}`);
+              stdout && log.log(`[test-server] runner output::stdout: ${stdout}`);
+              stderr && log.log(`[test-server] runner output::stderr: ${stderr}`);
+              if (stdout || stderr) {
+                eventEmitter.emit('test-server', {
+                  type: 'data',
+                  name: 'process',
+                  message: 'output',
+                  data: {
+                    phase,
+                    message: stdout ?? stderr,
+                  },
+                });
+              }
             });
 
             /*child.on('lines-stdout', (lines) => {
-              lines.length && log.log('[test-runner] lines-stdout:', lines);
+              lines.length && log.log('[test-server] runner lines-stdout:', lines);
               // ['foo', 'bar', 'baz']
               // automatically handles rejoining lines across stream chunks
             });
 
             child.on('lines-stderr', (lines) => {
-              lines.length && log.log('[test-runner] lines-stderr:', lines);
+              lines.length && log.log('[test-server] runner lines-stderr:', lines);
               // ['foo', 'bar', 'baz']
               // automatically handles rejoining lines across stream chunks
             });
@@ -578,58 +594,121 @@ async function runner(options) {
             // stream-line gives you one line at a time, with [STDOUT] or [STDERR]
             // prepended
             child.on('stream-line', (line) => {
-              line && log.log('[test-runner] stream-line:', line);
+              line && log.log('[test-server] runner stream-line:', line);
               // [STDOUT] foo
             });*/
 
             await child.start((stdout, stderr) => {
               if (/fail/.test(stderr)) {
                 // throw new Error('Encountered failure condition');
-                log.error('Encountered failure condition', stderr);
+                log.error('[test-server] runner encountered failure condition:', stderr);
+                eventEmitter.emit('test-server', {
+                  type: 'error',
+                  name: 'server',
+                  message: stderr,
+                  data: {
+                    phase,
+                  },
+                });
+              } else {
+                eventEmitter.emit('test-server', {
+                  type: 'data',
+                  name: 'server',
+                  message: stdout,
+                  data: {
+                    phase,
+                  },
+                });
               }
               return stdout || stderr;
             });
           }
 
-          log.log(`[tester-compile] runner spawned: ${child.pid}`);
+          log.log('[test-server] runner spawned:', child.pid);
         }, 1);
       } else {
-        // TODO: send reasons about failed to compile
-        log.error('[tester-compile] failed to compile test runner with error');
+        log.error('[test-server] failed to compile test template');
+        eventEmitter.emit('test-server', {
+          type: 'error',
+          name: 'process',
+          message: 'exit',
+          data: {
+            phase,
+            code,
+            signal,
+          },
+        });
       }
     });
 
     child.on('stop', (code, signal) => {
       // if we get here, we know that we intentionally stopped the proc
       // by calling proc.stop
-      log.log(`[tester-compile] stop with code ${code} from signal ${signal}`);
+      log.log(`[test-server] compiler stop with code ${code} from signal ${signal}`);
+      eventEmitter.emit('test-server', {
+        type: 'data',
+        name: 'server',
+        message: 'stop',
+        data: {
+          code,
+          signal,
+        },
+      });
     });
 
     child.on('end', (code, signal) => {
-      // if we get here, we know that the process stopped outside of our control
+      // if we get here, we know that the process stopped outside our control
       // but with a 0 exit code
-      log.log(`[tester-compile] ended with code ${code} from signal ${signal}`);
+      log.log(`[test-server] compiler ended with code ${code} from signal ${signal}`);
+      eventEmitter.emit('test-server', {
+        type: 'data',
+        name: 'server',
+        message: 'end',
+        data: {
+          code,
+          signal,
+        },
+      });
     });
 
     child.on('die', (code, signal) => {
       // if we get here, we know that the process stopped outside of our control
       // with a non-zero exit code
-      log.log(`[tester-compile] died with code ${code} from signal ${signal}`);
+      log.log(`[test-server] compiler died with code ${code} from signal ${signal}`);
+      eventEmitter.emit('test-server', {
+        type: 'data',
+        name: 'server',
+        message: 'die',
+        data: {
+          code,
+          signal,
+        },
+      });
     });
 
     child.on('output', (stdout, stderr) => {
-      stdout && log.log(`[tester-compile] output::stdout: ${stdout}`);
-      stderr && log.log(`[tester-compile] output::stderr: ${stderr}`);
+      stdout && log.log(`[test-server] compiler output::stdout: ${stdout}`);
+      stderr && log.log(`[test-server] compiler output::stderr: ${stderr}`);
+      if (stdout || stderr) {
+        eventEmitter.emit('test-server', {
+          type: 'data',
+          name: 'server',
+          message: 'end',
+          data: {
+            message: stdout ?? stderr,
+          },
+        });
+      }
     });
 
     /*child.on('lines-stdout', (lines) => {
-      lines.length && log.log('[tester-compile] lines-stdout:', lines);
+      lines.length && log.log('[test-server] compiler lines-stdout:', lines);
       // ['foo', 'bar', 'baz']
       // automatically handles rejoining lines across stream chunks
     });
 
     child.on('lines-stderr', (lines) => {
-      lines.length && log.log('[tester-compile] lines-stderr:', lines);
+      lines.length && log.log('[test-server] compiler lines-stderr:', lines);
       // ['foo', 'bar', 'baz']
       // automatically handles rejoining lines across stream chunks
     });
@@ -637,22 +716,236 @@ async function runner(options) {
     // stream-line gives you one line at a time, with [STDOUT] or [STDERR]
     // prepended
     child.on('stream-line', (line) => {
-      log.log('[tester-compile] stream-line:', line);
+      log.log('[test-server] compiler stream-line:', line);
       // [STDOUT] foo
     });*/
 
     await child.start((stdout, stderr) => {
       if (/fail/.test(stderr)) {
-        // throw new Error('Encountered failure condition');
-        log.error('Encountered failure condition', stderr);
+        // throw new Error(`Encountered failure condition: ${stderr}`);
+        log.error('[test-server] compiler encountered failure condition:', stderr);
+        eventEmitter.emit('test-server', {
+          type: 'error',
+          name: 'process',
+          message: stderr,
+          data: {
+            phase,
+          },
+        });
+      } else {
+        eventEmitter.emit('test-server', {
+          type: 'data',
+          name: 'process',
+          message: stdout,
+          data: {
+            phase,
+          },
+        });
       }
       return stdout || stderr;
     });
   }
 
-  log.log(`[tester-compile] compiler spawned: ${child.pid}`);
+  log.log('[test-server] compiler spawned:', child.pid);
 
   return child;
+}
+
+/**
+ * Execute Appium server in background
+ * @returns {Promise<import('http').Server<import('http').IncomingMessage, import('http').ServerResponse<import('http').IncomingMessage>>>}
+ */
+async function runner() {
+  log.log('[test-server] starting server...');
+  let child;
+  /** @type {import('http').Server<import('http').IncomingMessage, import('http').ServerResponse<import('http').IncomingMessage>>} */
+  let messageServer;
+
+  const handleKillProcess = () => {
+    if (!child) {
+      return;
+    }
+    if (process.env.NODE_NATIVE) {
+      if (!child.killed) {
+        log.log('Terminate Test runner...');
+        child.kill?.('SIGTERM'); // NodeJS.Signals
+        // process.kill(testerRunner.pid, 'SIGINT');
+        child = null;
+      }
+    } else {
+      if (child.isRunning) {
+        log.log('Terminate Test runner...');
+        child.stop?.('SIGTERM'); // NodeJS.Signals
+        child = null;
+      }
+    }
+    eventEmitter.emit('test-server', {
+      type: 'data',
+      name: 'server',
+      message: 'killed',
+      data: {
+        phase,
+      },
+    });
+  };
+  /*
+  // NOTE: main.js에서 처리함
+  const onAppQuit = () => {
+    if (messageServer) {
+      log.log('Terminate Message Server...');
+      messageServer.closeAllConnections();
+      messageServer = null;
+    }
+    if (process.env.NODE_NATIVE) {
+      if (testRunner && !testRunner.killed) {
+        log.log('Terminate Test runner...');
+        testRunner.kill?.('SIGTERM'); // NodeJS.Signals
+        // process.kill(testerRunner.pid, 'SIGINT');
+        testRunner = null;
+      }
+    } else {
+      if (testRunner && testRunner.isRunning) {
+        log.log('Terminate Test runner...');
+        testRunner.stop?.('SIGTERM'); // NodeJS.Signals
+        testRunner = null;
+      }
+    }
+  };
+
+  app.on('before-quit', onAppQuit).on('will-quit', onAppQuit);
+
+  process.on('SIGINT', onAppQuit);
+  process.on('SIGTERM', onAppQuit);
+  */
+
+  messageServer = createServer();
+
+  /*const server2 = express();
+  server2.get('/', (req, res) => {
+    return res.send('메인 페이지');
+  });
+
+  server2.get('/', (req, res) => {
+    return res.send('로그인 페이지');
+  });
+
+  server2.listen(8080, () => {
+    log.log('express server running on port 8080');
+  });*/
+
+  // server 객체에 이벤트를 연결합니다.
+  messageServer.on('request', (/** @type {import('http').IncomingMessage} */ req, /** @type {import('http').ServerResponse} */ res) => {
+    log.log('[test-server] requesting...:', req.url);
+    eventEmitter.emit('test-server', {
+      type: 'data',
+      name: 'server',
+      message: 'request',
+      data: {
+        url: req.url,
+      },
+    });
+    /* NOTE: 별도의 uuid로 session 별로 구분하는 것이 안전할 듯...
+    const port = uuid();
+    ipcMain.once(port, (ev, status, head, body) => {
+      res.writeHead(status, head);
+      res.end(body);
+    });
+    window.webContents.send('uuid-for-this-time', req, port);
+     */
+    /*
+    const remoteAddress = res.socket.remoteAddress;
+    const remotePort = res.socket.remotePort;
+    */
+    if (req.method === 'POST') {
+      if (req.url === '/message') {
+        const body = [];
+        req.on('data', (chunk) => {
+          body.push(chunk.toString());
+        });
+        req.on('end', () => {
+          // console.log('Received message from Java:', body);
+          const message = Buffer.concat(body).toString();
+          log.log('Received message from Java: ', message);
+          // window.webContents.send('message-from-java', body);
+          // Java 프로세스에 응답 보내기
+          res.writeHead(200, {'Content-Type': 'text/plain'});
+          res.end('Message received');
+        });
+      } else {
+        res.writeHead(404);
+        res.end('Not found');
+      }
+    } else {
+      res.end('Hello from Electron!');
+    }
+  });
+
+  messageServer.on('connection', () => {
+    log.log('[test-server] connection on');
+    eventEmitter.emit('test-server', {
+      type: 'data',
+      name: 'server',
+      message: 'connection',
+      data: {
+        phase,
+      },
+    });
+  });
+
+  messageServer.on('close', () => {
+    log.log('[test-server] close');
+    handleKillProcess();
+  });
+
+  return await getPort({port: 8000})
+    // eslint-disable-next-line promise/prefer-await-to-then
+    .then((port) => {
+      messageServer.listen(port, () => {
+        log.log(`[test-server] message server running on port #${port}`);
+        eventEmitter.emit('test-server', {
+          type: 'data',
+          name: 'server',
+          message: 'start',
+          data: {
+            phase,
+          },
+        });
+      });
+
+      log.log(`[test-server] message server on http://127.0.0.1:${port}/`);
+
+      // TODO: Message Server가 실행되지 못했다면, Test Server도 실행할 수 없음
+      ipcMain.on('start-test', async (event, ...args) => {
+        // NOTE: args.length === 1이어야 함
+        const {targetVersion, codes, capabilities, remoteAddress} = args[0];
+        log.debug('[start-test]', '__', codes.substring(0, 10), '__', ...args);
+        // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
+        child = runTest({
+          targetVersion,
+          codes,
+          capabilities: {
+            ...capabilities,
+            app: capabilities.app ? resolve(ROOT_PATH, '..', normalize(capabilities.app)) : undefined,
+          },
+          remoteAddress: remoteAddress ?? 'http://127.0.0.1:8000', // 'host:port'
+        });
+        ipcMain.once('stop-test', () => {
+          log.debug('[stop-test]......');
+          handleKillProcess();
+        });
+      });
+
+      return messageServer;
+    })
+    // eslint-disable-next-line promise/prefer-await-to-then,promise/prefer-await-to-callbacks
+    .catch((err) => {
+      log.error('[test-server] failed to get available port:', err);
+      eventEmitter.emit('test-server', {
+        type: 'error',
+        name: 'server',
+        message: err.message,
+      });
+    });
 }
 
 export default runner;

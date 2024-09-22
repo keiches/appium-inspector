@@ -52,12 +52,14 @@ Flex.propTypes = {children: PropTypes.node};
 // const MODULO = 1e9 + 7;
 
 const Recorder = (props) => {
-  const {showBoilerplate, recordedActions, actionFramework, t, showActionSource} = props;
+  const {showBoilerplate, recordedActions, actionFramework, t, showActionSource, caps} = props;
   // actions panel
   const [actionSelect, setActionSelect] = useState({
     selectedRowKeys: [],
     loading: false
   });
+
+  log.debug('$$$$$$$$$$$$$$$$$$$$$$$', caps);
 
   const [propertiesSelect, setPropertiesSelect] = useState({
     selectedRowKeys: [],
@@ -513,6 +515,7 @@ const Recorder = (props) => {
   const onStartTesting = useCallback(() => {
     setIsActionsPlayed(true);
     log.debug('[renderer] starting test....');
+    // TODO:
     ipcRenderer.send('start-test', {
       // NOTE: read from device info
       targetVersion: 12,

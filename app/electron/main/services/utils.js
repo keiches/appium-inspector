@@ -1,6 +1,7 @@
 import which from 'which';
-import {exists, getExecutableName} from '../utils';
+
 import {log} from '../logger.js';
+import {exists, getExecutableName} from '../utils';
 
 /**
  * Return an executable path of cmd
