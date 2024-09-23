@@ -118,13 +118,14 @@ function generator1(codes) {
         return through(function (chunk, enc, done) {
           done(null, render(chunk.toString(), {
             codes,
-            remoteAddress: 'http://localhost:4723', // 'host:port'
             capabilities: {
               app: 'C:\\Users\\keiches\\Projects\\sptek\\appium-app-validator\\apks\\Android-MyDemoAppRN.1.3.0.build-244.apk',
               appPackage: 'com.saucelabs.mydemoapp.rn',
               appActivity: '.MainActivity',
               deviceName: 'emulator-5554',
             },
+            serverAddress: 'http://127.0.0.1:4723', // 'host:port'
+            testerAddress: 'http://127.0.0.1:8000', // 'host:port'
           }));
         });
       }
@@ -150,13 +151,14 @@ function generator1(codes) {
   // #2 render main test class
   /!*const renderFile('./templates/src/test/java/com/sptek/appium/UnitTest.java', {
     codes,
-    remoteAddress: '', // 'host:port'
     capabilities: {
       app: '',
       appPackage: '',
       appActivity: '',
       deviceName: '',
     },
+    serverAddress: 'http://127.0.0.1:4723', // 'host:port'
+    testerAddress: 'http://127.0.0.1:8000', // 'host:port'
   });
   const fullPath = path.join(destination, path.basename(filename));
   fs.writeFile(fullPath, contents);
@@ -173,13 +175,14 @@ function generator1(codes) {
       // const result = replace(data, '__codes__', codes);
       renderFile(template, {
         codes,
-        remoteAddress: '', // 'host:port'
         capabilities: {
           app: '',
           appPackage: '',
           appActivity: '',
           deviceName: '',
         },
+        serverAddress: 'http://127.0.0.1:4723', // 'host:port'
+        testerAddress: 'http://127.0.0.1:8000', // 'host:port'
       });
       //
       return !!result;
@@ -192,12 +195,13 @@ function generator1(codes) {
  * @param {Object} options
  * @param {string} options.targetVersion
  * @param {string} options.codes
- * @param {string} options.remoteAddress
  * @param {string} options.capabilities
+ * @param {string} options.serverAddress
+ * @param {string} options.testerAddress
  * @return {Promise<{dest: String; copied: import('recursive-copy').CopyOperation[]|void}>}
  */
 async function generator(options) {
-  const {targetVersion, codes, remoteAddress, capabilities} = options;
+  const {targetVersion, codes, capabilities, serverAddress, testerAddress} = options;
   // #0 create template directory
   const src = TESTER_TEMPLATE_PATH;
   const dest = join(TESTER_TEMP_PATH, uuid().replace(/-/g, ''));
@@ -234,7 +238,8 @@ async function generator(options) {
                 deviceName: 'emulator-5554',
                 ...capabilities,
               },
-              remoteAddress: remoteAddress ?? 'http://localhost:4723', // 'host:port'
+              serverAddress: serverAddress ?? 'http://localhost:4723', // 'host:port'
+              testerAddress: testerAddress ?? 'http://localhost:8000', // 'host:port'
             }));
           });
         case '.cmd':
@@ -274,13 +279,14 @@ async function generator(options) {
 generator({
   androidVersion: process.argv[2],
   codes: 'a = 1;',
-  remoteAddress: 'http://localhost:4723', // 'host:port'
   capabilities: {
     app: join(ROOT_PATH, 'apps', 'Android-MyDemoAppRN.1.3.0.build-244.apk'),
     appPackage: 'com.saucelabs.mydemoapp.rn',
     appActivity: '.MainActivity',
     deviceName: 'emulator-5554',
   },
+  serverAddress: 'http://127.0.0.1:4723', // 'host:port'
+  testerAddress: 'http://127.0.0.1:8000', // 'host:port'
 }).then((r) => {
   // eslint-disable-next-line
   console.log('----0');

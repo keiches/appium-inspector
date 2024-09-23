@@ -1,22 +1,23 @@
 import {dialog} from 'electron';
-import {EventEmitter} from 'events';
+// import {EventEmitter} from 'events';
 // import {openSync} from 'fs';
+import getPort from 'get-port';
 import {homedir} from 'os';
 import {join, resolve} from 'path';
 
 import {isDev} from '../../helpers';
 import {log} from '../../logger';
 import {exists, PACKAGES_PATH, ROOT_PATH, spawn} from '../../utils';
-import getPort from '../get-port';
 import {resolveNodePath} from '../index';
 
-const eventEmitter = new EventEmitter();
+// const eventEmitter = new EventEmitter();
 
 /**
  * Execute Appium server in background
- * @returns {Promise<import('child_process').ChildProcess|import('teen_process').SubProcess>}
+ * @param {Electron.BrowserWindow} window
+ * @returns {Promise<import('child_process').ChildProcess|import('teen_process').SubProcess|undefined>}
  */
-async function runner() {
+async function runner(window) {
   log.log('[appium-server] starting server...');
   /*const controller = new AbortController();
   const { signal } = controller;
@@ -55,7 +56,9 @@ async function runner() {
   const execPath = join(PACKAGES_PATH, 'server', 'packages', 'appium', 'index.js'); // 'build', 'lib', 'main.js');
   // isDev && (spawnOptions.stdio = ['ignore', openSync(`stdout_server_${fileIndex}.txt`, 'w'), openSync(`stderr_server_${fileIndex}.txt`, 'w')]);
   if (!(await exists(execPath))) {
-    log.error(`[appium-server] server ("${execPath}") not found`);
+    log.error(`[appium-server] server ("${execPath}") not exists`);
+    window.webContents.send('appium-server', 'error', 'server', 'server not found');
+    return;
   } else {
     log.info(`[appium-server] server ("${execPath}") found`);
   }
@@ -81,25 +84,29 @@ async function runner() {
       // if we get here, all we know is that the proc exited
       log.log('[appium-server] data:', data.toString());
       // exited with code 127 from signal SIGHUP
-      eventEmitter.emit('appium-server', {
+      /*eventEmitter.emit('appium-server', {
         type: 'data',
-        name: 'process',
+        name: 'server',
         message: data.toString(),
-      });
+      });*/
+      window.webContents.send('appium-server', 'data', 'server', 'stdout::data', data.toString());
     });
 
     child.stderr?.setEncoding?.('utf-8');
     child.stderr?.on?.('data', (/** @type {Buffer} */ data) => {
       log.error('[appium-server] stderr:', data.toString('utf-8'));
+      window.webContents.send('appium-server', 'data', 'server', 'stderr::data', data.toString());
     });
 
     child.on('message', (message) => {
       log.log('[appium-server] message:', message);
+      window.webContents.send('appium-server', 'data', 'server', 'message', message);
     });
 
     child.on('error', (err) => {
       // This will be called with err being an AbortError if the controller aborts
       log.error('[appium-server] error:', err.toString());
+      window.webContents.send('appium-server', 'error', 'server', err.message);
       dialog.showMessageBox({
         type: 'error',
         buttons: ['OK'],
@@ -108,12 +115,13 @@ async function runner() {
     });
 
     child.on('disconnect', () => {
-      log.warn('[appium-server] disconnect');
-      eventEmitter.emit('appium-server', {
+      log.log('[appium-server] disconnect');
+      /*eventEmitter.emit('appium-server', {
         type: 'data',
-        name: 'process',
+        name: 'server',
         message: 'disconnect',
-      });
+      });*/
+      window.webContents.send('appium-server', 'data', 'server', 'disconnect');
     });
 
     child.on('close', (code, signal) => {
@@ -121,103 +129,115 @@ async function runner() {
       // but with a 0 exit code
       // app.quit();
       log.log(`[appium-server] closed with code ${code} from signal ${signal}`);
-      eventEmitter.emit('appium-server', {
+      /*eventEmitter.emit('appium-server', {
         type: 'data',
-        name: 'process',
+        name: 'server',
         message: 'close',
         data: {
           code,
           signal,
         },
-      });
+      });*/
+      window.webContents.send('appium-server', 'data', 'server', 'close', {code, signal});
     });
 
     child.on('exit', (code, signal) => {
       log.log(`[appium-server] exit on code: ${code} from signal ${signal}`);
-      eventEmitter.emit('appium-server', {
+      /*eventEmitter.emit('appium-server', {
         type: 'data',
-        name: 'process',
+        name: 'server',
         message: 'exit',
         data: {
           code,
           signal,
         },
-      });
+      });*/
+      window.webContents.send('appium-server', 'data', 'server', 'exit', {code, signal});
+      if (code === 0 && signal === null) {
+        log.error('[appium-server] failed to run server');
+      }
     });
   } else {
     child.on('exit', (code, signal) => {
       // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
       log.log(`[appium-server] exited with code ${code} from signal ${signal}`);
-      eventEmitter.emit('appium-server', {
+      /*eventEmitter.emit('appium-server', {
         type: 'data',
-        name: 'process',
+        name: 'server',
         message: 'exit',
         data: {
           code,
           signal,
         },
-      });
+      });*/
+      window.webContents.send('appium-server', 'data', 'server', 'exit', {code, signal});
     });
 
     child.on('stop', (code, signal) => {
       // if we get here, we know that we intentionally stopped the proc
       // by calling proc.stop
       log.log(`[appium-server] stop with code ${code} from signal ${signal}`);
-      eventEmitter.emit('appium-server', {
+      /*eventEmitter.emit('appium-server', {
         type: 'data',
-        name: 'process',
+        name: 'server',
         message: 'stop',
         data: {
           code,
           signal,
         },
-      });
+      });*/
+      window.webContents.send('appium-server', 'data', 'server', 'stop', {code, signal});
     });
 
     child.on('end', (code, signal) => {
-      // if we get here, we know that the process stopped outside of our control
+      // if we get here, we know that the process stopped outside our control
       // but with a 0 exit code
       log.log(`[appium-server] ended with code ${code} from signal ${signal}`);
-      eventEmitter.emit('appium-server', {
+      /*eventEmitter.emit('appium-server', {
         type: 'data',
-        name: 'process',
+        name: 'server',
         message: 'end',
         data: {
           code,
           signal,
         },
-      });
+      });*/
+      window.webContents.send('appium-server', 'data', 'server', 'end', {code, signal});
     });
 
     child.on('die', (code, signal) => {
-      // if we get here, we know that the process stopped outside of our control
+      // if we get here, we know that the process stopped outside our control
       // with a non-zero exit code
       log.log(`[appium-server] died with code ${code} from signal ${signal}`);
-      eventEmitter.emit('appium-server', {
+      /*eventEmitter.emit('appium-server', {
         type: 'data',
-        name: 'process',
+        name: 'server',
         message: 'die',
         data: {
           code,
           signal,
         },
-      });
+      });*/
+      window.webContents.send('appium-server', 'data', 'server', 'die', {code, signal});
     });
 
     child.on('output', (stdout, stderr) => {
-      if ((!stdout?.includes('getTimeouts')) || (!stderr?.includes('getTimeouts'))) {
+      if (stdout?.includes('getTimeouts') || stderr?.includes('getTimeouts')) {
+        log.log(`[appium-server] output::stdout1: ${stdout}`);
+        log.log(`[appium-server] output::stderr1: ${stderr}`);
         return;
       }
       stdout && log.log(`[appium-server] output::stdout: ${stdout}`);
       stderr && log.log(`[appium-server] output::stderr: ${stderr}`);
-      eventEmitter.emit('appium-server', {
+      /*eventEmitter.emit('appium-server', {
         type: 'data',
-        name: 'process',
+        name: 'server',
         message: 'output',
         data: {
           message: stdout ?? stderr,
         },
-      });
+      });*/
+      window.webContents.send('appium-server', 'data', 'server', 'output', stdout ?? stderr);
     });
 
     /*child.on('lines-stdout', (lines) => {
@@ -248,18 +268,20 @@ async function runner() {
         // throw new Error('Encountered failure condition');
         log.error('[appium-server] encountered failure condition:', stderr);
         // window.webContents.send('appium-server', 'error', stderr);
-        eventEmitter.emit('appium-server', {
+        /*eventEmitter.emit('appium-server', {
           name: 'error',
           type: 'process',
           message: stderr,
-        });
+        });*/
+        window.webContents.send('appium-server', 'error', 'server', 'start', stderr);
       } else {
-        // window.webContents.send('appium-server', 'message', stdout);
-        eventEmitter.emit('appium-server', {
+        /*eventEmitter.emit('appium-server', {
           type: 'data',
-          name: 'process',
+          name: 'server',
           message: 'appium server started',
-        });
+        });*/
+        // window.webContents.send('appium-server', 'message', stdout);
+        window.webContents.send('appium-server', 'data', 'server', 'message', stdout);
       }
       // throw new Error(`Encountered failure condition: ${stderr}`);
       return stdout || stderr;

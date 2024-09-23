@@ -36,11 +36,11 @@ public class IOSUnitTest {
 
     private URL getURL() {
         try {
-            // System.out.println("URL #1: " + URI.create("{{remoteAddress}}").toURL().toString());
-            log.debug("URL #2: {}", URI.create("{{remoteAddress}}").toURL().toString());
-            return URI.create("{{remoteAddress}}").toURL();
-            // return Paths.get("{{remoteAddress}}"); // .toUri().toURL();
-            // return new URL("{{remoteAddress}}"); // "http://localhost:4723"
+            // System.out.println("URL #1: " + URI.create("{{serverAddress}}").toURL().toString());
+            log.debug("URL #2: {}", URI.create("{{serverAddress}}").toURL().toString());
+            return URI.create("{{serverAddress}}").toURL();
+            // return Paths.get("{{serverAddress}}"); // .toUri().toURL();
+            // return new URL("{{serverAddress}}"); // "http://localhost:4723"
         } catch (MalformedURLException e) {
             // e.printStackTrace();
             // System.out.println("Error creating URL1 " + e.toString());
@@ -62,7 +62,7 @@ public class IOSUnitTest {
     // appium-reporter-plugin
     public static void setTestInfo(String sessionId, String testName, String testStatus, String error) {
         try {
-            String url = "{{remoteAddress}}/setTestInfo";
+            String url = "{{testerAddress}}/setTestInfo";
             String body = "{" +
                     "\"sessionId\":\""+sessionId+"\"," +
                     "\"testName\":\""+testName+"\"," +
@@ -83,7 +83,7 @@ public class IOSUnitTest {
 
     // appium-reporter-plugin
     public String getReport() throws IOException, InterruptedException {
-        String url = "{{remoteAddress}}/getReport";
+        String url = "{{testerAddress}}/getReport";
         String report = Unirest.get(url).asString().getBody();
         System.out.println("received report = " + report);
         return report;
@@ -91,7 +91,7 @@ public class IOSUnitTest {
 
     // appium-reporter-plugin
     public void deleteReportData() throws IOException, InterruptedException {
-        String url = "{{remoteAddress}}/deleteReportData";
+        String url = "{{testerAddress}}/deleteReportData";
         Unirest.delete(url).asEmpty();
         System.out.println("report data deleted done!");
     }

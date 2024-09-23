@@ -1,7 +1,8 @@
 import {dialog} from 'electron';
-import {EventEmitter} from 'events';
+// import {EventEmitter} from 'events';
 import {existsSync} from 'fs';
 import {join} from 'path';
+// TODO: will change to 'node:child_process'
 import {exec} from 'teen_process';
 
 import {log} from '../logger';
@@ -11,7 +12,7 @@ import JavaDetector from './test/java-detector';
 import NodeDetector from './test/node-detector';
 import testRunner from './test/runner';
 
-const eventEmitter = new EventEmitter();
+// const eventEmitter = new EventEmitter();
 
 /**
  * Get Node.Js executable path
@@ -122,14 +123,14 @@ export async function resolveJavaExecutePaths() {
 /**
  * Start Appium server
  * @param {Electron.BrowserWindow} window
- * @returns {Promise<import('child_process').ChildProcess|import('teen_process').SubProcess>}
+ * @returns {Promise<import('child_process').ChildProcess|import('teen_process').SubProcess|undefined>}
  */
 export async function startAppiumServer(window) {
-  eventEmitter.on('appium-server', (...args) => {
+  /*eventEmitter.on('appium-server', (...args) => {
     log.debug('[appium-server] event from appium server:', ...args);
     window.webContents.send('appium-server', ...args);
-  });
-  return await serverRunner();
+  });*/
+  return await serverRunner(window);
 }
 
 /**
@@ -138,9 +139,9 @@ export async function startAppiumServer(window) {
  * @returns {Promise<import('http').Server<import('http').IncomingMessage, import('http').ServerResponse<import('http').IncomingMessage>>>}
  */
 export async function startTestServer(window) {
-  eventEmitter.on('test-server', (...args) => {
+  /*eventEmitter.on('test-server', (...args) => {
     log.debug('[test-server] event from test process:', ...args);
     window.webContents.send('test-server', ...args);
-  });
-  return await testRunner();
+  });*/
+  return await testRunner(window);
 }

@@ -125,13 +125,13 @@ export const readDevices = (platform, deviceType) => async (dispatch) => {
         },
         {
           key: 'DEVICE#2',
-          name: 'emulator-5555', // 'Pixel_7_API_33',
+          name: 'emulator-5554', // 'Pixel_7_API_33',
           platform: {
             name: 'Android', // TODO: read using adb
             version: '13.0',
             icon: AndroidOutlined, // TODO: assign according to platform.name
           },
-          udid: 'emulator-5555', // TODO: read using adb (serial)
+          udid: 'emulator-5554', // TODO: read using adb (serial)
           status: 'Ready',
         },
         {

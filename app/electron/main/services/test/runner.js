@@ -1,18 +1,18 @@
 import {dialog, ipcMain} from 'electron';
-import {EventEmitter} from 'events';
-import {createServer} from 'http';
+// import {EventEmitter} from 'events';
 // import {openSync} from 'fs';
+import getPort from 'get-port';
+import {createServer} from 'http';
 import {delimiter as pathDel, join, normalize, resolve, sep as pathSep} from 'path';
 
 import {isDev} from '../../helpers.js';
 import {log} from '../../logger';
-import {JRM_PATH, ROOT_PATH, spawn, TESTER_LIBS_PATH} from '../../utils';
-import getPort from '../get-port.js';
+import {isWindows, JRM_PATH, ROOT_PATH, spawn, TESTER_LIBS_PATH} from '../../utils';
 import {resolveJavaExecutePaths} from '../index';
 import ANDROID_VERSIONS from './android-versions';
 import generator from './generator';
 
-const eventEmitter = new EventEmitter();
+// const eventEmitter = new EventEmitter();
 
 // NOTE: default target Windows (path delimater: ';', path separator: '\')
 const CLASS_PATH = '@@java-client-9.3.0.jar;@@aspectjrt-1.9.22.1.jar;@@aspectjtools-1.9.22.1.jar;@@java-client-9.3.0.jar;@@selenium-support-4.24.0.jar;@@gson-2.11.0.jar;@@error_prone_annotations-2.27.0.jar;@@junit-jupiter-5.11.0.jar;@@junit-jupiter-api-5.11.0.jar;@@opentest4j-1.3.0.jar;@@junit-platform-commons-1.11.0.jar;@@apiguardian-api-1.1.2.jar;@@junit-jupiter-engine-5.11.0.jar;@@junit-platform-engine-1.11.0.jar;@@junit-jupiter-params-5.11.0.jar;@@selenium-api-4.24.0.jar;@@jspecify-1.0.0.jar;@@selenium-java-4.24.0.jar;@@selenium-chrome-driver-4.24.0.jar;@@selenium-chromium-driver-4.24.0.jar;@@selenium-devtools-v126-4.24.0.jar;@@selenium-devtools-v127-4.24.0.jar;@@selenium-devtools-v128-4.24.0.jar;@@selenium-devtools-v85-4.24.0.jar;@@selenium-edge-driver-4.24.0.jar;@@selenium-firefox-driver-4.24.0.jar;@@selenium-ie-driver-4.24.0.jar;@@selenium-safari-driver-4.24.0.jar;@@selenium-json-4.24.0.jar;@@selenium-remote-driver-4.24.0.jar;@@auto-service-annotations-1.1.1.jar;@@guava-33.3.0-jre.jar;@@failureaccess-1.0.2.jar;@@listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;@@jsr305-3.0.2.jar;@@checker-qual-3.43.0.jar;@@j2objc-annotations-3.0.0.jar;@@opentelemetry-semconv-1.25.0-alpha.jar;@@opentelemetry-api-1.41.0.jar;@@opentelemetry-context-1.41.0.jar;@@opentelemetry-exporter-logging-1.41.0.jar;@@opentelemetry-sdk-common-1.41.0.jar;@@opentelemetry-sdk-extension-autoconfigure-spi-1.41.0.jar;@@opentelemetry-sdk-extension-autoconfigure-1.41.0.jar;@@opentelemetry-api-incubator-1.41.0-alpha.jar;@@opentelemetry-sdk-trace-1.41.0.jar;@@opentelemetry-sdk-1.41.0.jar;@@opentelemetry-sdk-metrics-1.41.0.jar;@@opentelemetry-sdk-logs-1.41.0.jar;@@byte-buddy-1.15.0.jar;@@selenium-http-4.24.0.jar;@@failsafe-3.3.2.jar;@@selenium-manager-4.24.0.jar;@@selenium-os-4.24.0.jar;@@commons-exec-1.4.0.jar;@@unirest-java-3.14.5.jar;@@unirest-java-3.14.5-standalone.jar;@@unirest-java-core-4.4.4.jar;@@unirest-modules-jackson-4.4.4.jar;@@junit-platform-suite-1.11.0.jar;@@junit-platform-suite-api-1.11.0.jar;@@junit-platform-suite-engine-1.11.0.jar;@@junit-platform-suite-commons-1.11.0.jar;@@junit-platform-launcher-1.11.0.jar;@@slf4j-api-2.0.16.jar;@@logback-classic-1.5.8.jar;@@logback-core-1.5.8.jar;@@jul-to-slf4j-2.0.16.jar';
@@ -49,10 +49,12 @@ let phase = 0;
  * @param {string} options.targetVersion
  * @param {string} options.codes
  * @param {string} options.capabilities
- * @param {string} [options.remoteAddress]
+ * @param {string} [options.serverAddress]
+ * @param {string} [options.testerAddress]
+ * @param {Electron.BrowserWindow} window
  * @returns {Promise<import('child_process').ChildProcess|import('teen_process').SubProcess|undefined>}
  */
-async function runTest(options) {
+async function runTest(options, window) {
   log.log('[test-server] starting test runner with', options, '...');
   phase = 1;
   let child;
@@ -63,6 +65,7 @@ async function runTest(options) {
   }
   // eslint-disable-next-line
   log.debug('[test-server] template generated:', copied?.length ?? 0, 'files', 'to', dest);
+  window.webContents.send('test-server', 'data', 'tester', 'start', {phase});
 
   phase = 2;
   const {targetVersion} = options;
@@ -125,7 +128,7 @@ async function runTest(options) {
       const message = chunk?.toString();
       // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
       log.log('[test-server] compiler stdout:', message);
-      eventEmitter.emit('test-server', {
+      /*eventEmitter.emit('test-server', {
         type: 'data',
         name: 'process',
         message: 'stdout data',
@@ -133,7 +136,8 @@ async function runTest(options) {
           phase,
           message,
         },
-      });
+      });*/
+      window.webContents.send('test-server', 'data', 'compiler', 'data', {phase, message});
     });
 
     child.stderr?.setEncoding?.('utf-8');
@@ -141,7 +145,7 @@ async function runTest(options) {
     child.stderr.on('data', (chunk) => {
       const message = chunk?.toString();
       log.log('[test-server] compiler stderr:', message);
-      eventEmitter.emit('test-server', {
+      /*eventEmitter.emit('test-server', {
         type: 'data',
         name: 'message',
         message: 'stderr data',
@@ -149,12 +153,13 @@ async function runTest(options) {
           phase,
           message,
         },
-      });
+      });*/
+      window.webContents.send('test-server', 'data', 'compiler', 'stderr data', {phase, message});
     });
 
     child.on('message', (message) => {
       log.log('[test-server] compiler message:', message);
-      eventEmitter.emit('test-server', {
+      /*eventEmitter.emit('test-server', {
         type: 'data',
         name: 'message',
         message,
@@ -162,13 +167,14 @@ async function runTest(options) {
           phase,
           message,
         },
-      });
+      });*/
+      window.webContents.send('test-server', 'data', 'compiler', 'message', {phase, message});
     });
 
     child.on('error', (err) => {
       // This will be called with err being an AbortError if the controller aborts
       log.error('[test-server] compiler error:', err.toString());
-      eventEmitter.emit('test-server', {
+      /*eventEmitter.emit('test-server', {
         type: 'error',
         name: 'process',
         message: err.message,
@@ -176,7 +182,8 @@ async function runTest(options) {
           phase,
           error: err,
         },
-      });
+      });*/
+      window.webContents.send('test-server', 'error', 'compiler', 'data', {phase, error: err});
       dialog.showMessageBox({
         type: 'error',
         buttons: ['OK'],
@@ -186,14 +193,15 @@ async function runTest(options) {
 
     child.on('disconnect', () => {
       log.warn('[test-server] compiler disconnect');
-      eventEmitter.emit('test-server', {
+      /*eventEmitter.emit('test-server', {
         type: 'data',
         name: 'process',
         message: 'disconnect',
         data: {
           phase,
         },
-      });
+      });*/
+      window.webContents.send('test-server', 'data', 'compiler', 'disconnect', {phase});
     });
 
     child.on('close', (code, signal) => {
@@ -203,6 +211,7 @@ async function runTest(options) {
       log.log(`[test-server] compiler closed with code ${code} from signal ${signal}`);
       if (code === 0 && signal === null) {
         // TODO: when compiling is done successfully, start running
+        window.webContents.send('test-server', 'data', 'compiler', 'close', {phase});
         setTimeout(() => {
           // child?.unref?.();
           phase = 3;
@@ -235,7 +244,7 @@ async function runTest(options) {
             const message = chunk?.toString();
             // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
             log.log('[test-server] runner stdout:', message);
-            eventEmitter.emit('test-server', {
+            /*eventEmitter.emit('test-server', {
               type: 'data',
               name: 'process',
               message: 'stdout data',
@@ -243,7 +252,8 @@ async function runTest(options) {
                 phase,
                 message,
               },
-            });
+            });*/
+            window.webContents.send('test-server', 'data', 'tester', 'stdout data', {phase, message});
           });
 
           child.stderr?.setEncoding?.('utf-8');
@@ -251,7 +261,7 @@ async function runTest(options) {
           child.stderr.on('data', (chunk) => {
             const message = chunk?.toString();
             log.error('[test-server] runner stderr:', message);
-            eventEmitter.emit('test-server', {
+            /*eventEmitter.emit('test-server', {
               type: 'data',
               name: 'process',
               message: 'stderr data',
@@ -259,12 +269,13 @@ async function runTest(options) {
                 phase,
                 message,
               },
-            });
+            });*/
+            window.webContents.send('test-server', 'data', 'tester', 'stderr data', {phase, message});
           });
 
           child.on('message', (message) => {
             log.log('[test-server] runner message:', message);
-            eventEmitter.emit('test-server', {
+            /*eventEmitter.emit('test-server', {
               type: 'data',
               name: 'process',
               message: 'message',
@@ -272,13 +283,14 @@ async function runTest(options) {
                 phase,
                 message,
               },
-            });
+            });*/
+            window.webContents.send('test-server', 'data', 'tester', 'message', {phase, message});
           });
 
           child.on('error', (err) => {
             // This will be called with err being an AbortError if the controller aborts
             log.error('[test-server] runner error:', err.toString());
-            eventEmitter.emit('test-server', {
+            /*eventEmitter.emit('test-server', {
               type: 'error',
               name: 'process',
               message: err.message,
@@ -286,7 +298,8 @@ async function runTest(options) {
                 phase,
                 error: err,
               },
-            });
+            });*/
+            window.webContents.send('test-server', 'error', 'tester', err.message, {phase, error: err});
             dialog.showMessageBox({
               type: 'error',
               buttons: ['OK'],
@@ -296,14 +309,15 @@ async function runTest(options) {
 
           child.on('disconnect', () => {
             log.warn('[test-server] runner disconnect');
-            eventEmitter.emit('test-server', {
-              type: 'error',
+            /*eventEmitter.emit('test-server', {
+              type: 'data',
               name: 'process',
               message: 'disconnect',
               data: {
                 phase,
               },
-            });
+            });*/
+            window.webContents.send('test-server', 'data', 'tester', 'disconnect', {phase});
           });
 
           child.on('close', (code, signal) => {
@@ -311,7 +325,7 @@ async function runTest(options) {
             // but with a 0 exit code
             // app.quit();
             log.log(`[test-server] runner closed with code ${code} from signal ${signal}`);
-            eventEmitter.emit('test-server', {
+            /*eventEmitter.emit('test-server', {
               type: 'data',
               name: 'process',
               message: 'close',
@@ -320,12 +334,13 @@ async function runTest(options) {
                 code,
                 signal,
               },
-            });
+            });*/
+            window.webContents.send('test-server', 'data', 'tester', 'close', {phase, code, signal});
           });
 
           child.on('exit', (code, signal) => {
             log.log(`[test-server] runner existed with code ${code} from signal ${signal}`);
-            eventEmitter.emit('test-server', {
+            /*eventEmitter.emit('test-server', {
               type: 'data',
               name: 'process',
               message: 'exit',
@@ -334,7 +349,8 @@ async function runTest(options) {
                 code,
                 signal,
               },
-            });
+            });*/
+            window.webContents.send('test-server', 'data', 'tester', 'exit', {phase, code, signal});
           });
 
           log.log('[test-server] runner spawned:', child.pid);
@@ -342,31 +358,33 @@ async function runTest(options) {
       } else {
         // TODO: send reasons about failed to compile
         log.error('[test-server] failed to run test runner');
-        eventEmitter.emit('test-server', {
+        /*eventEmitter.emit('test-server', {
           type: 'error',
           name: 'process',
           message: 'failed to test',
           data: {
             phase,
           },
-        });
+        });*/
+        window.webContents.send('test-server', 'error', 'compiler', 'close', {phase, code, signal});
       }
     });
 
     child.on('exit', (code, signal) => {
       log.log(`[test-server] compiler existed with code ${code} from signal ${signal}`);
+      /*eventEmitter.emit('test-server', {
+        type: 'error',
+        name: 'process',
+        message: 'exit',
+        data: {
+          phase,
+          code,
+          signal,
+        },
+      });*/
+      window.webContents.send('test-server', 'data', 'compiler', 'exit', {phase, code, signal});
       if (code === 0 && signal === null) {
         log.error('[test-server] failed to compile test template');
-        eventEmitter.emit('test-server', {
-          type: 'error',
-          name: 'process',
-          message: 'exit',
-          data: {
-            phase,
-            code,
-            signal,
-          },
-        });
       }
     });
   } else {
@@ -406,14 +424,15 @@ async function runTest(options) {
               const message = chunk?.toString();
               // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
               log.log('[test-server] runner stdout:', message);
-              eventEmitter.emit('test-server', {
+              /*eventEmitter.emit('test-server', {
                 type: 'data',
                 name: 'process',
                 message: 'stdout data',
                 data: {
                   phase,
                 },
-              });
+              });*/
+              window.webContents.send('test-server', 'data', 'tester', 'stdout data', {phase, message});
             });
 
             child.stderr?.setEncoding?.('utf-8');
@@ -421,31 +440,34 @@ async function runTest(options) {
             child.stderr.on('data', (chunk) => {
             const message = chunk?.toString();
               log.log('[test-server] runner stderr:', message);
-              eventEmitter.emit('test-server', {
+              /*eventEmitter.emit('test-server', {
                 type: 'data',
                 name: 'process',
                 message: 'stderr data',
                 data: {
                   phase,
                 },
-              });
+              });*/
+              window.webContents.send('test-server', 'data', 'tester', 'stderr data', {phase, message});
             });
 
             child.on('message', (message) => {
               log.log('[test-server] message:', message);
-              eventEmitter.emit('test-server', {
+              /*eventEmitter.emit('test-server', {
                 type: 'data',
                 name: 'process',
                 message,
                 data: {
                   phase,
                 },
-              });
+              });*/
+              window.webContents.send('test-server', 'data', 'tester', 'message', {phase, message});
             });
 
             child.on('error', (err) => {
               // This will be called with err being an AbortError if the controller aborts
               log.error('[test-server] runner error:', err.toString());
+              window.webContents.send('test-server', 'error', 'tester', err.toString(), {phase, error: err});
               dialog.showMessageBox({
                 type: 'error',
                 buttons: ['OK'],
@@ -455,14 +477,15 @@ async function runTest(options) {
 
             child.on('disconnect', () => {
               log.warn('[test-server] runner disconnect');
-              eventEmitter.emit('test-server', {
+              /*eventEmitter.emit('test-server', {
                 type: 'data',
                 name: 'process',
                 message: 'disconnect',
                 data: {
                   phase,
                 },
-              });
+              });*/
+              window.webContents.send('test-server', 'data', 'tester', 'disconnect', {phase});
             });
 
             child.on('close', (code, signal) => {
@@ -470,7 +493,7 @@ async function runTest(options) {
               // but with a 0 exit code
               // app.quit();
               log.log(`[test-server] runner closed with code ${code} from signal ${signal}`);
-              eventEmitter.emit('test-server', {
+              /*eventEmitter.emit('test-server', {
                 type: 'data',
                 name: 'process',
                 message: 'close',
@@ -479,7 +502,8 @@ async function runTest(options) {
                   code,
                   signal,
                 },
-              });
+              });*/
+              window.webContents.send('test-server', 'data', 'tester', 'close', {phase, code, signal});
               if (code === 0 && signal === null) {
                 // TODO: when compiling is done successfully, start running
                 log.log('[test-server] runner stopped');
@@ -488,7 +512,7 @@ async function runTest(options) {
 
             child.on('exit', (code, signal) => {
               log.log(`[test-server] runner existed with code ${code} from signal ${signal}`);
-              eventEmitter.emit('test-server', {
+              /*eventEmitter.emit('test-server', {
                 type: 'data',
                 name: 'process',
                 message: 'exit',
@@ -497,13 +521,14 @@ async function runTest(options) {
                   code,
                   signal,
                 },
-              });
+              });*/
+              window.webContents.send('test-server', 'data', 'tester', 'exit', {phase, code, signal});
             });
           } else {
             child.on('exit', (code, signal) => {
               // if we get here, all we know is that the proc exited with code 127 from signal SIGHUP
               log.log(`[test-server] runner exited with code ${code} from signal ${signal}`);
-              eventEmitter.emit('test-server', {
+              /*eventEmitter.emit('test-server', {
                 type: 'data',
                 name: 'process',
                 message: 'exit',
@@ -512,14 +537,15 @@ async function runTest(options) {
                   code,
                   signal,
                 },
-              });
+              });*/
+              window.webContents.send('test-server', 'data', 'tester', 'exit', {phase, code, signal});
             });
 
             child.on('stop', (code, signal) => {
               // if we get here, we know that we intentionally stopped the proc
               // by calling proc.stop
               log.log(`[test-server] runner stop with code ${code} from signal ${signal}`);
-              eventEmitter.emit('test-server', {
+              /*eventEmitter.emit('test-server', {
                 type: 'data',
                 name: 'process',
                 message: 'stop',
@@ -528,14 +554,15 @@ async function runTest(options) {
                   code,
                   signal,
                 },
-              });
+              });*/
+              window.webContents.send('test-server', 'data', 'tester', 'stop', {phase, code, signal});
             });
 
             child.on('end', (code, signal) => {
               // if we get here, we know that the process stopped outside of our control
               // but with a 0 exit code
               log.log(`[test-server] runner ended with code ${code} from signal ${signal}`);
-              eventEmitter.emit('test-server', {
+              /*eventEmitter.emit('test-server', {
                 type: 'data',
                 name: 'process',
                 message: 'end',
@@ -544,14 +571,15 @@ async function runTest(options) {
                   code,
                   signal,
                 },
-              });
+              });*/
+              window.webContents.send('test-server', 'data', 'tester', 'end', {phase, code, signal});
             });
 
             child.on('die', (code, signal) => {
-              // if we get here, we know that the process stopped outside of our control
+              // if we get here, we know that the process stopped outside our control
               // with a non-zero exit code
               log.log(`[test-server] runner died with code ${code} from signal ${signal}`);
-              eventEmitter.emit('test-server', {
+              /*eventEmitter.emit('test-server', {
                 type: 'data',
                 name: 'process',
                 message: 'die',
@@ -560,14 +588,15 @@ async function runTest(options) {
                   code,
                   signal,
                 },
-              });
+              });*/
+              window.webContents.send('test-server', 'data', 'tester', 'die', {phase, code, signal});
             });
 
             child.on('output', (stdout, stderr) => {
               stdout && log.log(`[test-server] runner output::stdout: ${stdout}`);
               stderr && log.log(`[test-server] runner output::stderr: ${stderr}`);
               if (stdout || stderr) {
-                eventEmitter.emit('test-server', {
+                /*eventEmitter.emit('test-server', {
                   type: 'data',
                   name: 'process',
                   message: 'output',
@@ -575,7 +604,8 @@ async function runTest(options) {
                     phase,
                     message: stdout ?? stderr,
                   },
-                });
+                });*/
+                window.webContents.send('test-server', 'data', 'tester', 'output', {phase, message: stdout ?? stderr});
               }
             });
 
@@ -602,23 +632,25 @@ async function runTest(options) {
               if (/fail/.test(stderr)) {
                 // throw new Error('Encountered failure condition');
                 log.error('[test-server] runner encountered failure condition:', stderr);
-                eventEmitter.emit('test-server', {
+                /*eventEmitter.emit('test-server', {
                   type: 'error',
                   name: 'server',
                   message: stderr,
                   data: {
                     phase,
                   },
-                });
+                });*/
+                window.webContents.send('test-server', 'error', 'tester', 'start', {phase, message: stderr});
               } else {
-                eventEmitter.emit('test-server', {
+                /*eventEmitter.emit('test-server', {
                   type: 'data',
                   name: 'server',
-                  message: stdout,
+                  message: start,
                   data: {
                     phase,
                   },
-                });
+                });*/
+                window.webContents.send('test-server', 'data', 'tester', 'start', {phase, message: stdout});
               }
               return stdout || stderr;
             });
@@ -628,7 +660,7 @@ async function runTest(options) {
         }, 1);
       } else {
         log.error('[test-server] failed to compile test template');
-        eventEmitter.emit('test-server', {
+        /*eventEmitter.emit('test-server', {
           type: 'error',
           name: 'process',
           message: 'exit',
@@ -637,7 +669,8 @@ async function runTest(options) {
             code,
             signal,
           },
-        });
+        });*/
+        window.webContents.send('test-server', 'error', 'compiler', 'exit', {phase, code, signal});
       }
     });
 
@@ -645,7 +678,7 @@ async function runTest(options) {
       // if we get here, we know that we intentionally stopped the proc
       // by calling proc.stop
       log.log(`[test-server] compiler stop with code ${code} from signal ${signal}`);
-      eventEmitter.emit('test-server', {
+      /*eventEmitter.emit('test-server', {
         type: 'data',
         name: 'server',
         message: 'stop',
@@ -653,14 +686,15 @@ async function runTest(options) {
           code,
           signal,
         },
-      });
+      });*/
+      window.webContents.send('test-server', 'data', 'compiler', 'stop', {phase, code, signal});
     });
 
     child.on('end', (code, signal) => {
       // if we get here, we know that the process stopped outside our control
       // but with a 0 exit code
       log.log(`[test-server] compiler ended with code ${code} from signal ${signal}`);
-      eventEmitter.emit('test-server', {
+      /*eventEmitter.emit('test-server', {
         type: 'data',
         name: 'server',
         message: 'end',
@@ -668,14 +702,15 @@ async function runTest(options) {
           code,
           signal,
         },
-      });
+      });*/
+      window.webContents.send('test-server', 'data', 'compiler', 'end', {phase, code, signal});
     });
 
     child.on('die', (code, signal) => {
       // if we get here, we know that the process stopped outside of our control
       // with a non-zero exit code
       log.log(`[test-server] compiler died with code ${code} from signal ${signal}`);
-      eventEmitter.emit('test-server', {
+      /*eventEmitter.emit('test-server', {
         type: 'data',
         name: 'server',
         message: 'die',
@@ -683,21 +718,23 @@ async function runTest(options) {
           code,
           signal,
         },
-      });
+      });*/
+      window.webContents.send('test-server', 'data', 'compiler', 'die', {phase, code, signal});
     });
 
     child.on('output', (stdout, stderr) => {
       stdout && log.log(`[test-server] compiler output::stdout: ${stdout}`);
       stderr && log.log(`[test-server] compiler output::stderr: ${stderr}`);
       if (stdout || stderr) {
-        eventEmitter.emit('test-server', {
+        /*eventEmitter.emit('test-server', {
           type: 'data',
           name: 'server',
           message: 'end',
           data: {
             message: stdout ?? stderr,
           },
-        });
+        });*/
+        window.webContents.send('test-server', 'data', 'compiler', 'output', {phase, message: stdout ?? stderr});
       }
     });
 
@@ -724,23 +761,25 @@ async function runTest(options) {
       if (/fail/.test(stderr)) {
         // throw new Error(`Encountered failure condition: ${stderr}`);
         log.error('[test-server] compiler encountered failure condition:', stderr);
-        eventEmitter.emit('test-server', {
+        /*eventEmitter.emit('test-server', {
           type: 'error',
           name: 'process',
           message: stderr,
           data: {
             phase,
           },
-        });
+        });*/
+        window.webContents.send('test-server', 'error', 'compiler', 'start', {phase, message: stderr});
       } else {
-        eventEmitter.emit('test-server', {
+        /*eventEmitter.emit('test-server', {
           type: 'data',
           name: 'process',
           message: stdout,
           data: {
             phase,
           },
-        });
+        });*/
+        window.webContents.send('test-server', 'data', 'compiler', 'start', {phase, message: stdout});
       }
       return stdout || stderr;
     });
@@ -751,11 +790,21 @@ async function runTest(options) {
   return child;
 }
 
+function resolveAppPath(appPath) {
+  const targetPath = resolve(ROOT_PATH, '..', normalize(appPath));
+  if (isWindows) {
+    return targetPath.replace(/\\/g, '\\\\');
+  }
+
+  return targetPath;
+}
+
 /**
  * Execute Appium server in background
+ * @param {Electron.BrowserWindow} window
  * @returns {Promise<import('http').Server<import('http').IncomingMessage, import('http').ServerResponse<import('http').IncomingMessage>>>}
  */
-async function runner() {
+async function runner(window) {
   log.log('[test-server] starting server...');
   let child;
   /** @type {import('http').Server<import('http').IncomingMessage, import('http').ServerResponse<import('http').IncomingMessage>>} */
@@ -765,28 +814,28 @@ async function runner() {
     if (!child) {
       return;
     }
+    log.log('[test-server] terminate message server...');
     if (process.env.NODE_NATIVE) {
       if (!child.killed) {
-        log.log('Terminate Test runner...');
         child.kill?.('SIGTERM'); // NodeJS.Signals
         // process.kill(testerRunner.pid, 'SIGINT');
         child = null;
       }
     } else {
       if (child.isRunning) {
-        log.log('Terminate Test runner...');
         child.stop?.('SIGTERM'); // NodeJS.Signals
         child = null;
       }
     }
-    eventEmitter.emit('test-server', {
+    /*eventEmitter.emit('test-server', {
       type: 'data',
       name: 'server',
       message: 'killed',
       data: {
         phase,
       },
-    });
+    });*/
+    // window.webContents.send('test-server', 'data', 'server', 'process killed', {phase});
   };
   /*
   // NOTE: main.js에서 처리함
@@ -836,14 +885,15 @@ async function runner() {
   // server 객체에 이벤트를 연결합니다.
   messageServer.on('request', (/** @type {import('http').IncomingMessage} */ req, /** @type {import('http').ServerResponse} */ res) => {
     log.log('[test-server] requesting...:', req.url);
-    eventEmitter.emit('test-server', {
+    /*eventEmitter.emit('test-server', {
       type: 'data',
       name: 'server',
       message: 'request',
       data: {
         url: req.url,
       },
-    });
+    });*/
+    window.webContents.send('test-server', 'data', 'server', 'request', {phase, url: req.url});
     /* NOTE: 별도의 uuid로 session 별로 구분하는 것이 안전할 듯...
     const port = uuid();
     ipcMain.once(port, (ev, status, head, body) => {
@@ -882,19 +932,21 @@ async function runner() {
 
   messageServer.on('connection', () => {
     log.log('[test-server] connection on');
-    eventEmitter.emit('test-server', {
+    /*eventEmitter.emit('test-server', {
       type: 'data',
       name: 'server',
       message: 'connection',
       data: {
         phase,
       },
-    });
+    });*/
+    window.webContents.send('test-server', 'data', 'server', 'connection', {phase});
   });
 
   messageServer.on('close', () => {
     log.log('[test-server] close');
     handleKillProcess();
+    window.webContents.send('test-server', 'data', 'server', 'close', {phase});
   });
 
   return await getPort({port: 8000})
@@ -902,14 +954,15 @@ async function runner() {
     .then((port) => {
       messageServer.listen(port, () => {
         log.log(`[test-server] message server running on port #${port}`);
-        eventEmitter.emit('test-server', {
+        /*eventEmitter.emit('test-server', {
           type: 'data',
           name: 'server',
           message: 'start',
           data: {
             phase,
           },
-        });
+        });*/
+        window.webContents.send('test-server', 'data', 'server', 'start', {phase});
       });
 
       log.log(`[test-server] message server on http://127.0.0.1:${port}/`);
@@ -917,7 +970,7 @@ async function runner() {
       // TODO: Message Server가 실행되지 못했다면, Test Server도 실행할 수 없음
       ipcMain.on('start-test', async (event, ...args) => {
         // NOTE: args.length === 1이어야 함
-        const {targetVersion, codes, capabilities, remoteAddress} = args[0];
+        const {targetVersion, codes, capabilities, serverAddress, testerAddress, ...rest} = args[0];
         log.debug('[start-test]', '__', codes.substring(0, 10), '__', ...args);
         // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
         child = runTest({
@@ -925,13 +978,16 @@ async function runner() {
           codes,
           capabilities: {
             ...capabilities,
-            app: capabilities.app ? resolve(ROOT_PATH, '..', normalize(capabilities.app)) : undefined,
+            app: capabilities.app ? resolveAppPath(capabilities.app) : undefined,
           },
-          remoteAddress: remoteAddress ?? 'http://127.0.0.1:8000', // 'host:port'
-        });
+          serverAddress: serverAddress ?? 'http://localhost:4723', // 'host:port'
+          testerAddress: testerAddress ?? 'http://localhost:8000', // 'host:port',
+          ...rest,
+        }, window);
         ipcMain.once('stop-test', () => {
           log.debug('[stop-test]......');
           handleKillProcess();
+          window.webContents.send('test-server', 'data', 'server', 'stop-test', {phase});
         });
       });
 
@@ -940,11 +996,12 @@ async function runner() {
     // eslint-disable-next-line promise/prefer-await-to-then,promise/prefer-await-to-callbacks
     .catch((err) => {
       log.error('[test-server] failed to get available port:', err);
-      eventEmitter.emit('test-server', {
+      /*eventEmitter.emit('test-server', {
         type: 'error',
         name: 'server',
         message: err.message,
-      });
+      });*/
+      window.webContents.send('test-server', 'error', 'server', err.message, {phase, error: err});
     });
 }
 

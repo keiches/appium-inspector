@@ -105,9 +105,12 @@ body::-webkit-scrollbar-corner {
 
 #root > :first-child {
   height: calc(100% - 25px);
+  overflow: auto;
 }
 
 footer.ant-layout-footer {
+  position: fixed;
+  bottom: 0;
   padding: 0 16px;
   height: 25px;
   line-height: 25px;

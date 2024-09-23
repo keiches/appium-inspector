@@ -5,11 +5,28 @@ DeleteOutlined, DownloadOutlined, MinusOutlined, MobileOutlined, PlusOutlined,
 ReloadOutlined, ShakeOutlined, StopOutlined} from '@ant-design/icons';
 import {Button, Card, Checkbox, Col, Form, List, Menu, Row, Select, Table, Tooltip} from 'antd';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
+import isEqual from 'lodash/isEqual';
 
 import {SERVER_TYPES} from '../../constants/session-builder';
 import {ipcRenderer} from '../../polyfills';
 import {log} from '../../utils/logger';
 import SessionStyles from './Session.module.css';
+
+/**
+ * Effect for "Object" dependencies.
+ * @param effect
+ * @param {Object|undefined} [depObj]
+ */
+function useCustomEffect(effect, depObj) {
+  const prevDepObjRef = useRef();
+
+  useEffect(() => {
+    if (!isEqual(prevDepObjRef.current, depObj)) {
+      effect();
+      prevDepObjRef.current = depObj;
+    }
+  }, [depObj]);
+}
 
 /**
  * @param {import('@wdio/utils/node_modules/@wdio/types/build').Capabilities.AppiumCapabilities} caps
@@ -98,6 +115,7 @@ const ConnectionSettings = (props) => {
     t,
   } = props;
 
+  const [isReady, setIsReady] = useState(false);
   /** @type {Parameters<typeof Table>[0]['ref']} */
   const devicesTblRef = useRef(null);
   /** @type {Parameters<typeof Table>[0]['ref']} */
@@ -166,26 +184,6 @@ const ConnectionSettings = (props) => {
   /** @type {import('antd/lib/menu').ItemType[]} */
   const menuItemsDevices = [
     {
-      title: 'Run test',
-      icon: ShakeOutlined,
-      onClick: () => {
-        log.debug('starting test......');
-        // TODO:
-        ipcRenderer.send('start-test', {
-          // NOTE: read from device info
-          targetVersion: 12,
-          codes: 'var a = 3;',
-          capabilities: {
-            deviceName: 'emulator-5554',
-            app: 'apps/Android-MyDemoAppRN.1.3.0.build-244.apk',
-            appPackage: 'com.saucelabs.mydemoapp.rn',
-            appActivity: '.MainActivity',
-          },
-          remoteAddress: 'http://localhost:8000', // 'host:port'
-        });
-      }
-    },
-    {
       title: 'Add a device',
       icon: PlusOutlined,
     }, {
@@ -203,6 +201,27 @@ const ConnectionSettings = (props) => {
       onClick: (e) => {
         log.log('Devices: menu clicked:', e.item);
       },
+    },
+    {
+      title: 'Run test',
+      icon: ShakeOutlined,
+      onClick: () => {
+        log.debug('starting test......');
+        // TODO:
+        ipcRenderer.send('start-test', {
+          // NOTE: read from device info
+          targetVersion: 12,
+          codes: 'var a = 3;',
+          capabilities: {
+            deviceName: 'emulator-5554',
+            app: 'apps/Android-MyDemoAppRN.1.3.0.build-244.apk',
+            appPackage: 'com.saucelabs.mydemoapp.rn',
+            appActivity: '.MainActivity',
+          },
+          serverAddress: 'http://127.0.0.1:4723', // 'host:port'
+          testerAddress: 'http://127.0.0.1:8000', // 'host:port'
+        });
+      }
     },
   ].map(({title, icon, onClick}, index) => ({
     key: String(index + 1),
@@ -263,7 +282,7 @@ const ConnectionSettings = (props) => {
               // icon: device.platform === 'iOS' ? AppleOutlined : AndroidOutlined,
               icon: device.platform.icon,
             },
-            uuid: device.device,
+            uuid: device.uuid,
             status: 'Ready',
           };
         });
@@ -273,6 +292,12 @@ const ConnectionSettings = (props) => {
       log.error('Failed to assign devices', error);
     }
   }, [currentDevices.map((device) => device.name)]);
+
+  /**
+   * Event handler of Menu item click
+   * @param {import('rc-menu').MenuInfo} info
+   * @returns {Promise<void>}
+   */
   async function onDevicesMenuClick(info) {
     log.log('menu clicked:', info);
     // TODO: key를 명확하게 바꾸자
@@ -433,6 +458,9 @@ const ConnectionSettings = (props) => {
   };
 
   useEffect(() => {
+    if (!isReady) {
+      return;
+    }
     log.debug('Devices or Applications Table selected:', deviceSelect, applicationSelect);
     try {
       /*let nextCapabilities = {
@@ -481,7 +509,7 @@ const ConnectionSettings = (props) => {
       */
       setCapabilities((prevState) => {
         if ((deviceSelect.selectedRowKeys.length === 0) && (applicationSelect.selectedRowKeys.length === 0)) {
-          setRawDesiredCaps(JSON.stringify(defaultCapabilities));
+          // setRawDesiredCaps(JSON.stringify(defaultCapabilities));
           return {...defaultCapabilities};
         }
         let nextDeviceState;
@@ -513,13 +541,13 @@ const ConnectionSettings = (props) => {
           ...nextDeviceState,
           ...nextApplicationState,
         };
-        setRawDesiredCaps(JSON.stringify(nextState));
+        // setRawDesiredCaps(JSON.stringify(nextState));
         return nextState;
       });
     } catch (error) {
       log.error('Failed to set Devices or Applications capabilities', error);
     }
-  }, [deviceSelect?.selectedRowKeys?.[0], applicationSelect?.selectedRowKeys?.[0]]);
+  }, [isReady, deviceSelect?.selectedRowKeys?.[0] ?? null, applicationSelect?.selectedRowKeys?.[0] ?? null]);
 
   useEffect(() => {
     log.debug('Appium:noReset:', capabilitiesNoReset);
@@ -531,7 +559,7 @@ const ConnectionSettings = (props) => {
           ...prevState,
           'appium:noReset': capabilitiesNoReset,
         };
-        setRawDesiredCaps(JSON.stringify(nextState));
+        // setRawDesiredCaps(JSON.stringify(nextState));
         return nextState;
       });
     } catch (error) {
@@ -549,7 +577,7 @@ const ConnectionSettings = (props) => {
           ...prevState,
           'appium:fullReset': capabilitiesFullReset,
         };
-        setRawDesiredCaps(JSON.stringify(nextState));
+        // setRawDesiredCaps(JSON.stringify(nextState));
         return nextState;
       });
     } catch (error) {
@@ -594,6 +622,10 @@ const ConnectionSettings = (props) => {
     }
   }, [isValidCapsJson]);
 
+  useCustomEffect(() => {
+    setRawDesiredCaps(JSON.stringify(capabilities));
+  }, capabilities);
+
   useEffect(() => {
     ipcRenderer.on('devices:set', (event, message) => {
       log.debug('[ConnectionSettings] on "devices:set" received', event, message);
@@ -608,6 +640,10 @@ const ConnectionSettings = (props) => {
     readDevices();
     readApplications();
   }, []);
+
+  useEffect(() => {
+    setIsReady(true);
+  });
 
   return (
     <>

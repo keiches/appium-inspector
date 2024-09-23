@@ -1,4 +1,4 @@
-import {BrowserWindow, Menu, webContents} from 'electron';
+import {BrowserWindow, globalShortcut, Menu, webContents} from 'electron';
 import settings from 'electron-settings';
 import {join} from 'path';
 
@@ -65,6 +65,19 @@ export function setupMainWindow() {
     splashWindow.destroy();
     mainWindow.show();
     mainWindow.focus();
+  });
+
+  mainWindow.on('focus', () => {
+    if (isDev) {
+      for (const accelerator of ['CmdOrCtrl+R', 'F5']) {
+        globalShortcut.register(accelerator, () => {
+        });
+      }
+    }
+  });
+
+  mainWindow.on('blur', () => {
+    globalShortcut.unregisterAll();
   });
 
   mainWindow.on('closed', () => {

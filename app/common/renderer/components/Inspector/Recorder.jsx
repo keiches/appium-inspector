@@ -526,7 +526,8 @@ const Recorder = (props) => {
         appPackage: 'com.saucelabs.mydemoapp.rn',
         appActivity: '.MainActivity',
       },
-      remoteAddress: 'http://localhost:8000', // 'host:port'
+      serverAddress: 'http://127.0.0.1:4723', // 'host:port'
+      testerAddress: 'http://127.0.0.1:8000', // 'host:port'
     });
   }, [recordedActions?.length > 0]);
 
