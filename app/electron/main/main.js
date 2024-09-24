@@ -15,11 +15,11 @@ import {setupMainWindow} from './windows';
 // and this flow only makes sense for the installed Inspector app anyway
 export let openFilePath = isMac || isDev ? null : process.argv[1];
 
+/** @type {import('child_process').ChildProcess|import('teen_process').SubProcess} */
+/** @type {import('./utils.js').SpawnProcess|undefined|null} */
 let appiumServer;
-/** @type {import('http').Server<import('http').IncomingMessage, import('http').ServerResponse>} */
+/** @type {import('./services.js').Server|undefined|null} */
 let testServer;
-/** @type {import('child_process').ChildProcess} */
-/** @type {import('teen_process').SubProcess} */
 
 // Used when opening Inspector through an .appiumsession file (macOS)
 app.on('open-file', (event, filePath) => {
@@ -85,16 +85,37 @@ app.whenReady().then(() => {
 });
 */
 
-app.on('before-quit', () => {
-  if (appiumServer && !appiumServer.killed) {
-    log.log('[client] terminate Appium server...');
-    appiumServer.kill?.('SIGTERM'); // NodeJS.Signals
-    // process.kill(appiumServer.pid, 'SIGINT');
+app.on('before-quit', async () => {
+  if (appiumServer) {
+    log.log('[client] terminating appium server...');
+    try {
+      const code = await appiumServer.terminate?.('SIGTERM'); // NodeJS.Signals
+      log.log('[client] "appium-server" killed process with code:', code);
+      /*if (process.env.NODE_NATIVE) {
+        if (/!*appiumServer instanceof ChildProcess && *!/ !appiumServer.killed) {
+          // process.kill(appiumServer.pid, 'SIGINT');
+          const result = appiumServer.kill?.('SIGTERM'); // NodeJS.Signals
+          log.log(`[client] "appium-server" ${result ? 'process killed' : 'failed to kill process'}`);
+        }
+      } else {
+        if (/!*appiumServer instanceof SubProcess && *!/ appiumServer.isRunning) {
+          // process.kill(appiumServer.proc.pid, 'SIGINT');
+          const code = await appiumServer.stop?.('SIGTERM'); // NodeJS.Signals
+          log.log('[client] "appium-server" killed process with code:', code);
+        }
+      }*/
+    } catch (err) {
+      log.error('[client] "appium-server" failed to kill process:', err);
+    }
     appiumServer = null;
   }
   if (testServer && !testServer.listening) {
-    log.log('[client] terminate test server...');
-    testServer.closeAllConnections();
+    log.log('[client] closing test server...');
+    try {
+      testServer.destroy(); // .closeAllConnections();
+    } catch (err) {
+      log.error('[client] "test-server" failed to destroy server:', err);
+    }
     testServer = null;
   }
 });

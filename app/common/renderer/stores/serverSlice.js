@@ -54,7 +54,6 @@ export const serverSlice = createSlice({
   },
 });
 
-
 // `createSlice` automatically generated action creators with these names.
 // export them as named exports from this "slice" file
 export const serverActions = serverSlice.actions;
@@ -71,7 +70,8 @@ export const testSelectors = serverEntity.getSelectors<TestSlice>(
 /*export const testSelectors = serverEntity.getSelectors(
   (state) => state[testSlice.name].test,
 );*/
-export const {isTesting} = serverSlice.getSelectors(serverSlice.selectSlice);
+// export const {isTesting} = serverSlice.getSelectors(serverSlice.selectSlice);
+export const serverSelectors = serverSlice.selectors;
 
 // Export the slice reducer as the default export
 export default serverSlice.reducer;

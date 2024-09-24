@@ -34,7 +34,7 @@ if (process.argv.length === 2) {
 async function runner() {
   try {
     // const options = commandLineArgs(optionDefinitions);
-    /** @type {import('teen_process').SubProcessOptions|any} */
+    /** @type {import('../../../app/electron/main/utils.js').ProcessOptions} */
     const spawnOptions = {
       // detached: true, ==> actionsTester.unref();
       // detached: true,

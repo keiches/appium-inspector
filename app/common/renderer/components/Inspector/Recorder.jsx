@@ -1,4 +1,4 @@
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {
   ClearOutlined,
   CodeOutlined,
@@ -8,9 +8,25 @@ import {
   EditOutlined,
   DeleteOutlined, PlayCircleOutlined, StopOutlined, TagOutlined
 } from '@ant-design/icons';
-import {Button, Card, Col, Descriptions, Divider, Layout, List, Row, Select, Space, Spin, Table, Tooltip} from 'antd';
+import {
+  Button,
+  Card,
+  Col,
+  Descriptions,
+  Divider,
+  Layout,
+  List,
+  Progress,
+  Row,
+  Select,
+  Space,
+  Spin,
+  Table,
+  Tooltip
+} from 'antd';
 import hljs from 'highlight.js';
 import {capitalCase, sentenceCase} from 'change-case';
+import {useDispatch, useSelector} from 'react-redux';
 
 import {BUTTON} from '../../constants/antd-types';
 import frameworks from '../../lib/client-frameworks';
@@ -19,6 +35,7 @@ import InspectorStyles from './Inspector.module.css';
 import SessionStyles from '../Session/Session.module.css';
 import * as PropTypes from 'prop-types';
 import {log} from '../../utils/logger';
+import {serverActions, serverSelectors} from '../../stores/serverSlice.js';
 
 /** @type {React.CSSProperties} */
 const contentStyle = {
@@ -52,14 +69,14 @@ Flex.propTypes = {children: PropTypes.node};
 // const MODULO = 1e9 + 7;
 
 const Recorder = (props) => {
-  const {showBoilerplate, recordedActions, actionFramework, t, showActionSource, caps} = props;
+  const {showBoilerplate, recordedActions, actionFramework, t, showActionSource} = props;
+  const dispatch = useDispatch();
+  const isTesting = useSelector(serverSelectors.isTesting);
   // actions panel
   const [actionSelect, setActionSelect] = useState({
     selectedRowKeys: [],
     loading: false
   });
-
-  log.debug('$$$$$$$$$$$$$$$$$$$$$$$', caps);
 
   const [propertiesSelect, setPropertiesSelect] = useState({
     selectedRowKeys: [],
@@ -515,6 +532,7 @@ const Recorder = (props) => {
   const onStartTesting = useCallback(() => {
     setIsActionsPlayed(true);
     log.debug('[renderer] starting test....');
+    dispatch(serverActions.setIsTesting(true));
     // TODO:
     ipcRenderer.send('start-test', {
       // NOTE: read from device info
@@ -669,6 +687,32 @@ const Recorder = (props) => {
     };
   };
 
+  /*useEffect(() => {
+    ipcRenderer.on('test-server', (event, ...args) => {
+      const [eventName, eventType, eventCategory, eventData] = args;
+      if (eventName === 'server') {
+        return;
+      }
+      log.log('<test-server::Recorder>~~~~~~~~~~~~~~~~~~~~', ...args);
+      /!*if (eventName === 'tester' && eventType === 'data') {
+        switch (eventCategory) {
+          case 'output': /!*{
+              "phase": 2,
+              "message": "\r\nTest run finished after 9071 ms\r\n[         4 containers found      ]\r\n[         0 containers skipped    ]\r\n[         4 containers started    ]\r\n[         0 containers aborted    ]\r\n[         4 containers successful ]\r\n[         0 containers failed     ]\r\n[         1 tests found           ]\r\n[         0 tests skipped         ]\r\n[         1 tests started         ]\r\n[         0 tests aborted         ]\r\n[         1 tests successful      ]\r\n[         0 tests failed          ]\r\n\r\n"
+            }*!/
+            setLastOutput(eventData);
+            break;
+          case 'die':
+            setVisibleTestResult(true);
+            break;
+          case 'end':
+            setVisibleTestResult(true);
+            break;
+        }
+      }*!/
+    });
+  }, []);*/
+
   return (
     <div id="recorder" className="action-row">
       <div className="action-col">
@@ -746,6 +790,14 @@ const Recorder = (props) => {
           </Descriptions> */}
         </Card>
       </div>
+      {isTesting && (
+        <div style={{position: 'absolute', inset: 0, zIndex: 1}}>
+          <Tooltip title="3 done / 3 in progress / 4 to do">
+            <Progress percent={60} success={{percent: 30}} type="circle"
+                      style={{position: 'absolute', left: '50%', top: '50%', marginLeft: '-60px', marginTop: '-60px'}} />
+          </Tooltip>
+        </div>
+      )}
     </div>
   );
 };

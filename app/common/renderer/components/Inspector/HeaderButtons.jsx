@@ -228,8 +228,8 @@ const HeaderButtons = (props) => {
   const getDevicesButton = (
     <Tooltip title={t('getCurrentDevices')}>
       <Button id="btnGetCurrentDevices"
-        icon={<IoPhonePortraitOutline className={InspectorStyles['custom-button-icon']} />}
-        onClick={getCurrentDevices}
+              icon={<IoPhonePortraitOutline className={InspectorStyles['custom-button-icon']} />}
+              onClick={getCurrentDevices}
       />
     </Tooltip>
   );
@@ -250,20 +250,22 @@ const HeaderButtons = (props) => {
         {quitSessionButton}
       </Space>
       {/* DEBUG: */}
-      <Modal
-        title="Current devices (DEBUG)"
-        open={visibleCurrentDevices}
-        onOk={() => {
-          setVisibleCurrentDevices(false);
-        }}
-        onCancel={() => {
-          setVisibleCurrentDevices(false);
-        }}
-      >
-        <pre>
-          <code>{JSON.stringify(currentDevices, null, 2)}</code>
-        </pre>
-      </Modal>
+      {!!visibleCurrentDevices && (
+        <Modal
+          title="Current devices (DEBUG)"
+          open={visibleCurrentDevices}
+          onOk={() => {
+            setVisibleCurrentDevices(false);
+          }}
+          onCancel={() => {
+            setVisibleCurrentDevices(false);
+          }}
+        >
+          <pre>
+            <code>{JSON.stringify(currentDevices, null, 2)}</code>
+          </pre>
+        </Modal>
+      )}
     </div>
   );
 };

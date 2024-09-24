@@ -30,7 +30,7 @@ import Session from '../components/Session/Session.jsx';
 import {withTranslation} from '../i18next';
 
 function mapStateToProps(state) {
-  const aaa = {
+  return {
     ...state.session,
     // devices: state.devices.items,
     // selectedDevice: state.devices.selected,
@@ -41,11 +41,7 @@ function mapStateToProps(state) {
     selectedApplication: selectorSelectedApplication(state),
     isApplicationsReading: selectorIsApplicationsReading(state),
   };
-  // eslint-disable-next-line no-console
-  console.log('SessionPage:', aaa);
-  return aaa;
 }
-
 
 function mapDispatchToProps(dispatch) {
   return {

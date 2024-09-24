@@ -69,14 +69,70 @@ export async function exists(path) {
 }
 
 /**
+ * @typedef {Object} ChildProcessOptions
+ * @property {string|URL}  [cwd]
+ * @property {Record<string, string>} [env]
+ * @property {string} [argv0]
+ * @property {Array|string} [stdio]
+ * @property {boolean} [detached]
+ * @property {number} [uid]
+ * @property {number} [gid]
+ * @property {string} [serialization]
+ * @property {boolean|string} [shell]
+ * @property {boolean} [windowsVerbatimArguments]
+ * @property {boolean} [windowsHide]
+ * @property {AbortSignal} [signal]
+ * @property {number} [timeout]
+ * @property {string|number} [killSignal]
+ */
+
+/**
+ * @typedef {import('child_process').ChildProcessOptions&import('teen_process').SubProcessOptions} SpawnProcessOptions
+ * // @extends import('teen_process').SubProcessOptions
+ */
+
+/**
+ * @typedef {import('child_process').ChildProcess|import('teen_process').SubProcess} SpawnProcess
+ * @property {(signal?: NodeJS.Signals | number) => Promise<number>} terminate
+ */
+
+/**
+ * @param {import('child_process').ChildProcess|import('teen_process').SubProcess} spawnedProcess
+ * @return {SpawnProcess}
+ */
+function mixinSpawnedProcess(spawnedProcess) {
+  /** @type {(signal?: NodeJS.Signals | number) => Promise<number>} */
+  spawnedProcess.terminate = (async function terminate(signal) {
+    if (process.env.NODE_NATIVE) {
+      if (/*this instanceof ChildProcess && */ !this.killed) {
+        // process.kill(this.pid, 'SIGINT');
+        return this.kill?.(signal ?? 'SIGTERM') ? 0 : 1; // NodeJS.Signals
+      }
+    } else {
+      if (/*this instanceof SubProcess && */ this.isRunning) {
+        // process.kill(this.proc.pid, 'SIGINT');
+        return await this.stop?.(signal ?? 'SIGTERM'); // NodeJS.Signals
+      }
+    }
+  }).bind(spawnedProcess);
+
+  return /** @type {SpawnProcess} */ spawnedProcess;
+}
+
+/**
  * Spawns a new process using the given `file`.
  * @param {string} file
  * @param {string[]} [args]
- * @param {import('teen_process').SubProcessOptions} [options]
- * @returns {ChildProcess|import('teen_process').SubProcess}
+ * @param {SpawnProcessOptions} [options]
+ * // @param {ChildProcessOptions|import('teen_process').SubProcessOptions} [options]
+ * // @returns {import('child_process').ChildProcess|import('teen_process').SubProcess}
+ * @returns {SpawnProcess}
  */
 export function spawn(file, args, options) {
-  log.debug('[SPAWN]', args, {cwd: options.cwd});
+  log.debug('[spawn]', args, {cwd: options.cwd});
+  if (process.env.NODE_NATIVE) {
+    return mixinSpawnedProcess(spawnNode(file, args, options));
+  }
   /*return new SubProcess(file, args, {
     cwd: __dirname,
     env,
@@ -84,10 +140,7 @@ export function spawn(file, args, options) {
     stdio: ['ignore', 'pipe', 'pipe'],
     ...options,
   });*/
-  if (process.env.NODE_NATIVE) {
-    return spawnNode(file, args, options);
-  }
-  return new SubProcess(file, args, options);
+  return mixinSpawnedProcess(new SubProcess(file, args, options));
 }
 
 /*
