@@ -31,11 +31,11 @@ import {useDispatch, useSelector} from 'react-redux';
 import {BUTTON} from '../../constants/antd-types';
 import frameworks from '../../lib/client-frameworks';
 import {copyToClipboard, ipcRenderer} from '../../polyfills';
+import {selectorIsTesting} from '../../stores/serverSlice';
 import InspectorStyles from './Inspector.module.css';
 import SessionStyles from '../Session/Session.module.css';
 import * as PropTypes from 'prop-types';
 import {log} from '../../utils/logger';
-import {serverActions, serverSelectors} from '../../stores/serverSlice.js';
 
 /** @type {React.CSSProperties} */
 const contentStyle = {
@@ -69,9 +69,8 @@ Flex.propTypes = {children: PropTypes.node};
 // const MODULO = 1e9 + 7;
 
 const Recorder = (props) => {
-  const {showBoilerplate, recordedActions, actionFramework, t, showActionSource} = props;
-  const dispatch = useDispatch();
-  const isTesting = useSelector(serverSelectors.isTesting);
+  const {showBoilerplate, recordedActions, actionFramework, t, showActionSource, setIsTesting} = props;
+  const isTesting = useSelector(selectorIsTesting);
   // actions panel
   const [actionSelect, setActionSelect] = useState({
     selectedRowKeys: [],
@@ -485,7 +484,6 @@ const Recorder = (props) => {
       key: 'unit'
     }
   ];
-  const [isActionsPlayed, setIsActionsPlayed] = useState(false);
 
   const code = (raw = true) => {
     const {host, port, path, https, desiredCapabilities} = props.sessionDetails;
@@ -530,9 +528,8 @@ const Recorder = (props) => {
   };
 
   const onStartTesting = useCallback(() => {
-    setIsActionsPlayed(true);
     log.debug('[renderer] starting test....');
-    dispatch(serverActions.setIsTesting(true));
+    setIsTesting(true);
     // TODO:
     ipcRenderer.send('start-test', {
       // NOTE: read from device info
@@ -550,8 +547,8 @@ const Recorder = (props) => {
   }, [recordedActions?.length > 0]);
 
   const onStopTesting = useCallback(() => {
-    setIsActionsPlayed(false);
     log.debug('[renderer] stopping test....');
+    setIsTesting(false);
     ipcRenderer.send('stop-test');
   }, []);
 
@@ -602,7 +599,7 @@ const Recorder = (props) => {
                       onClick={onStartTesting}
                       icon={<PlayCircleOutlined />}
                       type={BUTTON.DEFAULT}
-                      disabled={(recordedActions.length === 0) || isActionsPlayed}
+                      disabled={(recordedActions.length === 0) || isTesting}
                     />
                   </Tooltip>
                   <Tooltip title={t('stopTesting')}>
@@ -610,7 +607,7 @@ const Recorder = (props) => {
                       onClick={onStopTesting}
                       icon={<StopOutlined />}
                       type={BUTTON.DEFAULT}
-                      disabled={(recordedActions.length === 0) || (!isActionsPlayed)}
+                      disabled={(recordedActions.length === 0) || (!isTesting)}
                     />
                   </Tooltip>
                 </Button.Group>

@@ -637,8 +637,8 @@ const ConnectionSettings = (props) => {
       resetApplications(message.items);
     });
 
-    readDevices();
-    readApplications();
+    readDevices({platform: 'android', deviceType: 'all'});
+    readApplications({platform: 'android'});
   }, []);
 
   useEffect(() => {

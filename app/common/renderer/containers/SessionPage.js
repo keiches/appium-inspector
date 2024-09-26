@@ -1,37 +1,48 @@
-import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
 import * as SessionActions from '../actions/Session';
-// import * as DevicesActions from '../actions/Devices';
-import {
-  selectorDevices,
-  selectorSelectedDevice,
-  selectorIsReading as selectorIsDevicesReading,
-  readDevices,
-  resetDevices,
-  clearDevices,
-  selectDevice,
-  addDevice,
-  deleteDevice,
-} from '../stores/devicesSlice';
-// import * as ApplicationsActions from '../actions/Applications';
-import {
-  selectorApplications,
-  selectorSelectedApplication,
-  selectorIsReading as selectorIsApplicationsReading,
-  readApplications,
-  resetApplications,
-  clearApplications,
-  selectApplication,
-  addApplication,
-  deleteApplication,
-} from '../stores/applicationsSlice';
 import Session from '../components/Session/Session.jsx';
 import {withTranslation} from '../i18next';
+// import * as ApplicationsActions from '../actions/Applications';
+import {
+  addApplication,
+  clearApplications,
+  deleteApplication,
+  readApplications,
+  resetApplications,
+  selectApplication,
+  selectorApplications,
+  selectorIsReading as selectorIsApplicationsReading,
+  selectorSelectedApplication,
+} from '../stores/applicationsSlice';
+// import * as DevicesActions from '../actions/Devices';
+import {
+  addDevice,
+  clearDevices,
+  deleteDevice,
+  readDevices,
+  resetDevices,
+  selectDevice,
+  selectorDevices,
+  selectorIsReading as selectorIsDevicesReading,
+  selectorSelectedDevice,
+} from '../stores/devicesSlice';
+import {
+  setAppiumServerRunning,
+  setTestServerRunning,
+  setIsTesting,
+  selectorIsAppiumServerRunning,
+  selectorIsTestServerRunning,
+  selectorIsTesting,
+} from '../stores/serverSlice';
 
 function mapStateToProps(state) {
   return {
     ...state.session,
+    IsAppiumServerRunning: selectorIsAppiumServerRunning(state),
+    IsTestServerRunning: selectorIsTestServerRunning(state),
+    IsTesting: selectorIsTesting(state),
     // devices: state.devices.items,
     // selectedDevice: state.devices.selected,
     devices: selectorDevices(state),
@@ -46,19 +57,17 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
   return {
     ...bindActionCreators(SessionActions, dispatch),
+    // ...SessionActions,
     // ...bindActionCreators(DevicesActions, dispatch),
-    // devicesActions: bindActionCreators({
     ...bindActionCreators({
+      // for Devices
       readDevices,
       resetDevices,
       clearDevices,
       selectDevice,
       addDevice,
-      deleteDevice
-    }, dispatch),
-    // ...bindActionCreators(ApplicationsActions, dispatch),
-    // applicationsActions: bindActionCreators({
-    ...bindActionCreators({
+      deleteDevice,
+      // for Applications
       readApplications,
       resetApplications,
       clearApplications,
@@ -69,4 +78,25 @@ function mapDispatchToProps(dispatch) {
   };
 }
 
-export default withTranslation(Session, connect(mapStateToProps, mapDispatchToProps));
+// export default withTranslation(Session, connect(mapStateToProps, mapDispatchToProps));
+export default withTranslation(Session, connect(mapStateToProps, {
+  ...SessionActions,
+  // for Server
+  setAppiumServerRunning,
+  setTestServerRunning,
+  setIsTesting,
+  // for Devices
+  readDevices,
+  resetDevices,
+  clearDevices,
+  selectDevice,
+  addDevice,
+  deleteDevice,
+  // for Applications
+  readApplications,
+  resetApplications,
+  clearApplications,
+  selectApplication,
+  addApplication,
+  deleteApplication
+}));

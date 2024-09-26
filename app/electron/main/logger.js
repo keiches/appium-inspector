@@ -13,29 +13,58 @@ if (process.env.ELECTRON_LOG) {
 }*/
 
 class Logger {
-  constructor() {
-    console.info('Log from the main process'); // eslint-disable-line no-console
+  _options = {
+    showTime: false,
+  };
+
+  constructor(options = {}) {
+    this._options = {...options};
+    console.info(options.subtitle ? `Log from ${options.subtitle}` : 'Log from the main process'); // eslint-disable-line no-console
+  }
+
+  setOptions(options) {
+    this._options = {...this._options, ...options};
   }
 
   debug(...args) {
-    console.info(...args); // eslint-disable-line no-console
+    const message = [...args];
+    if (this._options.showTime) {
+      message.unshift(`[${(new Date()).toFormattedString()}]`);
+    }
+    console.debug(...message); // eslint-disable-line no-console
   }
 
   info(...args) {
-    console.info(...args); // eslint-disable-line no-console
+    const message = [...args];
+    if (this._options.showTime) {
+      message.unshift(`[${(new Date()).toFormattedString()}]`);
+    }
+    console.info(...message); // eslint-disable-line no-console
   }
 
   log(...args) {
-    console.info(...args); // eslint-disable-line no-console
+    const message = [...args];
+    if (this._options.showTime) {
+      message.unshift(`[${(new Date()).toFormattedString()}]`);
+    }
+    console.info(...message); // eslint-disable-line no-console
   }
 
   warn(...args) {
-    console.warn(...args); // eslint-disable-line no-console
+    const message = [...args];
+    if (this._options.showTime) {
+      message.unshift(`[${(new Date()).toFormattedString()}]`);
+    }
+    console.warn(...message); // eslint-disable-line no-console
   }
 
   error(...args) {
-    console.error(...args); // eslint-disable-line no-console
+    const message = [...args];
+    if (this._options.showTime) {
+      message.unshift(`[${(new Date()).toFormattedString()}]`);
+    }
+    console.error(...message); // eslint-disable-line no-console
   }
 }
 
-export const log = new Logger();
+export const log = new Logger({showTime: true});

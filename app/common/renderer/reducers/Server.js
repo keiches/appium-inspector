@@ -1,13 +1,13 @@
 import {
   IS_APPIUM_SERVER_RUNNING,
-  IS_MESSAGE_SERVER_RUNNING,
+  IS_TEST_SERVER_RUNNING,
   IS_TESTING,
 } from '../actions/Server';
 import {log} from '../utils/logger';
 
 const INITIAL_STATE = {
   isAppiumServerRunning: false,
-  isMessageServerRunning: false,
+  isTestServerRunning: false,
   isTesting: false,
 };
 
@@ -16,8 +16,8 @@ export default function server(state = INITIAL_STATE, action) {
     case IS_APPIUM_SERVER_RUNNING:
       return {...state, isAppiumServerRunning: action.isAppiumServerRunning};
 
-    case IS_MESSAGE_SERVER_RUNNING:
-      return {...state, isMessageServerRunning: action.isMessageServerRunning};
+    case IS_TEST_SERVER_RUNNING:
+      return {...state, isTestServerRunning: action.isTestServerRunning};
 
     case IS_TESTING:
       return {...state, isTesting: action.isTesting};

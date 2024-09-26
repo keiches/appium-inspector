@@ -57,7 +57,7 @@ async function runner(window) {
     window.webContents.send('appium-server', 'server', 'error', {message: 'server not found'});
     return;
   } else {
-    log.info(`[appium-server] server ("${execPath}") found`);
+    log.info(`[appium-server] server ("${execPath}") exists`);
   }
   child = spawn(nodePath, [
     isDev ? `--inspect=${await getPort({port: 9090})}` : '',

@@ -31,6 +31,8 @@ const deviceEntity = createEntityAdapter<ApplicationState>();
  * @property {Application[]} items
  * @property {Application|null} selected
  * @property {boolean} isReading
+ * @property {Error|null} error
+ * @property {string} status
  */
 // const deviceEntity = createEntityAdapter();
 
@@ -39,6 +41,8 @@ const initialState = {
   items: [],
   selected: null,
   isReading: false,
+  error: null,
+  status: 'idle',
 };
 // } satisfies ApplicationState as ApplicationState;
 
@@ -82,8 +86,29 @@ export const applicationsSlice = createSlice({
       }
     },
   },
+  /*
+  extraReducers: (builder) => {
+    builder
+      .addCase(readApplications.pending, (state) => {
+        state.isReading = true;
+        state.status = 'loading';
+      })
+      .addCase(readApplications.fulfilled, (state, action) => {
+        state.isReading = false;
+        state.status = 'succeeded';
+        state.items = action.payload;
+        state.selected = null;
+      })
+      .addCase(readApplications.rejected, (state, action) => {
+        state.isReading = false;
+        state.status = 'failed';
+        state.error = action.payload;
+      });
+  },
+  */
 });
 
+// Actions
 export const {
   setLoading,
   resetApplications,
@@ -96,10 +121,10 @@ export const {
 // Thunk action creators
 /**
  * Send request to read the list of applications
- * @param {string} platform
- * @returns {(function(*): Promise<void>)|*}
+ * @param {{platform: string}} payload
  */
-export const readApplications = (platform) => async (dispatch) => {
+export const readApplications = (payload) => async (dispatch) => {
+  const {platform} = payload;
   dispatch(setLoading(true));
   ipcRenderer.send('applications:read', {
     platform,
@@ -153,13 +178,85 @@ export const readApplications = (platform) => async (dispatch) => {
     dispatch(setLoading(false));
   });
 };
+/*export const readApplications = createAsyncThunk(
+  'applicationsSlice/readApplications',
+  async (payload, {dispatch, rejectWithValue}) => {
+    const {platform} = payload;
+    dispatch(setLoading(true));
+    try {
+      ipcRenderer.send('applications:read', {
+        platform,
+      });
+      // Simulating API call
+      const response = await new Promise((resolve) => {
+        // TODO: Read the APKs and the IPAs(zip) from the disk (target location)
+        ipcRenderer.once('applications:reset', (_, applications) => {
+          resolve(applications);
+        });
+        // DEBUG:
+        setTimeout(() => {
+          const applications = [];
+          // TODO: When the API call is done
+          applications.push(...[
+            {
+              platform: {
+                name: 'Android',
+                icon: AndroidOutlined,
+              },
+              app: 'apps/Android-MyDemoAppRN.1.3.0.build-244.apk',
+              package: 'com.saucelabs.mydemoapp.rn',
+              activity: '.MainActivity',
+              version: '384.0.150',
+              status: 'Ready',
+            },
+            {
+              platform: {
+                name: 'iOS',
+                icon: AppleOutlined,
+              },
+              app: 'apps/Android-MyDemoAppRN.1.3.0.build-244.zip',
+              package: 'com.saucelabs.mydemoapp.rn',
+              activity: '.MainActivity',
+              version: '23.6.7',
+              status: 'Ready',
+            },
+            {
+              platform: {
+                name: 'Android',
+                icon: AndroidOutlined,
+              },
+              app: 'apps/Android-MyDemoAppRN.1.3.0.build-244.apk',
+              package: 'com.saucelabs.mydemoapp.rn',
+              activity: '.MainActivity',
+              version: '12.3.2',
+              status: 'Ready',
+            },
+          ].slice(Math.floor(Math.random()), Math.floor(Math.random() * 2) + 1));
+          resolve(applications);
+        }, 1000);
+      });
+      /*if (!response.ok) {
+        return rejectWithValue('failed to read applications list');
+      }
+      const applications = await response.json();*/
+      const applications = response;
+      dispatch(resetApplications(applications));
+      return applications;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    } finally {
+      dispatch(setLoading(false));
+    }
+  },
+);*/
 
 // Selectors
-// export const applicationSelectors = deviceSlice.getSelectors(deviceSlice.selectSlice);
+// export const applicationsSelectors = applicationsSlice.getSelectors(applicationsSlice.selectSlice);
 export const selectorApplications = (state) => state.applications.items;
 export const selectorSelectedApplication = (state) => state.applications.selected;
 export const selectorIsReading = (state) => state.applications.isReading;
 
+// Export the slice reducer as the default export
 export default applicationsSlice.reducer;
 
 /*
@@ -184,6 +281,6 @@ function MyComponent() {
     dispatch(readApplications());
   }, [dispatch]);
 
-  // ... 나머지 컴포넌트 로직
+  // ... ?�머지 컴포?�트 로직
 }
  */

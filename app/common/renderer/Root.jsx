@@ -1,17 +1,19 @@
 import {Alert, Modal} from 'antd';
-import React, {Suspense} from 'react';
-import {Provider, useDispatch} from 'react-redux';
+import {Suspense, useEffect, useState} from 'react';
+import {connect, Provider, useDispatch} from 'react-redux';
 import {MemoryRouter, Route, Routes} from 'react-router-dom';
+import {bindActionCreators} from 'redux';
 
 import Spinner from './components/Spinner/Spinner.jsx';
+import {ALERT} from './constants/antd-types.js';
 import InspectorPage from './containers/InspectorPage';
 import SessionPage from './containers/SessionPage';
-import i18n from './i18next';
+import i18n, {withTranslation} from './i18next';
 import {ipcRenderer} from './polyfills';
 import StatusBar from './StatusBar.jsx';
+import {selectDevice} from './stores/devicesSlice';
+import {setAppiumServerRunning, setIsTesting,setTestServerRunning} from './stores/serverSlice.js';
 import {log} from './utils/logger.js';
-import {ALERT} from './constants/antd-types.js';
-import {serverActions} from './stores/serverSlice.js';
 
 ipcRenderer.on('appium-language-changed', (event, message) => {
   if (i18n.language !== message.language) {
@@ -23,26 +25,26 @@ const Root = ({store}) => (
   <Provider store={store}>
     <MemoryRouter initialEntries={['/']}>
       <Suspense fallback={<Spinner />}>
-        <RootWrapper>
+        <ConnectedRootWrapper>
           <Routes>
             <Route path="/" element={<SessionPage />} />
             <Route path="/session" element={<SessionPage />} />
             <Route path="/inspector" element={<InspectorPage />} />
           </Routes>
           <StatusBar />
-        </RootWrapper>
+        </ConnectedRootWrapper>
       </Suspense>
     </MemoryRouter>
   </Provider>
 );
 
-const RootWrapper = ({children}) => {
-  const dispatch = useDispatch();
-  const [visibleTestResult, setVisibleTestResult] = React.useState(false);
-  const [lastOutput, setLastOutput] = React.useState();
-  const [errorMessage, setErrorMessage] = /** @type {[Error, React.Dispatch<React.SetStateAction<Error>>]} */ React.useState();
+const RootWrapper = (props) => {
+  const {children, setIsTesting} = props;
+  const [visibleTestResult, setVisibleTestResult] = useState(false);
+  const [lastOutput, setLastOutput] = useState();
+  const [errorMessage, setErrorMessage] = /** @type {[Error, React.Dispatch<React.SetStateAction<Error>>]} */ useState();
 
-  React.useEffect(() => {
+  useEffect(() => {
     ipcRenderer.on('appium-server', (event, ...args) => {
       log.log('<appium-server>~~~~~~~~~~~~~~~~~~~~', ...args);
     });
@@ -66,11 +68,11 @@ const RootWrapper = ({children}) => {
               setLastOutput(eventData);
               break;
             case 'die':
-              dispatch(serverActions.setIsTesting(false));
+              setIsTesting(false);
               setVisibleTestResult(true);
               break;
             case 'end':
-              dispatch(serverActions.setIsTesting(false));
+              setIsTesting(false);
               setVisibleTestResult(true);
               break;
           }
@@ -85,11 +87,11 @@ const RootWrapper = ({children}) => {
               setLastOutput(eventData);
               break;
             case 'die':
-              serverActions.setIsTesting(false);
+              setIsTesting(false);
               setVisibleTestResult(true);
               break;
             case 'end':
-              serverActions.setIsTesting(false);
+              setIsTesting(false);
               setVisibleTestResult(true);
               break;
           }
@@ -98,7 +100,7 @@ const RootWrapper = ({children}) => {
     });
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (visibleTestResult) {
     log.debug('-----', lastOutput);
     }
@@ -135,5 +137,28 @@ const RootWrapper = ({children}) => {
     }
   </>);
 };
+
+function mapStateToProps(state) {
+  return {
+    ...state.session,
+    ...state.server,
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    ...bindActionCreators({
+      selectDevice,
+      // setIsTesting: (payload) => dispatch(serverActions.setIsTesting(payload)),
+      // setIsTesting: serverActions.setIsTesting,
+    }, dispatch),
+  };
+}
+
+// const ConnectedRootWrapper = withTranslation(RootWrapper, connect(mapStateToProps, mapDispatchToProps));
+const ConnectedRootWrapper = withTranslation(RootWrapper, connect(mapStateToProps, {
+  setIsTesting,
+  selectDevice,
+}));
 
 export default Root;

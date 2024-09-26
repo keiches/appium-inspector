@@ -10,7 +10,13 @@ import {
   UserOutlined
 } from '@ant-design/icons';
 
+import {withTranslation} from './i18next.js';
+import {selectorIsAppiumServerRunning, selectorIsTestServerRunning} from './stores/serverSlice';
+
 const StatusBar = (props) => {
+  const {selectorIsAppiumServerRunning, selectorIsTestServerRunning} = props;
+  const isAppiumServerRunning = useSelector(selectorIsAppiumServerRunning);
+  const isTestServerRunning = useSelector(selectorIsTestServerRunning);
   return (
     <Layout.Footer>
       <Space split={<span style={{ margin: '0 8px' }}>|</span>} wrap={false}>
@@ -18,12 +24,12 @@ const StatusBar = (props) => {
           <Typography.Text>Message......</Typography.Text>
         </Space>
         <Space>
-          <CheckCircleOutlined style={{ color: '#52c41a' }} />
-          <Typography.Text>Server</Typography.Text>
+          <CheckCircleOutlined style={{ color: isAppiumServerRunning ? '#52c41a' : '#faad14' }} />
+          <Typography.Text>Core Server</Typography.Text>
         </Space>
         <Space>
-          <CheckCircleOutlined style={{ color: '#52c41a' }} />
-          <Typography.Text>Event</Typography.Text>
+          <CheckCircleOutlined style={{ color: isTestServerRunning ? '#52c41a' : '#faad14' }} />
+          <Typography.Text>Test Server</Typography.Text>
         </Space>
         <Space>
           <WarningOutlined style={{ color: '#faad14' }} />
@@ -50,7 +56,4 @@ function mapStateToProps(state) {
   return state.session;
 }
 
-export default connect(
-  mapStateToProps,
-  // mapDispatchToProps
-)(StatusBar);
+export default withTranslation(StatusBar, connect(mapStateToProps));

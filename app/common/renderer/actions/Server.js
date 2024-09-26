@@ -1,5 +1,5 @@
 export const IS_APPIUM_SERVER_RUNNING = 'IS_APPIUM_SERVER_RUNNING';
-export const IS_MESSAGE_SERVER_RUNNING = 'IS_MESSAGE_SERVER_RUNNING';
+export const IS_TEST_SERVER_RUNNING = 'IS_TEST_SERVER_RUNNING';
 export const IS_TESTING = 'IS_TESTING';
 
 /**
@@ -16,9 +16,9 @@ export function setAppiumServerRunning(running) {
  * Set whether the message server is running
  * @param {boolean} running
  */
-export function setMessageServerRunning(running) {
+export function setTestServerRunning(running) {
   return (dispatch) => {
-    dispatch({type: IS_MESSAGE_SERVER_RUNNING, running});
+    dispatch({type: IS_TEST_SERVER_RUNNING, running});
   };
 }
 
