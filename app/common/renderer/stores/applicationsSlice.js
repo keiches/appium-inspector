@@ -235,10 +235,10 @@ export const readApplications = (payload) => async (dispatch) => {
           resolve(applications);
         }, 1000);
       });
-      /*if (!response.ok) {
+      /!*if (!response.ok) {
         return rejectWithValue('failed to read applications list');
       }
-      const applications = await response.json();*/
+      const applications = await response.json();*!/
       const applications = response;
       dispatch(resetApplications(applications));
       return applications;
@@ -281,6 +281,6 @@ function MyComponent() {
     dispatch(readApplications());
   }, [dispatch]);
 
-  // ... ?�머지 컴포?�트 로직
+  // ... ?�머지 컴포?�트 로직
 }
  */

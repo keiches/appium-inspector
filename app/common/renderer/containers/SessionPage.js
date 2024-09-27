@@ -1,5 +1,5 @@
 import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
+// import {bindActionCreators} from 'redux';
 
 import * as SessionActions from '../actions/Session';
 import Session from '../components/Session/Session.jsx';
@@ -31,7 +31,7 @@ import {
 import {
   setAppiumServerRunning,
   setTestServerRunning,
-  setIsTesting,
+  setTesting,
   selectorIsAppiumServerRunning,
   selectorIsTestServerRunning,
   selectorIsTesting,
@@ -40,9 +40,9 @@ import {
 function mapStateToProps(state) {
   return {
     ...state.session,
-    IsAppiumServerRunning: selectorIsAppiumServerRunning(state),
-    IsTestServerRunning: selectorIsTestServerRunning(state),
-    IsTesting: selectorIsTesting(state),
+    isAppiumServerRunning: selectorIsAppiumServerRunning(state),
+    isTestServerRunning: selectorIsTestServerRunning(state),
+    isTesting: selectorIsTesting(state),
     // devices: state.devices.items,
     // selectedDevice: state.devices.selected,
     devices: selectorDevices(state),
@@ -54,6 +54,7 @@ function mapStateToProps(state) {
   };
 }
 
+/*
 function mapDispatchToProps(dispatch) {
   return {
     ...bindActionCreators(SessionActions, dispatch),
@@ -78,13 +79,14 @@ function mapDispatchToProps(dispatch) {
   };
 }
 
-// export default withTranslation(Session, connect(mapStateToProps, mapDispatchToProps));
+export default withTranslation(Session, connect(mapStateToProps, mapDispatchToProps));
+*/
 export default withTranslation(Session, connect(mapStateToProps, {
   ...SessionActions,
   // for Server
   setAppiumServerRunning,
   setTestServerRunning,
-  setIsTesting,
+  setTesting,
   // for Devices
   readDevices,
   resetDevices,

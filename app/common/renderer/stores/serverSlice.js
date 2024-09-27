@@ -40,14 +40,14 @@ export const serverSlice = createSlice({
     setTestServerRunning(state, /** @type {import('@reduxjs/toolkit').PayloadAction<boolean>} */ action) {
       state.isTestServerRunning = action.payload;
     },
-    setIsTesting(state, /** @type {import('@reduxjs/toolkit').PayloadAction<boolean>} */ action) {
+    setTesting(state, /** @type {import('@reduxjs/toolkit').PayloadAction<boolean>} */ action) {
       state.isTesting = action.payload;
     },
   },
   /*selectors: {
-    selectorIsAppiumServerRunning: (state) => state.isAppiumServerRunning,
-    selectorIsTestServerRunning: (state) => state.isTestServerRunning,
-    selectorIsTesting: (state) => state.isTesting,
+    selectorIsAppiumServerRunning: (state) => state.server.isAppiumServerRunning,
+    selectorIsTestServerRunning: (state) => state.server.isTestServerRunning,
+    selectorIsTesting: (state) => state.server.isTesting,
   },*/
 });
 
@@ -58,7 +58,7 @@ export const serverSlice = createSlice({
 export const {
   setAppiumServerRunning,
   setTestServerRunning,
-  setIsTesting,
+  setTesting,
 } = serverSlice.actions;
 
 // Selectors
@@ -76,9 +76,9 @@ export const testSelectors = serverEntity.getSelectors<TestSlice>(
 );*/
 // export const {isTesting} = serverSlice.getSelectors(serverSlice.selectSlice);
 // export const serverSelectors = serverSlice.selectors;
-export const selectorIsAppiumServerRunning = (state) => state.isAppiumServerRunning;
-export const selectorIsTestServerRunning = (state) => state.isTestServerRunning;
-export const selectorIsTesting = (state) => state.isTesting;
+export const selectorIsAppiumServerRunning = (state) => state.server.isAppiumServerRunning;
+export const selectorIsTestServerRunning = (state) => state.server.isTestServerRunning;
+export const selectorIsTesting = (state) => state.server.isTesting;
 
 // Export the slice reducer as the default export
 export default serverSlice.reducer;

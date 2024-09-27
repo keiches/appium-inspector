@@ -1,41 +1,37 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {
   ClearOutlined,
   CodeOutlined,
   CopyOutlined,
-  PicRightOutlined,
+  DeleteOutlined,
   // FormOutlined,
   EditOutlined,
-  DeleteOutlined, PlayCircleOutlined, StopOutlined, TagOutlined
+  PicRightOutlined,
+PlayCircleOutlined, StopOutlined, TagOutlined
 } from '@ant-design/icons';
 import {
   Button,
   Card,
-  Col,
-  Descriptions,
   Divider,
-  Layout,
-  List,
   Progress,
-  Row,
   Select,
   Space,
-  Spin,
   Table,
   Tooltip
 } from 'antd';
-import hljs from 'highlight.js';
 import {capitalCase, sentenceCase} from 'change-case';
+import hljs from 'highlight.js';
+import * as PropTypes from 'prop-types';
+import {useCallback, useMemo, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 
+import {setTesting} from '../../actions/Server.js';
 import {BUTTON} from '../../constants/antd-types';
 import frameworks from '../../lib/client-frameworks';
 import {copyToClipboard, ipcRenderer} from '../../polyfills';
 import {selectorIsTesting} from '../../stores/serverSlice';
-import InspectorStyles from './Inspector.module.css';
-import SessionStyles from '../Session/Session.module.css';
-import * as PropTypes from 'prop-types';
 import {log} from '../../utils/logger';
+import SessionStyles from '../Session/Session.module.css';
+import InspectorStyles from './Inspector.module.css';
 
 /** @type {React.CSSProperties} */
 const contentStyle = {
@@ -69,7 +65,9 @@ Flex.propTypes = {children: PropTypes.node};
 // const MODULO = 1e9 + 7;
 
 const Recorder = (props) => {
-  const {showBoilerplate, recordedActions, actionFramework, t, showActionSource, setIsTesting} = props;
+  // const {showBoilerplate, recordedActions, actionFramework, t, showActionSource, setTesting} = props;
+  const {showActionSource, showBoilerplate, recordedActions, actionFramework, t} = props;
+  const dispatch = useDispatch();
   const isTesting = useSelector(selectorIsTesting);
   // actions panel
   const [actionSelect, setActionSelect] = useState({
@@ -529,7 +527,7 @@ const Recorder = (props) => {
 
   const onStartTesting = useCallback(() => {
     log.debug('[renderer] starting test....');
-    setIsTesting(true);
+    dispatch(setTesting(true));
     // TODO:
     ipcRenderer.send('start-test', {
       // NOTE: read from device info
@@ -542,13 +540,13 @@ const Recorder = (props) => {
         appActivity: '.MainActivity',
       },
       serverAddress: 'http://127.0.0.1:4723', // 'host:port'
-      testerAddress: 'http://127.0.0.1:8000', // 'host:port'
+      testerAddress: 'http://127.0.0.1:4724', // 'host:port'
     });
   }, [recordedActions?.length > 0]);
 
   const onStopTesting = useCallback(() => {
     log.debug('[renderer] stopping test....');
-    setIsTesting(false);
+    dispatch(setTesting(false));
     ipcRenderer.send('stop-test');
   }, []);
 

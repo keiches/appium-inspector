@@ -1,9 +1,7 @@
 import {combineReducers} from '@reduxjs/toolkit';
 
 // import {apiSlice} from '../stores/apiSlice';
-// import applications from './Applications';
 import applications from '../stores/applicationsSlice';
-// import devices from './Devices';
 import devices from '../stores/devicesSlice';
 import server from '../stores/serverSlice';
 import inspector from './Inspector';

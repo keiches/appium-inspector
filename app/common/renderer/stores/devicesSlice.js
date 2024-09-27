@@ -237,10 +237,10 @@ export const readDevices = (payload) => async (dispatch) => {
           resolve(devices);
         }, 1000);
       });
-      /*if (!response.ok) {
+      /!*if (!response.ok) {
         return rejectWithValue('failed to read device list');
       }
-      const devices = await response.json();*/
+      const devices = await response.json();*!/
       const devices = response;
       dispatch(resetDevices(devices));
       return devices;
@@ -283,6 +283,6 @@ function MyComponent() {
     dispatch(readDevices());
   }, [dispatch]);
 
-  // ... ?�머지 컴포?�트 로직
+  // ... ?�머지 컴포?�트 로직
 }
  */
