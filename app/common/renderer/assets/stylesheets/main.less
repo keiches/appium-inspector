@@ -108,11 +108,28 @@ body::-webkit-scrollbar-corner {
   overflow: auto;
 }
 
-footer.ant-layout-footer {
+footer.statusbar {
   position: fixed;
   bottom: 0;
   padding: 0 16px;
+  width: 100%;
   height: 25px;
   line-height: 25px;
   /* background: #f0f0f0; */
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+footer.statusbar .checking {
+  animation: blink 1s infinite;
 }
