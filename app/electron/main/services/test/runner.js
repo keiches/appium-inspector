@@ -753,27 +753,61 @@ async function runner(window) {
     const remoteAddress = res.socket.remoteAddress;
     const remotePort = res.socket.remotePort;
     */
-    if (req.method === 'POST') {
-      if (req.url === '/message') {
-        const body = [];
-        req.on('data', (chunk) => {
-          body.push(chunk.toString());
-        });
-        req.on('end', () => {
-          // console.log('Received message from Java:', body);
-          const message = Buffer.concat(body).toString();
-          log.log('Received message from Java: ', message);
-          // window.webContents.send('message-from-java', body);
-          // Java 프로세스에 응답 보내기
-          res.writeHead(200, {'Content-Type': 'text/plain'});
-          res.end('Message received');
-        });
-      } else {
-        res.writeHead(404);
-        res.end('Not found');
-      }
-    } else {
-      res.end('Hello from Electron!');
+    res.setHeader('Access-Control-Allow-Origin', '*'); // 모든 출처 허용
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    // OPTIONS 요청 처리 (preflight request)
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+
+    switch (req.method) {
+      case 'GET':
+        if (req.url === '/status') {
+          res.writeHead(200, {'Content-Type': 'application/json'});
+          res.end(JSON.stringify({
+            value: {
+              ready: true,
+              message: 'The server is ready to accept new tests',
+              build: {
+                version: '1.0.0',
+                built: (new Date()).toFormattedString(),
+                sha: 'e943d9ac047290eaaa34',
+              }
+            },
+          }));
+        } else {
+          res.writeHead(404);
+          res.end('Not found');
+        }
+        break;
+      case 'POST':
+        if (req.url === '/message') {
+          const body = [];
+          req.on('data', (chunk) => {
+            body.push(chunk.toString());
+          });
+          req.on('end', () => {
+            // console.log('Received message from Java:', body);
+            const message = Buffer.concat(body).toString();
+            log.log('Received message from Java: ', message);
+            // window.webContents.send('message-from-java', body);
+            // Java 프로세스에 응답 보내기
+            res.writeHead(200, {'Content-Type': 'text/plain'});
+            res.end('Message received');
+          });
+        } else {
+          res.writeHead(404);
+          res.end('Not found');
+        }
+        break;
+      default:
+        res.end('Appium App Validator v1.x.');
+        break;
     }
   });
 
@@ -796,47 +830,44 @@ async function runner(window) {
     window.webContents.send('test-server', 'server', 'data', 'close', {phase});
   });
 
-  return await getPort({port: 8000})
-    // eslint-disable-next-line promise/prefer-await-to-then
-    .then((port) => {
-      messageServer.listen(port, () => {
-        log.log(`[test-server] message server running on port #${port}`);
-        window.webContents.send('test-server', 'server', 'data', 'start', {phase, port});
-      });
-
-      log.log(`[test-server] message server on http://127.0.0.1:${port}/`);
-
-      // TODO: Message Server가 실행되지 못했다면, Test Server도 실행할 수 없음
-      ipcMain.on('start-test', async (event, ...args) => {
-        // NOTE: args.length === 1이어야 함
-        const {targetVersion, codes, capabilities, serverAddress, testerAddress, ...rest} = args[0];
-        log.debug('[start-test]', '__', codes.substring(0, 10), '__', ...args);
-        // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
-        child = runTest({
-          targetVersion,
-          codes,
-          capabilities: {
-            ...capabilities,
-            app: capabilities.app ? resolveAppPath(capabilities.app) : undefined,
-          },
-          serverAddress: serverAddress ?? 'http://localhost:4723', // 'host:port'
-          testerAddress: testerAddress ?? 'http://localhost:8000', // 'host:port',
-          ...rest,
-        }, window);
-        ipcMain.once('stop-test', () => {
-          log.debug('[stop-test]......');
-          handleKillProcess();
-          window.webContents.send('test-server', 'server', 'data', 'stop-test', {phase});
-        });
-      });
-
-      return messageServer;
-    })
-    // eslint-disable-next-line promise/prefer-await-to-then,promise/prefer-await-to-callbacks
-    .catch((err) => {
-      log.error('[test-server] failed to get available port:', err);
-      window.webContents.send('test-server', 'server', 'error', 'start-test', {phase, error: err});
+  try {
+    const port = await getPort({port: 4724});
+    messageServer.listen(port, () => {
+      log.log(`[test-server] message server running on port #${port}`);
+      window.webContents.send('test-server', 'server', 'data', 'start', {phase, port});
     });
+
+    log.log(`[test-server] message server on http://127.0.0.1:${port}/`);
+
+    // TODO: Message Server가 실행되지 못했다면, Test Server도 실행할 수 없음
+    ipcMain.on('start-test', async (event, ...args) => {
+      // NOTE: args.length === 1이어야 함
+      const {targetVersion, codes, capabilities, serverAddress, testerAddress, ...rest} = args[0];
+      log.debug('[start-test]', '__', codes.substring(0, 10), '__', ...args);
+      // TODO: "spawn({detached})"로 호출할 지 확인 후 결정
+      child = runTest({
+        targetVersion,
+        codes,
+        capabilities: {
+          ...capabilities,
+          app: capabilities.app ? resolveAppPath(capabilities.app) : undefined,
+        },
+        serverAddress: serverAddress ?? 'http://127.0.0.1:4723', // 'host:port'
+        testerAddress: testerAddress ?? 'http://127.0.0.1:4724', // 'host:port',
+        ...rest,
+      }, window);
+      ipcMain.once('stop-test', () => {
+        log.debug('[stop-test]......');
+        handleKillProcess();
+        window.webContents.send('test-server', 'server', 'data', 'stop-test', {phase});
+      });
+    });
+
+    return messageServer;
+  } catch (err) {
+    log.error('[test-server] failed to get available port:', err);
+    window.webContents.send('test-server', 'server', 'error', 'start-test', {phase, error: err});
+  }
 }
 
 export default runner;
