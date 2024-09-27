@@ -125,7 +125,7 @@ function generator1(codes) {
               deviceName: 'emulator-5554',
             },
             serverAddress: 'http://127.0.0.1:4723', // 'host:port'
-            testerAddress: 'http://127.0.0.1:8000', // 'host:port'
+            testerAddress: 'http://127.0.0.1:4724', // 'host:port'
           }));
         });
       }
@@ -158,7 +158,7 @@ function generator1(codes) {
       deviceName: '',
     },
     serverAddress: 'http://127.0.0.1:4723', // 'host:port'
-    testerAddress: 'http://127.0.0.1:8000', // 'host:port'
+    testerAddress: 'http://127.0.0.1:4724', // 'host:port'
   });
   const fullPath = path.join(destination, path.basename(filename));
   fs.writeFile(fullPath, contents);
@@ -182,7 +182,7 @@ function generator1(codes) {
           deviceName: '',
         },
         serverAddress: 'http://127.0.0.1:4723', // 'host:port'
-        testerAddress: 'http://127.0.0.1:8000', // 'host:port'
+        testerAddress: 'http://127.0.0.1:4724', // 'host:port'
       });
       //
       return !!result;
@@ -239,7 +239,7 @@ async function generator(options) {
                 ...capabilities,
               },
               serverAddress: serverAddress ?? 'http://localhost:4723', // 'host:port'
-              testerAddress: testerAddress ?? 'http://localhost:8000', // 'host:port'
+              testerAddress: testerAddress ?? 'http://localhost:4724', // 'host:port'
             }));
           });
         case '.cmd':
@@ -286,7 +286,7 @@ generator({
     deviceName: 'emulator-5554',
   },
   serverAddress: 'http://127.0.0.1:4723', // 'host:port'
-  testerAddress: 'http://127.0.0.1:8000', // 'host:port'
+  testerAddress: 'http://127.0.0.1:4724', // 'host:port'
 }).then((r) => {
   // eslint-disable-next-line
   console.log('----0');

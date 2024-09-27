@@ -219,7 +219,7 @@ const ConnectionSettings = (props) => {
             appActivity: '.MainActivity',
           },
           serverAddress: 'http://127.0.0.1:4723', // 'host:port'
-          testerAddress: 'http://127.0.0.1:8000', // 'host:port'
+          testerAddress: 'http://127.0.0.1:4724', // 'host:port'
         });
       }
     },
